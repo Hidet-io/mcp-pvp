@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### [0.5.1] - 2026-01-18
+### Added github pages deployment workflow
+- **GitHub Actions Workflow**: Automated deployment of documentation to GitHub Pages
+  - New workflow file: `.github/workflows/docs.yml`
+  - Automatically builds and deploys docs on push to `main` branch
+
+
 ## [0.5.0] - 2026-01-18
 
 ### Added - Security Enhancements
