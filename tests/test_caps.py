@@ -1,6 +1,5 @@
 """Tests for capability creation and verification."""
 
-from datetime import datetime, timedelta
 
 import pytest
 from freezegun import freeze_time
@@ -11,7 +10,7 @@ from mcp_pvp.errors import (
     CapabilityInvalidError,
     CapabilityTamperedError,
 )
-from mcp_pvp.models import PIIType, RunContext, Sink, SinkKind
+from mcp_pvp.models import PIIType, Sink, SinkKind
 
 
 def test_create_capability(cap_manager: CapabilityManager, sample_sink: Sink) -> None:
@@ -98,14 +97,16 @@ def test_verify_capability_expired(
         )
 
     # Move time forward past expiration
-    with freeze_time("2024-01-01 12:10:00"):  # 10 minutes later
-        with pytest.raises(CapabilityExpiredError):
-            cap_manager.verify(
-                cap_string=cap_str,
-                vault_session="vs_test123",
-                pii_ref="tkn_abc",
-                sink=sample_sink,
-            )
+    with (
+        freeze_time("2024-01-01 12:10:00"),  # 10 minutes later
+        pytest.raises(CapabilityExpiredError),
+    ):
+        cap_manager.verify(
+            cap_string=cap_str,
+            vault_session="vs_test123",
+            pii_ref="tkn_abc",
+            sink=sample_sink,
+        )
 
 
 def test_verify_capability_mismatch_session(

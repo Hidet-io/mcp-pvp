@@ -76,9 +76,10 @@ class PolicyEvaluator:
                 continue
 
             # Check arg_path constraint
-            if allow_rule.arg_paths is not None:
-                if sink.arg_path is None or sink.arg_path not in allow_rule.arg_paths:
-                    continue
+            if allow_rule.arg_paths is not None and (
+                sink.arg_path is None or sink.arg_path not in allow_rule.arg_paths
+            ):
+                continue
 
             allowed = True
             break
@@ -120,7 +121,8 @@ class PolicyEvaluator:
         new_total = session.disclosed_bytes + value_size
         if new_total > limits.max_total_disclosed_bytes_per_step:
             raise DisclosureLimitExceededError(
-                f"Max disclosed bytes per step exceeded ({limits.max_total_disclosed_bytes_per_step})",
+                f"Max disclosed bytes per step exceeded "
+                f"({limits.max_total_disclosed_bytes_per_step})",
                 details={
                     "current": session.disclosed_bytes,
                     "adding": value_size,

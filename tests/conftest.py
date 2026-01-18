@@ -1,10 +1,7 @@
 """Test configuration and fixtures."""
 
-import secrets
-from datetime import datetime, timedelta
 
 import pytest
-from freezegun import freeze_time
 
 from mcp_pvp.caps import CapabilityManager
 from mcp_pvp.models import (

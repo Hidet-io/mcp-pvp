@@ -3,10 +3,8 @@
 import hashlib
 import hmac
 import time
-from typing import Callable
 
 from fastapi import Header, HTTPException, Request, status
-from fastapi.responses import JSONResponse
 
 from mcp_pvp.bindings.http.config import HTTPConfig
 
@@ -97,7 +95,10 @@ class AuthMiddleware:
         if age > self.config.anti_replay_window_seconds:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Request too old (age: {age}s, max: {self.config.anti_replay_window_seconds}s)",
+                detail=(
+                    f"Request too old (age: {age}s, "
+                    f"max: {self.config.anti_replay_window_seconds}s)"
+                ),
             )
 
         # Verify signature

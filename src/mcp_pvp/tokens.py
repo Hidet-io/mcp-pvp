@@ -1,6 +1,5 @@
 """Token parsing, extraction, and substitution utilities."""
 
-import json
 import re
 from typing import Any
 

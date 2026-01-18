@@ -3,12 +3,12 @@
 import base64
 import hmac
 import json
-from datetime import datetime, timedelta, UTC
-from typing import Any
+from datetime import timedelta
 
 from mcp_pvp.errors import CapabilityExpiredError, CapabilityInvalidError, CapabilityTamperedError
-from mcp_pvp.models import Capability, PIIType, RunContext, Sink, SinkKind
+from mcp_pvp.models import Capability, PIIType, RunContext, Sink
 from mcp_pvp.utils import utc_now
+
 
 class CapabilityManager:
     """Manages capability creation and verification."""
@@ -166,10 +166,13 @@ class CapabilityManager:
         else:
             # For arg_path, capability may have None (generic) while request has specific path
             # Only fail if both are non-None and different
-            if cap.sink.arg_path is not None and sink.arg_path is not None:
-                if cap.sink.arg_path != sink.arg_path:
-                    raise CapabilityInvalidError(
-                        "Capability arg_path mismatch",
+            if (
+                cap.sink.arg_path is not None
+                and sink.arg_path is not None
+                and cap.sink.arg_path != sink.arg_path
+            ):
+                raise CapabilityInvalidError(
+                    "Capability arg_path mismatch",
                         details={
                             "expected": sink.arg_path,
                             "got": cap.sink.arg_path,
@@ -177,18 +180,17 @@ class CapabilityManager:
                     )
 
         # Verify run context if specified in capability
-        if cap.run is not None and run is not None:
-            if (
-                cap.run.workflow_run_id != run.workflow_run_id
-                or cap.run.step_id != run.step_id
-            ):
-                raise CapabilityInvalidError(
-                    "Capability run context mismatch",
-                    details={
-                        "expected": run.model_dump(),
-                        "got": cap.run.model_dump(),
-                    },
-                )
+        if cap.run is not None and run is not None and (
+            cap.run.workflow_run_id != run.workflow_run_id
+            or cap.run.step_id != run.step_id
+        ):
+            raise CapabilityInvalidError(
+                "Capability run context mismatch",
+                details={
+                    "expected": run.model_dump(),
+                    "got": cap.run.model_dump(),
+                },
+            )
 
         return cap
 

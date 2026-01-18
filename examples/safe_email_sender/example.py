@@ -68,7 +68,7 @@ def main() -> None:
 
     print(f"Delivered: {deliver_response.delivered}")
     print(f"Audit ID: {deliver_response.audit_id}")
-    print(f"\nTool result (stub):")
+    print("\nTool result (stub):")
     print(deliver_response.tool_result)
 
     print("\n=== Key Points ===")

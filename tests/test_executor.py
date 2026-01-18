@@ -62,7 +62,7 @@ def test_custom_executor_integration():
     deliver_req = DeliverRequest(
         vault_session=tok_resp.vault_session,
         tool_call=ToolCall(
-            name="send_email", 
+            name="send_email",
             args={"to": token.model_dump(by_alias=True), "subject": "Hi"}
         ),
     )
@@ -119,7 +119,7 @@ def test_executor_failure_propagates():
     deliver_req = DeliverRequest(
         vault_session=tok_resp.vault_session,
         tool_call=ToolCall(
-            name="failing_tool", 
+            name="failing_tool",
             args={"email": token.model_dump(by_alias=True)}
         ),
     )

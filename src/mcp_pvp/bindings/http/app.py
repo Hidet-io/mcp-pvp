@@ -1,8 +1,7 @@
 """FastAPI HTTP binding for PVP."""
 
-import sys
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
-from typing import Any, AsyncGenerator
 
 import structlog
 import uvicorn
@@ -14,15 +13,12 @@ from mcp_pvp.bindings.http.config import HTTPConfig
 from mcp_pvp.errors import PVPError
 from mcp_pvp.models import (
     DeliverRequest,
-    DeliverResponse,
     ErrorDetail,
     ErrorEnvelope,
     Policy,
     ResolveRequest,
-    ResolveResponse,
     SuccessEnvelope,
     TokenizeRequest,
-    TokenizeResponse,
 )
 from mcp_pvp.vault import Vault
 
@@ -107,7 +103,9 @@ async def health() -> dict[str, str]:
 @app.post("/pvp/v1/tokenize", response_model=SuccessEnvelope)
 async def tokenize(
     request: TokenizeRequest,
-    _auth: None = Depends(lambda: auth_middleware.verify_shared_secret if auth_middleware else None),  # type: ignore
+    _auth: None = Depends(
+        lambda: auth_middleware.verify_shared_secret if auth_middleware else None
+    ),  # type: ignore
 ) -> SuccessEnvelope:
     """
     Tokenize content containing PII.
@@ -124,7 +122,9 @@ async def tokenize(
 @app.post("/pvp/v1/resolve", response_model=SuccessEnvelope)
 async def resolve(
     request: ResolveRequest,
-    _auth: None = Depends(lambda: auth_middleware.verify_shared_secret if auth_middleware else None),  # type: ignore
+    _auth: None = Depends(
+        lambda: auth_middleware.verify_shared_secret if auth_middleware else None
+    ),  # type: ignore
 ) -> SuccessEnvelope:
     """
     Resolve tokens to raw values (with policy enforcement).
@@ -141,7 +141,9 @@ async def resolve(
 @app.post("/pvp/v1/deliver", response_model=SuccessEnvelope)
 async def deliver(
     request: DeliverRequest,
-    _auth: None = Depends(lambda: auth_middleware.verify_shared_secret if auth_middleware else None),  # type: ignore
+    _auth: None = Depends(
+        lambda: auth_middleware.verify_shared_secret if auth_middleware else None
+    ),  # type: ignore
 ) -> SuccessEnvelope:
     """
     Deliver: inject PII into tool call and execute.

@@ -3,7 +3,7 @@
 import pytest
 
 from mcp_pvp.errors import DisclosureLimitExceededError, PolicyDeniedError
-from mcp_pvp.models import PIIType, Policy, PolicyAllow, Sink, SinkKind, SinkPolicy
+from mcp_pvp.models import PIIType, Policy, Sink, SinkKind
 from mcp_pvp.policy import PolicyEvaluator
 from mcp_pvp.store import SessionStore
 

@@ -1,13 +1,9 @@
 """Presidio-based PII detector (optional)."""
 
-from typing import TYPE_CHECKING
 
 from mcp_pvp.detectors.base import PIIDetector
 from mcp_pvp.errors import DetectionError
 from mcp_pvp.models import PIIDetection, PIIType
-
-if TYPE_CHECKING:
-    from presidio_analyzer import AnalyzerEngine
 
 # Mapping from Presidio entity types to PIIType
 PRESIDIO_ENTITY_MAP = {

@@ -10,7 +10,7 @@ These tests validate the security posture of the vault under attack scenarios:
 import pytest
 
 from mcp_pvp.caps import CapabilityManager
-from mcp_pvp.errors import CapabilityExpiredError, CapabilityInvalidError, CapabilityTamperedError
+from mcp_pvp.errors import CapabilityInvalidError, CapabilityTamperedError
 from mcp_pvp.models import (
     DeliverRequest,
     PIIType,
@@ -30,7 +30,7 @@ class TestPolicyBypass:
 
     def test_resolve_without_capability_fails(self):
         """Attacker tries to resolve token without valid capability.
-        
+
         v1.0 UPDATE: Capabilities are now issued on-demand by vault after policy check.
         This test now verifies that capabilities CANNOT be reused with different sinks.
         """
@@ -44,10 +44,10 @@ class TestPolicyBypass:
         # Tokenize - use EMAIL which is detected by regex
         tok_req = TokenizeRequest(content="Contact: user@example.com")
         tok_resp = vault.tokenize(tok_req)
-        
+
         if not tok_resp.tokens:
             pytest.skip("No tokens detected")
-        
+
         token = tok_resp.tokens[0]
 
         # Resolve for approved sink (should work)
@@ -72,7 +72,7 @@ class TestPolicyBypass:
 
     def test_resolve_with_tampered_capability_fails(self):
         """Attacker tries to reuse capability from one sink with a different sink.
-        
+
         v1.0: This is the CRITICAL security test - capabilities are now sink-bound
         and CANNOT be reused even if HMAC is valid.
         """
@@ -86,10 +86,10 @@ class TestPolicyBypass:
 
         tok_req = TokenizeRequest(content="Email: admin@company.com")
         tok_resp = vault.tokenize(tok_req)
-        
+
         if not tok_resp.tokens:
             pytest.skip("No tokens detected")
-        
+
         token = tok_resp.tokens[0]
 
         # Get capability for send_email
@@ -123,10 +123,10 @@ class TestPolicyBypass:
 
         tok_req = TokenizeRequest(content="Email: test@test.com")
         tok_resp = vault.tokenize(tok_req)
-        
+
         if not tok_resp.tokens:
             pytest.skip("No tokens detected")
-        
+
         token = tok_resp.tokens[0]
 
         # Attempt to resolve to denied ENGINE sink
@@ -224,10 +224,10 @@ class TestDefaultDeny:
 
         tok_req = TokenizeRequest(content="Email: test@test.com")
         tok_resp = vault.tokenize(tok_req)
-        
+
         if not tok_resp.tokens:
             pytest.skip("No tokens detected")
-        
+
         token = tok_resp.tokens[0]
 
         # Attempt to send to LLM - should be denied by policy
@@ -254,10 +254,10 @@ class TestDefaultDeny:
 
         tok_req = TokenizeRequest(content="Email: admin@company.com")
         tok_resp = vault.tokenize(tok_req)
-        
+
         if not tok_resp.tokens:
             pytest.skip("No tokens detected")
-        
+
         token = tok_resp.tokens[0]
 
         # LOCAL should be allowed with explicit policy
@@ -292,7 +292,7 @@ class TestSessionIsolation:
         # Each session should only access its own tokens
         if tok_resp1.tokens:
             token1 = tok_resp1.tokens[0]
-            
+
             # Should fail to use token1's capability in session2
             with pytest.raises((ValueError, Exception)):
                 vault.resolve(

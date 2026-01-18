@@ -3,7 +3,7 @@
 import pytest
 
 from mcp_pvp.errors import TokenInvalidError
-from mcp_pvp.models import JSONToken, PIIType, TextToken
+from mcp_pvp.models import PIIType
 from mcp_pvp.tokens import (
     extract_json_tokens,
     extract_text_tokens,

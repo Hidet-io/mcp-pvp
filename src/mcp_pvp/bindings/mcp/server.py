@@ -10,13 +10,10 @@ from mcp.server.fastmcp import FastMCP
 
 from mcp_pvp.models import (
     DeliverRequest,
-    DeliverResponse,
     Policy,
     ResolveRequest,
-    ResolveResponse,
     TokenFormat,
     TokenizeRequest,
-    TokenizeResponse,
 )
 from mcp_pvp.vault import Vault
 
@@ -124,7 +121,7 @@ def main() -> None:
     )
 
     logger.info("mcp_pvp_server_starting", transport="stdio")
-    
+
     # Run with stdio transport (default for MCP)
     mcp.run(transport="stdio")
 

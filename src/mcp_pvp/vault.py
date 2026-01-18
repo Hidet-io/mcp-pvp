@@ -1,7 +1,6 @@
 """Main Vault service implementing tokenize/resolve/deliver operations."""
 
 import secrets
-from typing import Any
 
 import structlog
 
@@ -367,7 +366,7 @@ class Vault:
         for token, path in json_token_paths:
             # Extract just the top-level key from path (e.g., "to" from "to.nested")
             arg_path = path.split(".")[0] if path else None
-            
+
             sink = Sink(
                 kind=SinkKind.TOOL,
                 name=request.tool_call.name,

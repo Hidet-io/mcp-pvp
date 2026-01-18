@@ -1,19 +1,19 @@
 """TTL-based session store."""
 
 import secrets
-from datetime import datetime, timedelta, UTC
-from typing import Dict
+from datetime import timedelta
 
 from mcp_pvp.errors import SessionExpiredError, SessionNotFoundError, TokenNotFoundError
 from mcp_pvp.models import StoredPII, VaultSession
 from mcp_pvp.utils import utc_now
+
 
 class SessionStore:
     """In-memory TTL-based session store."""
 
     def __init__(self) -> None:
         """Initialize session store."""
-        self._sessions: Dict[str, VaultSession] = {}
+        self._sessions: dict[str, VaultSession] = {}
 
     def create_session(self, ttl_seconds: int = 3600) -> VaultSession:
         """

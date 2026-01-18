@@ -1,11 +1,13 @@
 """Pydantic models for PVP protocol."""
 
-from datetime import datetime, UTC
+from datetime import datetime
 from enum import Enum
 from typing import Any, Literal
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field
+
 from mcp_pvp.utils import utc_now
+
 
 class PIIType(str, Enum):
     """Types of PII that can be detected and tokenized."""
