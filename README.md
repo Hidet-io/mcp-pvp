@@ -505,23 +505,41 @@ mcp-pvp can do: **tokenize → plan with tokens → deliver locally**, injecting
 mcp-pvp enforces allow-lists and limits in the local vault (default deny), aligning with MCP ecosystem security best practices and reducing trust in cloud components.
 
 
+## Observability & Monitoring
+
+mcp-pvp provides comprehensive observability for production deployments:
+
+- **Structured Logging**: Built on [structlog](https://www.structlog.org/) with JSON output
+- **Audit Trail**: Complete audit trail of all PII operations (never logs raw values)
+- **Error Tracking**: Optional [Sentry](https://sentry.io/) integration with PII protection
+- **Metrics**: Prometheus-compatible metrics for requests, latency, and disclosures
+- **Health Checks**: Ready-to-use health and readiness endpoints
+
+See [docs/OBSERVABILITY.md](docs/OBSERVABILITY.md) for the complete guide and [examples/observability/](examples/observability/) for production configurations.
+
+---
+
 ## Roadmap
 
-### v0.1
+### v0.2 ✅ (Current Release - Production Ready)
 
-* PVP core: tokenize/resolve/deliver
-* TTL store
-* policy allow-lists + limits
-* HMAC capabilities
-* MCP server binding
-* Example: “safe email sender” (LLM never sees recipient)
+* ✅ PVP core: tokenize/resolve/deliver
+* ✅ TTL store with session management
+* ✅ Policy allow-lists + limits
+* ✅ HMAC capabilities for sink-bound tokens
+* ✅ MCP server binding with ToolExecutor
+* ✅ Golden example: "safe email sender"
+* ✅ Comprehensive observability (logging, metrics, Sentry)
+* ✅ Production packaging (CHANGELOG, versioning, release workflow)
+* ✅ Security scanning (Bandit integration)
 
-### v0.2+
+### v0.3+ (Future)
 
 * encrypted local persistence (sqlite)
 * expanded detectors (IBAN, secrets, configurable patterns)
-* richer audit queries
+* richer audit queries and compliance reporting
 * optional proxy mode (secure existing agents without refactor)
+* enhanced policy primitives (time-based, context-aware)
 
 ---
 

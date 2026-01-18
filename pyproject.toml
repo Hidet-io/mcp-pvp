@@ -34,6 +34,9 @@ http = [
     "fastapi>=0.109.0",
     "uvicorn[standard]>=0.27.0",
 ]
+sentry = [
+    "sentry-sdk[logging]>=2.0.0",
+]
 dev = [
     "pytest>=7.4.0",
     "pytest-cov>=4.1.0",
@@ -44,12 +47,14 @@ dev = [
     "mypy>=1.8.0",
     "pre-commit>=3.5.0",
     "build>=1.0.0",
+    "bandit[toml]>=1.7.0",
 ]
 all = [
     "presidio-analyzer>=2.2.0",
     "presidio-anonymizer>=2.2.0",
     "fastapi>=0.109.0",
     "uvicorn[standard]>=0.27.0",
+    "sentry-sdk[logging]>=2.0.0",
 ]
 
 [project.scripts]
@@ -93,12 +98,15 @@ ignore = [
     "S101",   # assert allowed in tests
     "S104",   # possible binding to all interfaces (we control this via config)
     "S105",   # hardcoded password - false positives for error codes
+    "S106",   # hardcoded password - false positives for parameter names like token_format
     "S107",   # hardcoded password - false positives for default values
     "N801",   # MCP_ToolExecutor is a valid name (MCP is acronym)
+    "DTZ003", # datetime.utcnow() is acceptable in examples
 ]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**/*.py" = ["S101", "S105", "S106", "E501"]  # Relax line length in tests
+"examples/**/*.py" = ["W293", "E501"]  # Allow whitespace and longer lines in examples
 
 [tool.ruff.format]
 quote-style = "double"
@@ -167,4 +175,3 @@ exclude_lines = [
 # Exclude false positives for token/password detection
 # These are API parameters, not hardcoded credentials
 skips = ["B107", "B105"]  # Hardcoded password argument defaults
-exclude_dirs = ["/tests"]
