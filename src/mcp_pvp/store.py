@@ -100,7 +100,7 @@ class SessionStore:
         ref = f"tkn_{secrets.token_urlsafe(12)}"
         stored = StoredPII(
             ref=ref,
-            pii_type=pii_type,  # type: ignore
+            pii_type=pii_type,
             value=value,
         )
 
@@ -143,9 +143,7 @@ class SessionStore:
             Number of sessions cleaned up
         """
         now = utc_now()
-        expired = [
-            sid for sid, session in self._sessions.items() if session.expires_at < now
-        ]
+        expired = [sid for sid, session in self._sessions.items() if session.expires_at < now]
 
         for sid in expired:
             del self._sessions[sid]

@@ -23,6 +23,7 @@ class AuditEventType(str, Enum):
     POLICY_DENIED = "POLICY_DENIED"
     CAPABILITY_INVALID = "CAPABILITY_INVALID"
 
+
 def utc_now() -> datetime:
     """Get current UTC time."""
     return datetime.now(UTC)

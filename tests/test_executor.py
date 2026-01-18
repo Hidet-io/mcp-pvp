@@ -41,11 +41,7 @@ def test_custom_executor_integration():
     executor = CustomExecutor()
 
     # Configure policy to allow tool:send_email
-    policy = Policy(
-        sinks={
-            "tool:send_email": SinkPolicy(allow=[PolicyAllow(type=PIIType.EMAIL)])
-        }
-    )
+    policy = Policy(sinks={"tool:send_email": SinkPolicy(allow=[PolicyAllow(type=PIIType.EMAIL)])})
 
     vault = Vault(policy=policy, executor=executor)
 
@@ -62,8 +58,7 @@ def test_custom_executor_integration():
     deliver_req = DeliverRequest(
         vault_session=tok_resp.vault_session,
         tool_call=ToolCall(
-            name="send_email",
-            args={"to": token.model_dump(by_alias=True), "subject": "Hi"}
+            name="send_email", args={"to": token.model_dump(by_alias=True), "subject": "Hi"}
         ),
     )
 
@@ -103,9 +98,7 @@ def test_executor_failure_propagates():
             raise ValueError("Tool execution failed")
 
     policy = Policy(
-        sinks={
-            "tool:failing_tool": SinkPolicy(allow=[PolicyAllow(type=PIIType.EMAIL)])
-        }
+        sinks={"tool:failing_tool": SinkPolicy(allow=[PolicyAllow(type=PIIType.EMAIL)])}
     )
 
     vault = Vault(policy=policy, executor=FailingExecutor())
@@ -118,10 +111,7 @@ def test_executor_failure_propagates():
     # Deliver should propagate exception
     deliver_req = DeliverRequest(
         vault_session=tok_resp.vault_session,
-        tool_call=ToolCall(
-            name="failing_tool",
-            args={"email": token.model_dump(by_alias=True)}
-        ),
+        tool_call=ToolCall(name="failing_tool", args={"email": token.model_dump(by_alias=True)}),
     )
 
     with pytest.raises(ValueError, match="Tool execution failed"):
@@ -140,9 +130,7 @@ def test_executor_receives_pii_injected_args():
             return {"done": True}
 
     executor = InspectingExecutor()
-    policy = Policy(
-        sinks={"tool:test": SinkPolicy(allow=[PolicyAllow(type=PIIType.EMAIL)])}
-    )
+    policy = Policy(sinks={"tool:test": SinkPolicy(allow=[PolicyAllow(type=PIIType.EMAIL)])})
     vault = Vault(policy=policy, executor=executor)
 
     # Tokenize multiple emails

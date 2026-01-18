@@ -1,6 +1,5 @@
 """Tests for session store."""
 
-
 import pytest
 from freezegun import freeze_time
 
@@ -40,12 +39,13 @@ def test_get_session_expired(session_store: SessionStore) -> None:
         session = session_store.create_session(ttl_seconds=3600)
         session_id = session.session_id
 
-    # Move time forward past expiration
+        # Move time forward past expiration
         with (
             freeze_time("2024-01-01 14:00:00"),  # 2 hours later
             pytest.raises(SessionExpiredError),
         ):
             session_store.get_session(session_id)
+
 
 def test_close_session(session_store: SessionStore) -> None:
     """Test closing a session."""

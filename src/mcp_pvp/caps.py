@@ -173,16 +173,17 @@ class CapabilityManager:
             ):
                 raise CapabilityInvalidError(
                     "Capability arg_path mismatch",
-                        details={
-                            "expected": sink.arg_path,
-                            "got": cap.sink.arg_path,
-                        },
-                    )
+                    details={
+                        "expected": sink.arg_path,
+                        "got": cap.sink.arg_path,
+                    },
+                )
 
         # Verify run context if specified in capability
-        if cap.run is not None and run is not None and (
-            cap.run.workflow_run_id != run.workflow_run_id
-            or cap.run.step_id != run.step_id
+        if (
+            cap.run is not None
+            and run is not None
+            and (cap.run.workflow_run_id != run.workflow_run_id or cap.run.step_id != run.step_id)
         ):
             raise CapabilityInvalidError(
                 "Capability run context mismatch",

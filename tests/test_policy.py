@@ -8,7 +8,9 @@ from mcp_pvp.policy import PolicyEvaluator
 from mcp_pvp.store import SessionStore
 
 
-def test_policy_allow_disclosure(policy_evaluator: PolicyEvaluator, session_store: SessionStore) -> None:
+def test_policy_allow_disclosure(
+    policy_evaluator: PolicyEvaluator, session_store: SessionStore
+) -> None:
     """Test policy allows disclosure for matching rule."""
     session = session_store.create_session()
 
@@ -59,7 +61,9 @@ def test_policy_deny_engine_sink() -> None:
         )
 
 
-def test_policy_deny_wrong_arg_path(policy_evaluator: PolicyEvaluator, session_store: SessionStore) -> None:
+def test_policy_deny_wrong_arg_path(
+    policy_evaluator: PolicyEvaluator, session_store: SessionStore
+) -> None:
     """Test policy denies disclosure for wrong arg_path."""
     session = session_store.create_session()
 
@@ -75,7 +79,9 @@ def test_policy_deny_wrong_arg_path(policy_evaluator: PolicyEvaluator, session_s
         )
 
 
-def test_policy_deny_wrong_type(policy_evaluator: PolicyEvaluator, session_store: SessionStore) -> None:
+def test_policy_deny_wrong_type(
+    policy_evaluator: PolicyEvaluator, session_store: SessionStore
+) -> None:
     """Test policy denies disclosure for wrong PII type."""
     session = session_store.create_session()
 
@@ -91,7 +97,9 @@ def test_policy_deny_wrong_type(policy_evaluator: PolicyEvaluator, session_store
         )
 
 
-def test_policy_limit_max_disclosures(policy_evaluator: PolicyEvaluator, session_store: SessionStore) -> None:
+def test_policy_limit_max_disclosures(
+    policy_evaluator: PolicyEvaluator, session_store: SessionStore
+) -> None:
     """Test policy enforces max disclosures limit."""
     session = session_store.create_session()
     sink = Sink(kind=SinkKind.TOOL, name="test_tool", arg_path=None)
@@ -111,7 +119,9 @@ def test_policy_limit_max_disclosures(policy_evaluator: PolicyEvaluator, session
         policy_evaluator.check_disclosure(session, PIIType.EMAIL, sink, value_size=10)
 
 
-def test_policy_limit_max_bytes(policy_evaluator: PolicyEvaluator, session_store: SessionStore) -> None:
+def test_policy_limit_max_bytes(
+    policy_evaluator: PolicyEvaluator, session_store: SessionStore
+) -> None:
     """Test policy enforces max bytes limit."""
     session = session_store.create_session()
     sink = Sink(kind=SinkKind.TOOL, name="test_tool", arg_path=None)

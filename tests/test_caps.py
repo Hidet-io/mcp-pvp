@@ -1,6 +1,5 @@
 """Tests for capability creation and verification."""
 
-
 import pytest
 from freezegun import freeze_time
 
@@ -29,9 +28,7 @@ def test_create_capability(cap_manager: CapabilityManager, sample_sink: Sink) ->
     assert len(parts) == 2
 
 
-def test_verify_capability_success(
-    cap_manager: CapabilityManager, sample_sink: Sink
-) -> None:
+def test_verify_capability_success(cap_manager: CapabilityManager, sample_sink: Sink) -> None:
     """Test successful capability verification."""
     vault_session = "vs_test123"
     pii_ref = "tkn_abc"
@@ -58,9 +55,7 @@ def test_verify_capability_success(
     assert cap.pii_type == pii_type
 
 
-def test_verify_capability_tampered(
-    cap_manager: CapabilityManager, sample_sink: Sink
-) -> None:
+def test_verify_capability_tampered(cap_manager: CapabilityManager, sample_sink: Sink) -> None:
     """Test capability verification with tampered signature."""
     cap_str = cap_manager.create(
         vault_session="vs_test123",
@@ -83,9 +78,7 @@ def test_verify_capability_tampered(
         )
 
 
-def test_verify_capability_expired(
-    cap_manager: CapabilityManager, sample_sink: Sink
-) -> None:
+def test_verify_capability_expired(cap_manager: CapabilityManager, sample_sink: Sink) -> None:
     """Test capability verification with expired capability."""
     with freeze_time("2024-01-01 12:00:00"):
         cap_str = cap_manager.create(
@@ -130,9 +123,7 @@ def test_verify_capability_mismatch_session(
         )
 
 
-def test_verify_capability_mismatch_ref(
-    cap_manager: CapabilityManager, sample_sink: Sink
-) -> None:
+def test_verify_capability_mismatch_ref(cap_manager: CapabilityManager, sample_sink: Sink) -> None:
     """Test capability verification with mismatched ref."""
     cap_str = cap_manager.create(
         vault_session="vs_test123",
@@ -151,9 +142,7 @@ def test_verify_capability_mismatch_ref(
         )
 
 
-def test_verify_capability_mismatch_sink(
-    cap_manager: CapabilityManager, sample_sink: Sink
-) -> None:
+def test_verify_capability_mismatch_sink(cap_manager: CapabilityManager, sample_sink: Sink) -> None:
     """Test capability verification with mismatched sink."""
     cap_str = cap_manager.create(
         vault_session="vs_test123",

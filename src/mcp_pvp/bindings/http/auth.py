@@ -96,8 +96,7 @@ class AuthMiddleware:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=(
-                    f"Request too old (age: {age}s, "
-                    f"max: {self.config.anti_replay_window_seconds}s)"
+                    f"Request too old (age: {age}s, max: {self.config.anti_replay_window_seconds}s)"
                 ),
             )
 

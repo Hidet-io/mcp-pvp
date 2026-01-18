@@ -105,7 +105,7 @@ async def tokenize(
     request: TokenizeRequest,
     _auth: None = Depends(
         lambda: auth_middleware.verify_shared_secret if auth_middleware else None
-    ),  # type: ignore
+    ),
 ) -> SuccessEnvelope:
     """
     Tokenize content containing PII.
@@ -124,7 +124,7 @@ async def resolve(
     request: ResolveRequest,
     _auth: None = Depends(
         lambda: auth_middleware.verify_shared_secret if auth_middleware else None
-    ),  # type: ignore
+    ),
 ) -> SuccessEnvelope:
     """
     Resolve tokens to raw values (with policy enforcement).
@@ -143,7 +143,7 @@ async def deliver(
     request: DeliverRequest,
     _auth: None = Depends(
         lambda: auth_middleware.verify_shared_secret if auth_middleware else None
-    ),  # type: ignore
+    ),
 ) -> SuccessEnvelope:
     """
     Deliver: inject PII into tool call and execute.

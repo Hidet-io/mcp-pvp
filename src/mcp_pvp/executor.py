@@ -153,7 +153,7 @@ class MCP_ToolExecutor(ToolExecutor):
         # Call the MCP tool with injected args
         # Note: This is synchronous - for async, use AsyncMCP_ToolExecutor
         result = self.mcp_session.call_tool(
-            CallToolRequest(name=tool_name, arguments=injected_args)
+            CallToolRequest(name=tool_name, arguments=injected_args)  # type: ignore[call-arg]
         )
 
         return result

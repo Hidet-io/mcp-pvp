@@ -1,6 +1,5 @@
 """Test configuration and fixtures."""
 
-
 import pytest
 
 from mcp_pvp.caps import CapabilityManager

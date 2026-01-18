@@ -74,7 +74,7 @@ class Vault:
             try:
                 from mcp_pvp.detectors.presidio import PresidioDetector
 
-                self.detector = PresidioDetector()
+                self.detector: PIIDetector = PresidioDetector()
                 logger.info("vault_initialized", detector="presidio")
             except ImportError:
                 self.detector = RegexDetector()
@@ -173,6 +173,7 @@ class Vault:
             type_counts[detection.pii_type] = type_counts.get(detection.pii_type, 0) + 1
 
             # Create token
+            token: TextToken | JSONToken
             if request.token_format == TokenFormat.TEXT:
                 token = TextToken(ref=stored.ref, pii_type=detection.pii_type)
                 token_str = token.to_text()

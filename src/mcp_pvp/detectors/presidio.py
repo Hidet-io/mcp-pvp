@@ -1,6 +1,5 @@
 """Presidio-based PII detector (optional)."""
 
-
 from mcp_pvp.detectors.base import PIIDetector
 from mcp_pvp.errors import DetectionError
 from mcp_pvp.models import PIIDetection, PIIType
@@ -59,9 +58,7 @@ class PresidioDetector(PIIDetector):
             # Map PIIType to Presidio entity types
             entities = None
             if types is not None:
-                entities = [
-                    PIITYPE_TO_PRESIDIO[t] for t in types if t in PIITYPE_TO_PRESIDIO
-                ]
+                entities = [PIITYPE_TO_PRESIDIO[t] for t in types if t in PIITYPE_TO_PRESIDIO]
 
             # Run analysis
             results = self.analyzer.analyze(

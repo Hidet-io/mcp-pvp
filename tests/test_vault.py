@@ -59,9 +59,7 @@ def test_vault_resolve_with_policy() -> None:
     """Test vault resolve with policy enforcement."""
     policy = Policy(
         sinks={
-            "tool:test_tool": SinkPolicy(
-                allow=[PolicyAllow(type=PIIType.EMAIL, arg_paths=None)]
-            )
+            "tool:test_tool": SinkPolicy(allow=[PolicyAllow(type=PIIType.EMAIL, arg_paths=None)])
         }
     )
     vault = Vault(policy=policy)
@@ -94,9 +92,7 @@ def test_vault_deliver_mode() -> None:
     """Test vault deliver mode."""
     policy = Policy(
         sinks={
-            "tool:send_email": SinkPolicy(
-                allow=[PolicyAllow(type=PIIType.EMAIL, arg_paths=["to"])]
-            )
+            "tool:send_email": SinkPolicy(allow=[PolicyAllow(type=PIIType.EMAIL, arg_paths=["to"])])
         }
     )
     vault = Vault(policy=policy)

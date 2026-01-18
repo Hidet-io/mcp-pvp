@@ -147,11 +147,7 @@ class TestCapabilityTampering:
         """Attacker creates capability with different secret key - HMAC fails."""
         # Configure policy to allow the sink (so we reach capability verification)
         policy = Policy(
-            sinks={
-                "tool:malicious_tool": SinkPolicy(
-                    allow=[PolicyAllow(type=PIIType.EMAIL)]
-                )
-            }
+            sinks={"tool:malicious_tool": SinkPolicy(allow=[PolicyAllow(type=PIIType.EMAIL)])}
         )
         vault = Vault(policy=policy)
 
@@ -243,12 +239,7 @@ class TestDefaultDeny:
     def test_local_sink_allowed_with_default_allow(self):
         """LOCAL sinks are allowed when policy is configured to allow them."""
         policy = Policy(
-            default_allow=True,
-            sinks={
-                "local:internal_db": {
-                    "allow": [{"type": PIIType.EMAIL}]
-                }
-            }
+            default_allow=True, sinks={"local:internal_db": {"allow": [{"type": PIIType.EMAIL}]}}
         )
         vault = Vault(policy=policy)
 
