@@ -1,4 +1,4 @@
-.PHONY: help install install-dev install-all clean test test-cov lint format typecheck security pre-commit run-http run-mcp build example
+.PHONY: help install install-dev install-all clean test test-cov lint format typecheck security pre-commit run-http run-mcp build example version bump-major bump-minor bump-patch bump-version
 
 # Default target
 help:
@@ -27,6 +27,9 @@ help:
 	@echo "Build:"
 	@echo "  make build            - Build distribution packages"
 	@echo "  make version          - Show current version"
+	@echo "  make bump-major       - Bump major version (x.0.0)"
+	@echo "  make bump-minor       - Bump minor version (0.x.0)"
+	@echo "  make bump-patch       - Bump patch version (0.0.x)"
 	@echo ""
 	@echo "Release (Maintainers):"
 	@echo "  make release-check    - Pre-release checklist"
@@ -143,3 +146,20 @@ update:
 # Show current version
 version:
 	@python -c "from src.mcp_pvp import __version__; print(__version__)"
+
+# Version bumping
+bump-major:
+	@python scripts/bump_version.py --major
+
+bump-minor:
+	@python scripts/bump_version.py --minor
+
+bump-patch:
+	@python scripts/bump_version.py --patch
+
+bump-version:
+	@if [ -z "$(VERSION)" ]; then \
+		echo "Error: VERSION not specified. Usage: make bump-version VERSION=0.x.x"; \
+		exit 1; \
+	fi
+	@python scripts/bump_version.py $(VERSION)

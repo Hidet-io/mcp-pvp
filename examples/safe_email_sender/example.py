@@ -160,7 +160,8 @@ def main() -> None:
     print("  1. Parse args for tokens: Found token in 'to' field")
     print(f"  2. Validate session: {tokenize_response.vault_session} ✓")
     print("  3. Check policy: EMAIL allowed in send_email.to? ✓")
-    print(f"  4. Retrieve PII: {token.pii_ref} → alice@example.com")
+    print(f"  4. Retrieve PII: {token.pii_ref} → <redacted>")
+
     print("  5. Inject into args: {'to': 'alice@example.com', ...}")
     print("  6. Execute tool: send_email(to='alice@example.com', ...)")
     print("  7. Return result WITHOUT raw PII")

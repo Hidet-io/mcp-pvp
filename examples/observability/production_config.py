@@ -34,7 +34,7 @@ except ImportError:
     SENTRY_AVAILABLE = False
     print("Sentry not available. Install with: pip install 'mcp-pvp[sentry]'", file=sys.stderr)
 
-from mcp_pvp import DeliverRequest, Policy, TokenizeRequest, Vault
+from mcp_pvp import DeliverRequest, Policy, TokenizeRequest, Vault, __version__
 from mcp_pvp.audit import AuditEvent, AuditEventType, AuditLogger
 from mcp_pvp.models import ToolCall
 
@@ -213,7 +213,7 @@ class PostgreSQLAuditLogger(AuditLogger):
 # 4. FASTAPI APPLICATION WITH HEALTH CHECKS
 # ============================================================================
 
-app = FastAPI(title="mcp-pvp Production Server", version="0.2.0")
+app = FastAPI(title="mcp-pvp Production Server", version=__version__)
 
 # Global vault instance (initialized on startup)
 vault: Vault | None = None
@@ -237,7 +237,7 @@ async def startup_event():
         configure_sentry(
             dsn=sentry_dsn,
             environment=environment,
-            release=f"mcp-pvp@{os.getenv('VERSION', '0.2.0')}",
+            release=f"mcp-pvp@{os.getenv('VERSION', __version__)}",
             traces_sample_rate=float(os.getenv("SENTRY_TRACES_SAMPLE_RATE", "0.2")),
             profiles_sample_rate=float(os.getenv("SENTRY_PROFILES_SAMPLE_RATE", "0.1")),
         )
@@ -268,7 +268,7 @@ async def health_check():
     """Health check endpoint for load balancers."""
     return {
         "status": "healthy",
-        "version": "0.2.0",
+        "version": __version__,
         "timestamp": datetime.utcnow().isoformat(),
     }
 

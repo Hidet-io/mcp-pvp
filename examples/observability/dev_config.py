@@ -14,7 +14,7 @@ import logging
 
 import structlog
 
-from mcp_pvp import DeliverRequest, Policy, TokenizeRequest, Vault
+from mcp_pvp import DeliverRequest, Policy, TokenizeRequest, Vault, __version__
 
 # ============================================================================
 # DEVELOPMENT LOGGING CONFIGURATION
@@ -63,7 +63,7 @@ def main():
     configure_dev_logging(debug=True)
 
     logger = structlog.get_logger(__name__)
-    logger.info("app_starting", version="0.2.0")
+    logger.info("app_starting", version=__version__)
 
     # Create vault (uses in-memory audit logger by default)
     vault = Vault(policy=Policy())

@@ -77,7 +77,28 @@ make lint          # Run linter
 make format        # Format code
 make check         # Run all checks (lint, format, typecheck, test)
 make run-http      # Start HTTP API server
+make version       # Show current version
+make bump-minor    # Bump version (e.g., 0.4.0 -> 0.5.0)
 ```
+
+### Version Management
+
+Version is managed in a single source of truth. To update:
+
+```bash
+# Bump version automatically
+make bump-major   # 0.4.0 -> 1.0.0
+make bump-minor   # 0.4.0 -> 0.5.0  
+make bump-patch   # 0.4.0 -> 0.4.1
+
+# Or specify exact version
+python scripts/bump_version.py 0.5.0
+
+# Check current version
+make version
+```
+
+All code dynamically imports `__version__` from `mcp_pvp.__init__`, ensuring consistency.
 
 ---
 
