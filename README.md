@@ -199,6 +199,57 @@ We intentionally avoid “names/addresses” in v0.1 (regex-only is too error-pr
 
 ---
 
+## Feature Matrix & Differentiation
+
+### Where mcp-pvp fits
+There are great tools for *detecting* PII and great tools for *validating* LLM outputs, but fewer reusable building blocks for **MCP-native, local-first, policy-gated disclosure and safe tool execution**.
+
+mcp-pvp is intentionally **not** a detector-only library.  
+It’s a **Privacy Vault runtime** for MCP workflows: tokenize → policy → deliver → audit.
+
+### Feature matrix
+
+| Capability | **mcp-pvp (this project)** | **Microsoft Presidio** | **LangChain PII middleware** | **Guardrails / Portkey guardrails** | **Vault MCP Server (HashiCorp)** |
+|---|---|---|---|---|---|
+| High-quality PII detection | ✅ (via Presidio by default; pluggable) | ✅ | ✅ | ✅ | ❌ |
+| Redaction / anonymization | ✅ (tokenization + masking strategies) | ✅ | ✅ | ✅ | ❌ |
+| Local “vault session” storing raw PII | ✅ | ❌ | ⚠️ (framework-scoped) | ❌ (often service/gateway-scoped) | ✅ (but for *secrets*, not PII flows) |
+| Typed opaque tokens in prompts/plans | ✅ | ⚠️ (anonymization placeholders, not MCP tokens) | ⚠️ | ⚠️ | ❌ |
+| Capability-based selective disclosure | ✅ | ❌ | ❌ / limited | ❌ / varies | ✅ (Vault auth model, but for secrets APIs) |
+| Per-tool / per-arg-path policy enforcement (“sink allow-lists”) | ✅ | ❌ | ⚠️ | ✅ (provider guardrails) | ✅ (Vault policy system for secrets) |
+| **Deliver mode** (inject PII locally into tool calls so raw never returns to agent/LLM) | ✅ (key differentiator) | ❌ | ❌ | ❌ | ❌ (different use-case) |
+| MCP-native integration (tools / proxy / middleware) | ✅ | ❌ | ❌ | ❌ | ✅ |
+| Framework-agnostic (works with any MCP client) | ✅ | ✅ | ❌ | ✅ | ✅ |
+| Audit trail for disclosure (without raw values) | ✅ | ⚠️ | ⚠️ | ✅ | ✅ |
+
+**Notes**
+- Presidio excels at detection + anonymization, but it’s not a vault/session + disclosure protocol. :contentReference[oaicite:0]{index=0}  
+- LangChain provides PII middleware that redacts before model calls and restores values for tool execution—conceptually close, but framework-tied and not MCP-native. :contentReference[oaicite:1]{index=1}  
+- Guardrails ecosystems (Guardrails AI, Portkey guardrails) are great for validation/redaction pipelines, but they typically don’t provide a local vault + deliver-mode execution pattern. :contentReference[oaicite:2]{index=2}  
+- HashiCorp’s Vault MCP server integrates MCP with *secrets management* (credentials, mounts, policies). It’s complementary, not a replacement for PII-flow minimization. :contentReference[oaicite:3]{index=3}  
+
+---
+
+### Differentiation (why mcp-pvp exists)
+
+#### 1) Presidio-grade detection + MCP-native runtime
+We use **Microsoft Presidio** as the default detection/anonymization engine, so we don’t reinvent detection quality. We focus on the missing layer: **MCP-native privacy runtime** that safely carries sensitive values through tool plans without leaking them. :contentReference[oaicite:4]{index=4}
+
+#### 2) Tokens are first-class (agents operate on references)
+mcp-pvp replaces sensitive spans with **typed opaque tokens** (text + JSON forms). Tokens are scoped to a **vault session** with TTL, reducing replay and accidental reuse.
+
+#### 3) Capabilities prevent “restore everything”
+Even if an LLM is tricked (prompt injection) or hallucinates token IDs, disclosure requires **capabilities** that bind:
+token + sink/tool + arg_path + expiration (+ optional run/step).
+
+#### 4) Deliver mode eliminates a major exfiltration path
+Most approaches do: redact → restore → call tool (raw PII passes through the agent/orchestrator).
+mcp-pvp can do: **tokenize → plan with tokens → deliver locally**, injecting PII only at the tool boundary—so raw PII never returns to the agent/LLM.
+
+#### 5) Policy enforcement lives where it must: locally
+mcp-pvp enforces allow-lists and limits in the local vault (default deny), aligning with MCP ecosystem security best practices and reducing trust in cloud components. :contentReference[oaicite:5]{index=5}
+
+
 ## Roadmap
 
 ### v0.1
