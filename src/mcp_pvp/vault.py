@@ -2,6 +2,7 @@
 
 import json
 import secrets
+from typing import Any
 
 import structlog
 
@@ -438,11 +439,13 @@ class Vault:
 
         # SECURITY: Tokenize tool result to prevent PII leakage
         # We need to detect PII in the result and replace with tokens
-        result_tokens: list[JSONToken] = []
-        if tool_result is not None and isinstance(tool_result, (dict, list, str)):
+        result_tokens: list[JSONToken | TextToken] = []
+        if tool_result is not None and isinstance(tool_result, dict | list | str):
             # Serialize result to string for PII detection
-            result_str = json.dumps(tool_result) if not isinstance(tool_result, str) else tool_result
-            
+            result_str = (
+                json.dumps(tool_result) if not isinstance(tool_result, str) else tool_result
+            )
+
             # Tokenize to detect PII using TEXT format for simple replacement
             result_tokenization = self.tokenize(
                 TokenizeRequest(
@@ -451,10 +454,10 @@ class Vault:
                     token_format=TokenFormat.TEXT,  # Use TEXT for [[PII:TYPE:REF]] format
                 )
             )
-            
+
             result_tokens = result_tokenization.tokens
             # Use the redacted string representation with PII tokens
-            tokenized_result = result_tokenization.redacted
+            tokenized_result: Any = result_tokenization.redacted
         else:
             # Non-serializable or None result - return as is
             tokenized_result = tool_result
