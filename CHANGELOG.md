@@ -7,6 +7,48 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-01-18
+
+### Added - Security Enhancements
+- **Tool Result PII Tokenization**: Automatic detection and redaction of PII in tool execution results
+  - Prevents PII leakage when tools return sensitive data (e.g., `get_user_profile`)
+  - Added `result_tokens` field to `DeliverResponse` containing detected PII tokens
+  - Tool results are automatically tokenized before being returned to agents/LLMs
+  - Defense-in-depth: works even if ToolExecutor implementations accidentally return PII
+- **Optional Sentry Integration**: Production error tracking with PII protection
+  - Installed via `pip install 'mcp-pvp[sentry]'`
+  - Automatic PII scrubbing in error reports via `before_send` hook
+  - Configurable sample rates and environment detection
+  - See `docs/OBSERVABILITY.md` for configuration guide
+
+### Added - Development Experience
+- **Centralized Version Management**: Single-source-of-truth version system
+  - Version defined in only 2 files: `pyproject.toml` and `__init__.py`
+  - Automated version bumping via `scripts/bump_version.py`
+  - Make commands: `make bump-major`, `make bump-minor`, `make bump-patch`
+  - Dynamic version imports throughout codebase
+  - Eliminates manual version updates across 18+ files
+- **Comprehensive Observability Documentation**: Production-ready monitoring guide
+  - Complete `docs/OBSERVABILITY.md` (300+ lines)
+  - Sentry integration examples with PII protection patterns
+  - Prometheus metrics guidance
+  - Structured logging best practices
+  - Production and development configuration examples
+
+### Changed
+- `DeliverResponse.tool_result` now contains tokenized output (not raw)
+- `DeliverResponse.result_tokens` added to track PII found in tool results
+- Enhanced deliver mode security boundary to include result sanitization
+
+### Fixed
+- Tool execution results no longer leak raw PII back to agents/LLMs
+- Added sentry-sdk to dev dependencies for CI type checking
+
+### Security
+- **CRITICAL**: Tool results are now automatically scanned for PII and tokenized
+- Eliminates major exfiltration path where careless tools could leak sensitive data
+- Maintains execution boundary integrity: raw PII never crosses vault boundary
+
 ## [0.3.0] - 2026-06-15
 
 ## [0.1.0] - 2026-01-15
