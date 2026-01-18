@@ -9,7 +9,7 @@ This example shows:
 
 Security guarantee: alice@example.com NEVER appears in:
 - LLM context window
-- LLM embeddings/vectors  
+- LLM embeddings/vectors
 - Agent memory
 - API responses (except tool executor)
 - Logs (only audit IDs and metadata)
@@ -159,7 +159,7 @@ def main() -> None:
     print("Vault operations (internal):")
     print("  1. Parse args for tokens: Found token in 'to' field")
     print(f"  2. Validate session: {tokenize_response.vault_session} ✓")
-    print(f"  3. Check policy: EMAIL allowed in send_email.to? ✓")
+    print("  3. Check policy: EMAIL allowed in send_email.to? ✓")
     print(f"  4. Retrieve PII: {token.pii_ref} → alice@example.com")
     print("  5. Inject into args: {'to': 'alice@example.com', ...}")
     print("  6. Execute tool: send_email(to='alice@example.com', ...)")
