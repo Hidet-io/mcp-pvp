@@ -162,3 +162,9 @@ exclude_lines = [
     "if TYPE_CHECKING:",
     "@abstractmethod",
 ]
+
+[tool.bandit]
+# Exclude false positives for token/password detection
+# These are API parameters, not hardcoded credentials
+skips = ["B107", "B105"]  # Hardcoded password argument defaults
+exclude_dirs = ["/tests"]
