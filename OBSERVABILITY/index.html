@@ -1,0 +1,2094 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Tokenize sensitive data before the LLM sees it.">
+      
+      
+      
+        <link rel="canonical" href="https://spidux-ai.github.io/mcp-pvp/OBSERVABILITY/">
+      
+      
+        <link rel="prev" href="../CAPABILITY_SECURITY/">
+      
+      
+        <link rel="next" href="../THREAT_MODEL/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
+    
+    
+      
+        <title>Observability - mcp-pvp Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="teal" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#observability-guide" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="mcp-pvp Documentation" class="md-header__button md-logo" aria-label="mcp-pvp Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            mcp-pvp Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Observability
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/Spidux-ai/mcp-pvp" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Spidux-ai/mcp-pvp
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="mcp-pvp Documentation" class="md-nav__button md-logo" aria-label="mcp-pvp Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    mcp-pvp Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/Spidux-ai/mcp-pvp" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Spidux-ai/mcp-pvp
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture & Security
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Architecture & Security
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../CAPABILITY_SECURITY/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Capability Security
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Observability
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Observability
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#table-of-contents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Table of Contents
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#logging-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Logging Pipeline
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Logging Pipeline">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#default-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Default Configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#production-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Production Configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#development-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Development Configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#log-levels" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Log Levels
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#key-events-logged" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Key Events Logged
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#integration-with-log-aggregation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Integration with Log Aggregation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Integration with Log Aggregation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#cloudwatch-logs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CloudWatch Logs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datadog" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Datadog
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#elasticsearchlogstash" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Elasticsearch/Logstash
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#audit-trail" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Audit Trail
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Audit Trail">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#audit-events" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Audit Events
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#event-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Event Structure
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#custom-audit-logger" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Custom Audit Logger
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#compliance-reporting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Compliance Reporting
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#error-tracking-sentry" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Error Tracking (Sentry)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Error Tracking (Sentry)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#installation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Installation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#automatic-error-capture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Automatic Error Capture
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#performance-monitoring" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Performance Monitoring
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pii-protection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PII Protection
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#monitoring-metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Monitoring &amp; Metrics
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Monitoring &amp; Metrics">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#health-checks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Health Checks
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#prometheus-metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prometheus Metrics
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#kubernetes-monitoring" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Kubernetes Monitoring
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cloudwatch-metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CloudWatch Metrics
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#security-best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Security Best Practices
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Security Best Practices">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#never-log-raw-pii" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Never Log Raw PII
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#use-audit-ids-for-correlation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Use Audit IDs for Correlation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#redact-errors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Redact Errors
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#secure-metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Secure Metrics
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#log-rotation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Log Rotation
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#example-complete-observability-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example: Complete Observability Setup
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-reading" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further Reading
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../THREAT_MODEL/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../SPEC/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protocol Specification
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../v0.2.0-RELEASE-SUMMARY/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Release Snapshot
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#table-of-contents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Table of Contents
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#logging-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Logging Pipeline
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Logging Pipeline">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#default-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Default Configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#production-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Production Configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#development-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Development Configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#log-levels" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Log Levels
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#key-events-logged" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Key Events Logged
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#integration-with-log-aggregation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Integration with Log Aggregation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Integration with Log Aggregation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#cloudwatch-logs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CloudWatch Logs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datadog" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Datadog
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#elasticsearchlogstash" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Elasticsearch/Logstash
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#audit-trail" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Audit Trail
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Audit Trail">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#audit-events" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Audit Events
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#event-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Event Structure
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#custom-audit-logger" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Custom Audit Logger
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#compliance-reporting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Compliance Reporting
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#error-tracking-sentry" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Error Tracking (Sentry)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Error Tracking (Sentry)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#installation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Installation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#automatic-error-capture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Automatic Error Capture
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#performance-monitoring" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Performance Monitoring
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pii-protection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PII Protection
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#monitoring-metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Monitoring &amp; Metrics
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Monitoring &amp; Metrics">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#health-checks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Health Checks
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#prometheus-metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prometheus Metrics
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#kubernetes-monitoring" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Kubernetes Monitoring
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cloudwatch-metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CloudWatch Metrics
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#security-best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Security Best Practices
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Security Best Practices">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#never-log-raw-pii" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Never Log Raw PII
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#use-audit-ids-for-correlation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Use Audit IDs for Correlation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#redact-errors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Redact Errors
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#secure-metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Secure Metrics
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#log-rotation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Log Rotation
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#example-complete-observability-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example: Complete Observability Setup
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-reading" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further Reading
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="observability-guide">Observability Guide<a class="headerlink" href="#observability-guide" title="Permanent link">&para;</a></h1>
+<p>This guide covers logging, monitoring, and observability best practices for mcp-pvp deployments.</p>
+<hr />
+<h2 id="table-of-contents">Table of Contents<a class="headerlink" href="#table-of-contents" title="Permanent link">&para;</a></h2>
+<ol>
+<li><a href="#logging-pipeline">Logging Pipeline</a></li>
+<li><a href="#audit-trail">Audit Trail</a></li>
+<li><a href="#error-tracking-sentry">Error Tracking (Sentry)</a></li>
+<li><a href="#monitoring--metrics">Monitoring &amp; Metrics</a></li>
+<li><a href="#security-best-practices">Security Best Practices</a></li>
+</ol>
+<hr />
+<h2 id="logging-pipeline">Logging Pipeline<a class="headerlink" href="#logging-pipeline" title="Permanent link">&para;</a></h2>
+<p>mcp-pvp uses <a href="https://www.structlog.org/">structlog</a> for structured logging, making logs machine-readable and easy to integrate with log aggregation systems.</p>
+<h3 id="default-configuration">Default Configuration<a class="headerlink" href="#default-configuration" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">structlog</span>
+
+<span class="c1"># mcp-pvp uses structlog throughout the codebase</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">structlog</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="c1"># Example log output:</span>
+<span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+    <span class="s2">&quot;vault_tokenize_complete&quot;</span><span class="p">,</span>
+    <span class="n">vault_session</span><span class="o">=</span><span class="s2">&quot;vs_abc123&quot;</span><span class="p">,</span>
+    <span class="n">tokens_created</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+    <span class="n">detections</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="c1"># Output: {&quot;event&quot;: &quot;vault_tokenize_complete&quot;, &quot;vault_session&quot;: &quot;vs_abc123&quot;, ...}</span>
+</code></pre></div>
+<h3 id="production-configuration">Production Configuration<a class="headerlink" href="#production-configuration" title="Permanent link">&para;</a></h3>
+<p>For production deployments, configure JSON logging with timestamps:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">structlog</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+
+<span class="c1"># Configure standard library logging</span>
+<span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span>
+    <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%(message)s</span><span class="s2">&quot;</span><span class="p">,</span>
+    <span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="c1"># Configure structlog</span>
+<span class="n">structlog</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span>
+    <span class="n">processors</span><span class="o">=</span><span class="p">[</span>
+        <span class="n">structlog</span><span class="o">.</span><span class="n">contextvars</span><span class="o">.</span><span class="n">merge_contextvars</span><span class="p">,</span>
+        <span class="n">structlog</span><span class="o">.</span><span class="n">processors</span><span class="o">.</span><span class="n">add_log_level</span><span class="p">,</span>
+        <span class="n">structlog</span><span class="o">.</span><span class="n">processors</span><span class="o">.</span><span class="n">StackInfoRenderer</span><span class="p">(),</span>
+        <span class="n">structlog</span><span class="o">.</span><span class="n">processors</span><span class="o">.</span><span class="n">format_exc_info</span><span class="p">,</span>
+        <span class="n">structlog</span><span class="o">.</span><span class="n">processors</span><span class="o">.</span><span class="n">TimeStamper</span><span class="p">(</span><span class="n">fmt</span><span class="o">=</span><span class="s2">&quot;iso&quot;</span><span class="p">),</span>
+        <span class="n">structlog</span><span class="o">.</span><span class="n">processors</span><span class="o">.</span><span class="n">JSONRenderer</span><span class="p">(),</span>
+    <span class="p">],</span>
+    <span class="n">wrapper_class</span><span class="o">=</span><span class="n">structlog</span><span class="o">.</span><span class="n">make_filtering_bound_logger</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">),</span>
+    <span class="n">context_class</span><span class="o">=</span><span class="nb">dict</span><span class="p">,</span>
+    <span class="n">logger_factory</span><span class="o">=</span><span class="n">structlog</span><span class="o">.</span><span class="n">PrintLoggerFactory</span><span class="p">(),</span>
+    <span class="n">cache_logger_on_first_use</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span>
+</code></pre></div>
+<h3 id="development-configuration">Development Configuration<a class="headerlink" href="#development-configuration" title="Permanent link">&para;</a></h3>
+<p>For local development, use console-friendly output:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">structlog</span>
+
+<span class="n">structlog</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span>
+    <span class="n">processors</span><span class="o">=</span><span class="p">[</span>
+        <span class="n">structlog</span><span class="o">.</span><span class="n">contextvars</span><span class="o">.</span><span class="n">merge_contextvars</span><span class="p">,</span>
+        <span class="n">structlog</span><span class="o">.</span><span class="n">processors</span><span class="o">.</span><span class="n">add_log_level</span><span class="p">,</span>
+        <span class="n">structlog</span><span class="o">.</span><span class="n">processors</span><span class="o">.</span><span class="n">StackInfoRenderer</span><span class="p">(),</span>
+        <span class="n">structlog</span><span class="o">.</span><span class="n">dev</span><span class="o">.</span><span class="n">set_exc_info</span><span class="p">,</span>
+        <span class="n">structlog</span><span class="o">.</span><span class="n">processors</span><span class="o">.</span><span class="n">TimeStamper</span><span class="p">(</span><span class="n">fmt</span><span class="o">=</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2"> %H:%M:%S&quot;</span><span class="p">,</span> <span class="n">utc</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+        <span class="n">structlog</span><span class="o">.</span><span class="n">dev</span><span class="o">.</span><span class="n">ConsoleRenderer</span><span class="p">(),</span>  <span class="c1"># Pretty console output</span>
+    <span class="p">],</span>
+    <span class="n">wrapper_class</span><span class="o">=</span><span class="n">structlog</span><span class="o">.</span><span class="n">make_filtering_bound_logger</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">),</span>
+    <span class="n">logger_factory</span><span class="o">=</span><span class="n">structlog</span><span class="o">.</span><span class="n">PrintLoggerFactory</span><span class="p">(),</span>
+    <span class="n">cache_logger_on_first_use</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span>
+</code></pre></div>
+<h3 id="log-levels">Log Levels<a class="headerlink" href="#log-levels" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Level</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>DEBUG</code></td>
+<td>Detailed diagnostic information (disabled in production)</td>
+</tr>
+<tr>
+<td><code>INFO</code></td>
+<td>General informational messages (default)</td>
+</tr>
+<tr>
+<td><code>WARNING</code></td>
+<td>Warning messages for unexpected but handled conditions</td>
+</tr>
+<tr>
+<td><code>ERROR</code></td>
+<td>Error messages for failures that don't crash the system</td>
+</tr>
+<tr>
+<td><code>CRITICAL</code></td>
+<td>Critical errors requiring immediate attention</td>
+</tr>
+</tbody>
+</table>
+<h3 id="key-events-logged">Key Events Logged<a class="headerlink" href="#key-events-logged" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Event</th>
+<th>Description</th>
+<th>Fields</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>vault_initialized</code></td>
+<td>Vault instance created</td>
+<td><code>detector</code></td>
+</tr>
+<tr>
+<td><code>vault_tokenize_start</code></td>
+<td>Tokenization started</td>
+<td><code>content_length</code>, <code>token_format</code></td>
+</tr>
+<tr>
+<td><code>vault_tokenize_complete</code></td>
+<td>Tokenization finished</td>
+<td><code>vault_session</code>, <code>tokens_created</code>, <code>detections</code></td>
+</tr>
+<tr>
+<td><code>vault_resolve_start</code></td>
+<td>Resolution started</td>
+<td><code>vault_session</code>, <code>token_count</code></td>
+</tr>
+<tr>
+<td><code>vault_resolve_complete</code></td>
+<td>Resolution finished</td>
+<td><code>vault_session</code>, <code>resolved_count</code></td>
+</tr>
+<tr>
+<td><code>vault_deliver_start</code></td>
+<td>Delivery started</td>
+<td><code>vault_session</code>, <code>tool_name</code></td>
+</tr>
+<tr>
+<td><code>vault_deliver_complete</code></td>
+<td>Delivery finished</td>
+<td><code>vault_session</code>, <code>disclosed_count</code></td>
+</tr>
+<tr>
+<td><code>audit_event</code></td>
+<td>Audit event logged</td>
+<td><code>audit_id</code>, <code>event_type</code>, <code>vault_session</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>CRITICAL:</strong> Logs NEVER contain raw PII values, only metadata (IDs, counts, types).</p>
+<h3 id="integration-with-log-aggregation">Integration with Log Aggregation<a class="headerlink" href="#integration-with-log-aggregation" title="Permanent link">&para;</a></h3>
+<h4 id="cloudwatch-logs">CloudWatch Logs<a class="headerlink" href="#cloudwatch-logs" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">watchtower</span>
+
+<span class="n">handler</span> <span class="o">=</span> <span class="n">watchtower</span><span class="o">.</span><span class="n">CloudWatchLogHandler</span><span class="p">(</span>
+    <span class="n">log_group</span><span class="o">=</span><span class="s2">&quot;/mcp-pvp/production&quot;</span><span class="p">,</span>
+    <span class="n">stream_name</span><span class="o">=</span><span class="s2">&quot;vault-</span><span class="si">{machine}</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">handler</span><span class="p">)</span>
+</code></pre></div>
+<h4 id="datadog">Datadog<a class="headerlink" href="#datadog" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">datadog</span><span class="w"> </span><span class="kn">import</span> <span class="n">initialize</span><span class="p">,</span> <span class="n">statsd</span>
+
+<span class="n">initialize</span><span class="p">(</span>
+    <span class="n">api_key</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;DD_API_KEY&quot;</span><span class="p">),</span>
+    <span class="n">app_key</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;DD_APP_KEY&quot;</span><span class="p">),</span>
+<span class="p">)</span>
+
+<span class="c1"># Log to Datadog via syslog or agent</span>
+</code></pre></div>
+<h4 id="elasticsearchlogstash">Elasticsearch/Logstash<a class="headerlink" href="#elasticsearchlogstash" title="Permanent link">&para;</a></h4>
+<p>Configure structlog with JSON output and ship logs via Filebeat or Logstash.</p>
+<hr />
+<h2 id="audit-trail">Audit Trail<a class="headerlink" href="#audit-trail" title="Permanent link">&para;</a></h2>
+<p>mcp-pvp maintains a comprehensive audit trail of all PII operations.</p>
+<h3 id="audit-events">Audit Events<a class="headerlink" href="#audit-events" title="Permanent link">&para;</a></h3>
+<p>All PII disclosures are logged:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">mcp_pvp</span><span class="w"> </span><span class="kn">import</span> <span class="n">Vault</span><span class="p">,</span> <span class="n">Policy</span>
+
+<span class="n">vault</span> <span class="o">=</span> <span class="n">Vault</span><span class="p">(</span><span class="n">policy</span><span class="o">=</span><span class="n">Policy</span><span class="p">())</span>
+
+<span class="c1"># Tokenize creates TOKENIZE audit event</span>
+<span class="n">response</span> <span class="o">=</span> <span class="n">vault</span><span class="o">.</span><span class="n">tokenize</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+
+<span class="c1"># Deliver creates DELIVER audit event</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">vault</span><span class="o">.</span><span class="n">deliver</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+
+<span class="c1"># Query audit events</span>
+<span class="n">events</span> <span class="o">=</span> <span class="n">vault</span><span class="o">.</span><span class="n">audit_logger</span><span class="o">.</span><span class="n">get_events</span><span class="p">(</span>
+    <span class="n">vault_session</span><span class="o">=</span><span class="n">response</span><span class="o">.</span><span class="n">vault_session</span><span class="p">,</span>
+    <span class="n">event_type</span><span class="o">=</span><span class="n">AuditEventType</span><span class="o">.</span><span class="n">DELIVER</span><span class="p">,</span>
+    <span class="n">limit</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+<span class="p">)</span>
+</code></pre></div>
+<h3 id="event-structure">Event Structure<a class="headerlink" href="#event-structure" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">mcp_pvp.audit</span><span class="w"> </span><span class="kn">import</span> <span class="n">AuditEvent</span><span class="p">,</span> <span class="n">AuditEventType</span>
+
+<span class="n">event</span> <span class="o">=</span> <span class="n">AuditEvent</span><span class="p">(</span>
+    <span class="n">audit_id</span><span class="o">=</span><span class="s2">&quot;aud_abc123&quot;</span><span class="p">,</span>           <span class="c1"># Unique event ID</span>
+    <span class="n">timestamp</span><span class="o">=</span><span class="s2">&quot;2026-01-18T10:30:00Z&quot;</span><span class="p">,</span> <span class="c1"># ISO 8601 timestamp</span>
+    <span class="n">event_type</span><span class="o">=</span><span class="n">AuditEventType</span><span class="o">.</span><span class="n">DELIVER</span><span class="p">,</span>
+    <span class="n">vault_session</span><span class="o">=</span><span class="s2">&quot;vs_xyz789&quot;</span><span class="p">,</span>
+    <span class="n">run</span><span class="o">=</span><span class="n">RunContext</span><span class="p">(</span>                   <span class="c1"># Optional workflow context</span>
+        <span class="n">workflow_run_id</span><span class="o">=</span><span class="s2">&quot;wf_123&quot;</span><span class="p">,</span>
+        <span class="n">step_id</span><span class="o">=</span><span class="s2">&quot;step_456&quot;</span><span class="p">,</span>
+    <span class="p">),</span>
+    <span class="n">details</span><span class="o">=</span><span class="p">{</span>                         <span class="c1"># Event-specific metadata</span>
+        <span class="s2">&quot;tool_name&quot;</span><span class="p">:</span> <span class="s2">&quot;send_email&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;disclosed&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;EMAIL&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">},</span>    <span class="c1"># PII types and counts</span>
+        <span class="c1"># NO raw PII values here!</span>
+    <span class="p">},</span>
+<span class="p">)</span>
+</code></pre></div>
+<h3 id="custom-audit-logger">Custom Audit Logger<a class="headerlink" href="#custom-audit-logger" title="Permanent link">&para;</a></h3>
+<p>Implement persistent audit storage:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">mcp_pvp.audit</span><span class="w"> </span><span class="kn">import</span> <span class="n">AuditLogger</span><span class="p">,</span> <span class="n">AuditEvent</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">DatabaseAuditLogger</span><span class="p">(</span><span class="n">AuditLogger</span><span class="p">):</span>
+    \<span class="s2">&quot;</span><span class="se">\&quot;\&quot;</span><span class="s2">Audit logger backed by PostgreSQL.</span><span class="se">\&quot;\&quot;\&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">db_connection</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">db</span> <span class="o">=</span> <span class="n">db_connection</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">log_event</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">:</span> <span class="n">AuditEvent</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+            \<span class="s2">&quot;</span><span class="se">\&quot;\&quot;</span>
+            <span class="n">INSERT</span> <span class="n">INTO</span> <span class="n">audit_events</span> 
+            <span class="p">(</span><span class="n">audit_id</span><span class="p">,</span> <span class="n">timestamp</span><span class="p">,</span> <span class="n">event_type</span><span class="p">,</span> <span class="n">vault_session</span><span class="p">,</span> <span class="n">details</span><span class="p">)</span>
+            <span class="n">VALUES</span> <span class="p">(</span><span class="o">%</span><span class="n">s</span><span class="p">,</span> <span class="o">%</span><span class="n">s</span><span class="p">,</span> <span class="o">%</span><span class="n">s</span><span class="p">,</span> <span class="o">%</span><span class="n">s</span><span class="p">,</span> <span class="o">%</span><span class="n">s</span><span class="p">)</span>
+            \<span class="s2">&quot;</span><span class="se">\&quot;\&quot;</span><span class="s2">,</span>
+            <span class="p">(</span>
+                <span class="n">event</span><span class="o">.</span><span class="n">audit_id</span><span class="p">,</span>
+                <span class="n">event</span><span class="o">.</span><span class="n">timestamp</span><span class="p">,</span>
+                <span class="n">event</span><span class="o">.</span><span class="n">event_type</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+                <span class="n">event</span><span class="o">.</span><span class="n">vault_session</span><span class="p">,</span>
+                <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">details</span><span class="p">),</span>
+            <span class="p">),</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_events</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">filters</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">AuditEvent</span><span class="p">]:</span>
+        <span class="c1"># Query database with filters</span>
+        <span class="k">pass</span>
+
+<span class="c1"># Use custom logger</span>
+<span class="n">vault</span> <span class="o">=</span> <span class="n">Vault</span><span class="p">(</span><span class="n">policy</span><span class="o">=</span><span class="n">policy</span><span class="p">,</span> <span class="n">audit_logger</span><span class="o">=</span><span class="n">DatabaseAuditLogger</span><span class="p">(</span><span class="n">db</span><span class="p">))</span>
+</code></pre></div>
+<h3 id="compliance-reporting">Compliance Reporting<a class="headerlink" href="#compliance-reporting" title="Permanent link">&para;</a></h3>
+<p>Generate compliance reports from audit trail:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Query all DELIVER events (PII disclosures)</span>
+<span class="n">deliver_events</span> <span class="o">=</span> <span class="n">vault</span><span class="o">.</span><span class="n">audit_logger</span><span class="o">.</span><span class="n">get_events</span><span class="p">(</span>
+    <span class="n">event_type</span><span class="o">=</span><span class="n">AuditEventType</span><span class="o">.</span><span class="n">DELIVER</span><span class="p">,</span>
+    <span class="n">limit</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="c1"># Generate summary</span>
+<span class="n">summary</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;total_disclosures&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">deliver_events</span><span class="p">),</span>
+    <span class="s2">&quot;by_tool&quot;</span><span class="p">:</span> <span class="p">{},</span>
+    <span class="s2">&quot;by_pii_type&quot;</span><span class="p">:</span> <span class="p">{},</span>
+<span class="p">}</span>
+
+<span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">deliver_events</span><span class="p">:</span>
+    <span class="n">tool</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="n">details</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;tool_name&quot;</span><span class="p">,</span> <span class="s2">&quot;unknown&quot;</span><span class="p">)</span>
+    <span class="n">summary</span><span class="p">[</span><span class="s2">&quot;by_tool&quot;</span><span class="p">][</span><span class="n">tool</span><span class="p">]</span> <span class="o">=</span> <span class="n">summary</span><span class="p">[</span><span class="s2">&quot;by_tool&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">tool</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+
+    <span class="k">for</span> <span class="n">pii_type</span><span class="p">,</span> <span class="n">count</span> <span class="ow">in</span> <span class="n">event</span><span class="o">.</span><span class="n">details</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;disclosed&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">summary</span><span class="p">[</span><span class="s2">&quot;by_pii_type&quot;</span><span class="p">][</span><span class="n">pii_type</span><span class="p">]</span> <span class="o">=</span> <span class="n">summary</span><span class="p">[</span><span class="s2">&quot;by_pii_type&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pii_type</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="n">count</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">summary</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+</code></pre></div>
+<hr />
+<h2 id="error-tracking-sentry">Error Tracking (Sentry)<a class="headerlink" href="#error-tracking-sentry" title="Permanent link">&para;</a></h2>
+<p>Optional integration with <a href="https://sentry.io/">Sentry</a> for error tracking and performance monitoring.</p>
+<h3 id="installation">Installation<a class="headerlink" href="#installation" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span><span class="s1">&#39;mcp-pvp[sentry]&#39;</span>
+</code></pre></div>
+<h3 id="configuration">Configuration<a class="headerlink" href="#configuration" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">mcp_pvp.observability</span><span class="w"> </span><span class="kn">import</span> <span class="n">configure_sentry</span>
+
+<span class="n">configure_sentry</span><span class="p">(</span>
+    <span class="n">dsn</span><span class="o">=</span><span class="s2">&quot;https://...@sentry.io/...&quot;</span><span class="p">,</span>
+    <span class="n">environment</span><span class="o">=</span><span class="s2">&quot;production&quot;</span><span class="p">,</span>
+    <span class="n">release</span><span class="o">=</span><span class="s2">&quot;mcp-pvp@0.2.0&quot;</span><span class="p">,</span>
+    <span class="n">traces_sample_rate</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span>  <span class="c1"># Sample 20% of transactions</span>
+    <span class="n">profiles_sample_rate</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>  <span class="c1"># Profile 10% of transactions</span>
+<span class="p">)</span>
+</code></pre></div>
+<p><strong>Environment Variables:</strong></p>
+<div class="highlight"><pre><span></span><code><span class="nb">export</span><span class="w"> </span><span class="nv">SENTRY_DSN</span><span class="o">=</span><span class="s2">&quot;https://...@sentry.io/...&quot;</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">SENTRY_ENVIRONMENT</span><span class="o">=</span><span class="s2">&quot;production&quot;</span>
+</code></pre></div>
+<h3 id="automatic-error-capture">Automatic Error Capture<a class="headerlink" href="#automatic-error-capture" title="Permanent link">&para;</a></h3>
+<p>Errors are automatically captured with safe context:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">mcp_pvp</span><span class="w"> </span><span class="kn">import</span> <span class="n">Vault</span><span class="p">,</span> <span class="n">PolicyDeniedError</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mcp_pvp.observability</span><span class="w"> </span><span class="kn">import</span> <span class="n">capture_exception</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="n">vault</span><span class="o">.</span><span class="n">deliver</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+<span class="k">except</span> <span class="n">PolicyDeniedError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+    <span class="c1"># Automatically captured to Sentry (if configured)</span>
+    <span class="c1"># Only safe metadata included, no PII</span>
+    <span class="n">capture_exception</span><span class="p">(</span>
+        <span class="n">e</span><span class="p">,</span>
+        <span class="n">vault_session</span><span class="o">=</span><span class="n">session_id</span><span class="p">,</span>
+        <span class="n">audit_id</span><span class="o">=</span><span class="n">audit_id</span><span class="p">,</span>
+        <span class="n">tool_name</span><span class="o">=</span><span class="n">tool_name</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">raise</span>
+</code></pre></div>
+<h3 id="performance-monitoring">Performance Monitoring<a class="headerlink" href="#performance-monitoring" title="Permanent link">&para;</a></h3>
+<p>Track operation performance:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">mcp_pvp.observability</span><span class="w"> </span><span class="kn">import</span> <span class="n">start_transaction</span>
+
+<span class="k">with</span> <span class="n">start_transaction</span><span class="p">(</span><span class="s2">&quot;vault.tokenize&quot;</span><span class="p">,</span> <span class="s2">&quot;tokenize&quot;</span><span class="p">):</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">vault</span><span class="o">.</span><span class="n">tokenize</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+
+<span class="k">with</span> <span class="n">start_transaction</span><span class="p">(</span><span class="s2">&quot;vault.deliver&quot;</span><span class="p">,</span> <span class="s2">&quot;deliver&quot;</span><span class="p">):</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">vault</span><span class="o">.</span><span class="n">deliver</span><span class="p">(</span><span class="n">deliver_request</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="pii-protection">PII Protection<a class="headerlink" href="#pii-protection" title="Permanent link">&para;</a></h3>
+<p>Sentry integration includes automatic PII redaction:</p>
+<ul>
+<li>Request/response bodies are redacted</li>
+<li>Only safe metadata (audit IDs, session IDs, event types) included</li>
+<li><code>send_default_pii=False</code> enforced</li>
+<li>Custom <code>before_send</code> hook scrubs breadcrumbs</li>
+</ul>
+<hr />
+<h2 id="monitoring-metrics">Monitoring &amp; Metrics<a class="headerlink" href="#monitoring-metrics" title="Permanent link">&para;</a></h2>
+<h3 id="health-checks">Health Checks<a class="headerlink" href="#health-checks" title="Permanent link">&para;</a></h3>
+<p>Implement health check endpoints for orchestration platforms:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">fastapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">FastAPI</span>
+
+<span class="n">app</span> <span class="o">=</span> <span class="n">FastAPI</span><span class="p">()</span>
+
+<span class="nd">@app</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/health&quot;</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">health_check</span><span class="p">():</span>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;healthy&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;version&quot;</span><span class="p">:</span> <span class="s2">&quot;0.2.0&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;vault&quot;</span><span class="p">:</span> <span class="n">vault</span><span class="o">.</span><span class="n">session_store</span><span class="o">.</span><span class="n">active_sessions_count</span><span class="p">(),</span>
+    <span class="p">}</span>
+
+<span class="nd">@app</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/ready&quot;</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">readiness_check</span><span class="p">():</span>
+    <span class="c1"># Check dependencies (database, detector, etc.)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">vault</span><span class="o">.</span><span class="n">detector</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="s2">&quot;test@example.com&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;ready&quot;</span><span class="p">}</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;not_ready&quot;</span><span class="p">,</span> <span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)},</span> <span class="mi">503</span>
+</code></pre></div>
+<h3 id="prometheus-metrics">Prometheus Metrics<a class="headerlink" href="#prometheus-metrics" title="Permanent link">&para;</a></h3>
+<p>Export metrics for Prometheus:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">prometheus_client</span><span class="w"> </span><span class="kn">import</span> <span class="n">Counter</span><span class="p">,</span> <span class="n">Histogram</span><span class="p">,</span> <span class="n">Gauge</span><span class="p">,</span> <span class="n">start_http_server</span>
+
+<span class="c1"># Define metrics</span>
+<span class="n">tokenize_total</span> <span class="o">=</span> <span class="n">Counter</span><span class="p">(</span><span class="s2">&quot;pvp_tokenize_total&quot;</span><span class="p">,</span> <span class="s2">&quot;Total tokenize operations&quot;</span><span class="p">)</span>
+<span class="n">tokenize_errors</span> <span class="o">=</span> <span class="n">Counter</span><span class="p">(</span><span class="s2">&quot;pvp_tokenize_errors&quot;</span><span class="p">,</span> <span class="s2">&quot;Tokenize errors&quot;</span><span class="p">)</span>
+<span class="n">tokenize_duration</span> <span class="o">=</span> <span class="n">Histogram</span><span class="p">(</span><span class="s2">&quot;pvp_tokenize_duration_seconds&quot;</span><span class="p">,</span> <span class="s2">&quot;Tokenize duration&quot;</span><span class="p">)</span>
+
+<span class="n">deliver_total</span> <span class="o">=</span> <span class="n">Counter</span><span class="p">(</span><span class="s2">&quot;pvp_deliver_total&quot;</span><span class="p">,</span> <span class="s2">&quot;Total deliver operations&quot;</span><span class="p">)</span>
+<span class="n">deliver_errors</span> <span class="o">=</span> <span class="n">Counter</span><span class="p">(</span><span class="s2">&quot;pvp_deliver_errors&quot;</span><span class="p">,</span> <span class="s2">&quot;Deliver errors&quot;</span><span class="p">)</span>
+<span class="n">deliver_duration</span> <span class="o">=</span> <span class="n">Histogram</span><span class="p">(</span><span class="s2">&quot;pvp_deliver_duration_seconds&quot;</span><span class="p">,</span> <span class="s2">&quot;Deliver duration&quot;</span><span class="p">)</span>
+
+<span class="n">active_sessions</span> <span class="o">=</span> <span class="n">Gauge</span><span class="p">(</span><span class="s2">&quot;pvp_active_sessions&quot;</span><span class="p">,</span> <span class="s2">&quot;Active vault sessions&quot;</span><span class="p">)</span>
+<span class="n">disclosed_pii_total</span> <span class="o">=</span> <span class="n">Counter</span><span class="p">(</span><span class="s2">&quot;pvp_disclosed_pii_total&quot;</span><span class="p">,</span> <span class="s2">&quot;Total PII disclosures&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;pii_type&quot;</span><span class="p">])</span>
+
+<span class="c1"># Start metrics server</span>
+<span class="n">start_http_server</span><span class="p">(</span><span class="mi">9090</span><span class="p">)</span>
+
+<span class="c1"># Instrument code</span>
+<span class="nd">@tokenize_duration</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">tokenize</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="n">tokenize_total</span><span class="o">.</span><span class="n">inc</span><span class="p">()</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">vault</span><span class="o">.</span><span class="n">tokenize</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+        <span class="n">active_sessions</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">vault</span><span class="o">.</span><span class="n">session_store</span><span class="o">.</span><span class="n">_sessions</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">response</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="n">tokenize_errors</span><span class="o">.</span><span class="n">inc</span><span class="p">()</span>
+        <span class="k">raise</span>
+</code></pre></div>
+<h3 id="kubernetes-monitoring">Kubernetes Monitoring<a class="headerlink" href="#kubernetes-monitoring" title="Permanent link">&para;</a></h3>
+<p>Deploy with Prometheus annotations:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">v1</span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Pod</span>
+<span class="nt">metadata</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mcp-pvp</span>
+<span class="w">  </span><span class="nt">annotations</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">prometheus.io/scrape</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;true&quot;</span>
+<span class="w">    </span><span class="nt">prometheus.io/port</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;9090&quot;</span>
+<span class="w">    </span><span class="nt">prometheus.io/path</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;/metrics&quot;</span>
+<span class="nt">spec</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">containers</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mcp-pvp</span>
+<span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mcp-pvp:0.2.0</span>
+<span class="w">    </span><span class="nt">ports</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">containerPort</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">8000</span><span class="w">  </span><span class="c1"># HTTP API</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">containerPort</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">9090</span><span class="w">  </span><span class="c1"># Metrics</span>
+<span class="w">    </span><span class="nt">livenessProbe</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">httpGet</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/health</span>
+<span class="w">        </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">8000</span>
+<span class="w">      </span><span class="nt">initialDelaySeconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span>
+<span class="w">      </span><span class="nt">periodSeconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10</span>
+<span class="w">    </span><span class="nt">readinessProbe</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">httpGet</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/ready</span>
+<span class="w">        </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">8000</span>
+<span class="w">      </span><span class="nt">initialDelaySeconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span>
+<span class="w">      </span><span class="nt">periodSeconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span>
+</code></pre></div>
+<h3 id="cloudwatch-metrics">CloudWatch Metrics<a class="headerlink" href="#cloudwatch-metrics" title="Permanent link">&para;</a></h3>
+<p>Publish custom metrics to CloudWatch:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">boto3</span>
+
+<span class="n">cloudwatch</span> <span class="o">=</span> <span class="n">boto3</span><span class="o">.</span><span class="n">client</span><span class="p">(</span><span class="s1">&#39;cloudwatch&#39;</span><span class="p">)</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">publish_metric</span><span class="p">(</span><span class="n">metric_name</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s1">&#39;Count&#39;</span><span class="p">):</span>
+    <span class="n">cloudwatch</span><span class="o">.</span><span class="n">put_metric_data</span><span class="p">(</span>
+        <span class="n">Namespace</span><span class="o">=</span><span class="s1">&#39;MCP-PVP&#39;</span><span class="p">,</span>
+        <span class="n">MetricData</span><span class="o">=</span><span class="p">[</span>
+            <span class="p">{</span>
+                <span class="s1">&#39;MetricName&#39;</span><span class="p">:</span> <span class="n">metric_name</span><span class="p">,</span>
+                <span class="s1">&#39;Value&#39;</span><span class="p">:</span> <span class="n">value</span><span class="p">,</span>
+                <span class="s1">&#39;Unit&#39;</span><span class="p">:</span> <span class="n">unit</span><span class="p">,</span>
+                <span class="s1">&#39;Timestamp&#39;</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">utcnow</span><span class="p">(),</span>
+            <span class="p">},</span>
+        <span class="p">],</span>
+    <span class="p">)</span>
+
+<span class="c1"># Usage</span>
+<span class="n">publish_metric</span><span class="p">(</span><span class="s1">&#39;TokenizeRequests&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">publish_metric</span><span class="p">(</span><span class="s1">&#39;PIIDisclosures&#39;</span><span class="p">,</span> <span class="n">count</span><span class="p">,</span> <span class="s1">&#39;Count&#39;</span><span class="p">)</span>
+</code></pre></div>
+<hr />
+<h2 id="security-best-practices">Security Best Practices<a class="headerlink" href="#security-best-practices" title="Permanent link">&para;</a></h2>
+<h3 id="never-log-raw-pii">Never Log Raw PII<a class="headerlink" href="#never-log-raw-pii" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># ✗ WRONG</span>
+<span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;email_sent&quot;</span><span class="p">,</span> <span class="n">to</span><span class="o">=</span><span class="n">email_address</span><span class="p">)</span>  <span class="c1"># Leaks PII!</span>
+
+<span class="c1"># ✓ CORRECT</span>
+<span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;email_sent&quot;</span><span class="p">,</span> <span class="n">token_ref</span><span class="o">=</span><span class="n">token</span><span class="o">.</span><span class="n">pii_ref</span><span class="p">,</span> <span class="n">audit_id</span><span class="o">=</span><span class="n">audit_id</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="use-audit-ids-for-correlation">Use Audit IDs for Correlation<a class="headerlink" href="#use-audit-ids-for-correlation" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Link operations via audit_id, not PII</span>
+<span class="n">tokenize_resp</span> <span class="o">=</span> <span class="n">vault</span><span class="o">.</span><span class="n">tokenize</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="n">deliver_resp</span> <span class="o">=</span> <span class="n">vault</span><span class="o">.</span><span class="n">deliver</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+
+<span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+    <span class="s2">&quot;operation_complete&quot;</span><span class="p">,</span>
+    <span class="n">tokenize_audit_id</span><span class="o">=</span><span class="n">tokenize_resp</span><span class="o">.</span><span class="n">audit_id</span><span class="p">,</span>
+    <span class="n">deliver_audit_id</span><span class="o">=</span><span class="n">deliver_resp</span><span class="o">.</span><span class="n">audit_id</span><span class="p">,</span>
+<span class="p">)</span>
+</code></pre></div>
+<h3 id="redact-errors">Redact Errors<a class="headerlink" href="#redact-errors" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="k">try</span><span class="p">:</span>
+    <span class="n">vault</span><span class="o">.</span><span class="n">tokenize</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+<span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+    <span class="c1"># Don&#39;t leak PII in error messages</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;tokenize_failed&quot;</span><span class="p">,</span> <span class="n">error_type</span><span class="o">=</span><span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+    <span class="k">raise</span>
+</code></pre></div>
+<h3 id="secure-metrics">Secure Metrics<a class="headerlink" href="#secure-metrics" title="Permanent link">&para;</a></h3>
+<p>Ensure metrics endpoints don't expose PII:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># ✓ CORRECT: Count of operations</span>
+<span class="n">tokenize_total</span><span class="o">.</span><span class="n">inc</span><span class="p">()</span>
+
+<span class="c1"># ✗ WRONG: Operation details</span>
+<span class="c1"># tokenize_by_email.labels(email=email).inc()  # Don&#39;t do this!</span>
+</code></pre></div>
+<h3 id="log-rotation">Log Rotation<a class="headerlink" href="#log-rotation" title="Permanent link">&para;</a></h3>
+<p>Configure log rotation to prevent unbounded growth:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Logrotate configuration</span>
+/var/log/mcp-pvp/*.log<span class="w"> </span><span class="o">{</span>
+<span class="w">    </span>daily
+<span class="w">    </span>rotate<span class="w"> </span><span class="m">30</span>
+<span class="w">    </span>compress
+<span class="w">    </span>delaycompress
+<span class="w">    </span>notifempty
+<span class="w">    </span>create<span class="w"> </span><span class="m">0640</span><span class="w"> </span>mcp-pvp<span class="w"> </span>mcp-pvp
+<span class="w">    </span>sharedscripts
+<span class="w">    </span>postrotate
+<span class="w">        </span>systemctl<span class="w"> </span>reload<span class="w"> </span>mcp-pvp
+<span class="w">    </span>endscript
+<span class="o">}</span>
+</code></pre></div>
+<hr />
+<h2 id="example-complete-observability-setup">Example: Complete Observability Setup<a class="headerlink" href="#example-complete-observability-setup" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">structlog</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">prometheus_client</span><span class="w"> </span><span class="kn">import</span> <span class="n">start_http_server</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mcp_pvp</span><span class="w"> </span><span class="kn">import</span> <span class="n">Vault</span><span class="p">,</span> <span class="n">Policy</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mcp_pvp.observability</span><span class="w"> </span><span class="kn">import</span> <span class="n">configure_sentry</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mcp_pvp.audit</span><span class="w"> </span><span class="kn">import</span> <span class="n">DatabaseAuditLogger</span>
+
+<span class="c1"># 1. Configure structured logging</span>
+<span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span>
+    <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%(message)s</span><span class="s2">&quot;</span><span class="p">,</span>
+    <span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">structlog</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span>
+    <span class="n">processors</span><span class="o">=</span><span class="p">[</span>
+        <span class="n">structlog</span><span class="o">.</span><span class="n">contextvars</span><span class="o">.</span><span class="n">merge_contextvars</span><span class="p">,</span>
+        <span class="n">structlog</span><span class="o">.</span><span class="n">processors</span><span class="o">.</span><span class="n">add_log_level</span><span class="p">,</span>
+        <span class="n">structlog</span><span class="o">.</span><span class="n">processors</span><span class="o">.</span><span class="n">TimeStamper</span><span class="p">(</span><span class="n">fmt</span><span class="o">=</span><span class="s2">&quot;iso&quot;</span><span class="p">),</span>
+        <span class="n">structlog</span><span class="o">.</span><span class="n">processors</span><span class="o">.</span><span class="n">format_exc_info</span><span class="p">,</span>
+        <span class="n">structlog</span><span class="o">.</span><span class="n">processors</span><span class="o">.</span><span class="n">JSONRenderer</span><span class="p">(),</span>
+    <span class="p">],</span>
+    <span class="n">logger_factory</span><span class="o">=</span><span class="n">structlog</span><span class="o">.</span><span class="n">PrintLoggerFactory</span><span class="p">(),</span>
+<span class="p">)</span>
+
+<span class="c1"># 2. Configure Sentry (optional)</span>
+<span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;SENTRY_DSN&quot;</span><span class="p">):</span>
+    <span class="n">configure_sentry</span><span class="p">(</span>
+        <span class="n">environment</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;ENV&quot;</span><span class="p">,</span> <span class="s2">&quot;development&quot;</span><span class="p">),</span>
+        <span class="n">traces_sample_rate</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span>
+    <span class="p">)</span>
+
+<span class="c1"># 3. Start Prometheus metrics server</span>
+<span class="n">start_http_server</span><span class="p">(</span><span class="mi">9090</span><span class="p">)</span>
+
+<span class="c1"># 4. Create vault with custom audit logger</span>
+<span class="n">db</span> <span class="o">=</span> <span class="n">DatabaseConnection</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;DATABASE_URL&quot;</span><span class="p">))</span>
+<span class="n">vault</span> <span class="o">=</span> <span class="n">Vault</span><span class="p">(</span>
+    <span class="n">policy</span><span class="o">=</span><span class="n">Policy</span><span class="p">(),</span>
+    <span class="n">audit_logger</span><span class="o">=</span><span class="n">DatabaseAuditLogger</span><span class="p">(</span><span class="n">db</span><span class="p">),</span>
+<span class="p">)</span>
+
+<span class="c1"># 5. Add health checks</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">fastapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">FastAPI</span>
+
+<span class="n">app</span> <span class="o">=</span> <span class="n">FastAPI</span><span class="p">()</span>
+
+<span class="nd">@app</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/health&quot;</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">health</span><span class="p">():</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;healthy&quot;</span><span class="p">}</span>
+
+<span class="nd">@app</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/metrics&quot;</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">metrics</span><span class="p">():</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;active_sessions&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">vault</span><span class="o">.</span><span class="n">session_store</span><span class="o">.</span><span class="n">_sessions</span><span class="p">)}</span>
+
+<span class="c1"># Now your deployment has:</span>
+<span class="c1"># - Structured JSON logs</span>
+<span class="c1"># - Error tracking via Sentry</span>
+<span class="c1"># - Prometheus metrics on :9090</span>
+<span class="c1"># - Persistent audit trail in database</span>
+<span class="c1"># - Health check endpoints</span>
+</code></pre></div>
+<hr />
+<h2 id="further-reading">Further Reading<a class="headerlink" href="#further-reading" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="https://www.structlog.org/">Structlog Documentation</a></li>
+<li><a href="https://docs.sentry.io/platforms/python/">Sentry Python SDK</a></li>
+<li><a href="https://github.com/prometheus/client_python">Prometheus Python Client</a></li>
+<li><a href="../README.md#audit-trail">mcp-pvp Audit Trail</a></li>
+<li><a href="../README.md#threat-model-what-this-helps-with">Security Best Practices</a></li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/Spidux-ai/mcp-pvp" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.instant", "navigation.sections", "navigation.top"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

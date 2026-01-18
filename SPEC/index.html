@@ -1,0 +1,1764 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Tokenize sensitive data before the LLM sees it.">
+      
+      
+      
+        <link rel="canonical" href="https://spidux-ai.github.io/mcp-pvp/SPEC/">
+      
+      
+        <link rel="prev" href="../THREAT_MODEL/">
+      
+      
+        <link rel="next" href="../v0.2.0-RELEASE-SUMMARY/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
+    
+    
+      
+        <title>Protocol Specification - mcp-pvp Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="teal" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#4-pii-type-registry-v1" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="mcp-pvp Documentation" class="md-header__button md-logo" aria-label="mcp-pvp Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            mcp-pvp Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Protocol Specification
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/Spidux-ai/mcp-pvp" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Spidux-ai/mcp-pvp
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="mcp-pvp Documentation" class="md-nav__button md-logo" aria-label="mcp-pvp Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    mcp-pvp Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/Spidux-ai/mcp-pvp" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Spidux-ai/mcp-pvp
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture & Security
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Architecture & Security
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../CAPABILITY_SECURITY/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Capability Security
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../OBSERVABILITY/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Observability
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../THREAT_MODEL/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protocol Specification
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protocol Specification
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#4-pii-type-registry-v1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. PII Type Registry (v1)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. PII Type Registry (v1)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-replacement-modes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1 Replacement Modes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-security-requirements-normative" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Security Requirements (Normative)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-policy-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Policy Model
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. Policy Model">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#61-sink-allow-lists" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.1 Sink Allow-Lists
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#62-limits" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.2 Limits
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-capability-format" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Capability Format
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. Capability Format">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#71-claims-json" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.1 Claims (JSON)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#72-encoding-recommended-lightweight" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.2 Encoding (recommended, lightweight)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-operations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Operations
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8. Operations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#81-response-envelope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.1 Response Envelope
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-tokenize" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. tokenize
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="9. tokenize">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#91-purpose" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.1 Purpose
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#92-request" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.2 Request
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#93-result" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.3 Result
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-resolve-selective-disclosure-fallback" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. resolve (Selective Disclosure, fallback)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10. resolve (Selective Disclosure, fallback)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#101-purpose" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.1 Purpose
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#102-request" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.2 Request
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#103-result" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.3 Result
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-deliver-preferred" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. deliver (Preferred)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="11. deliver (Preferred)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#111-purpose" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11.1 Purpose
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#112-request" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11.2 Request
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#113-result" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11.3 Result
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12-error-codes-standard" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12. Error Codes (Standard)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#13-audit-events" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13. Audit Events
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#14-detection-engines" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        14. Detection Engines
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#15-compatibility-notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15. Compatibility Notes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#16-appendix-minimal-end-to-end-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        16. Appendix: Minimal End-to-End Example
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../v0.2.0-RELEASE-SUMMARY/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Release Snapshot
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#4-pii-type-registry-v1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. PII Type Registry (v1)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. PII Type Registry (v1)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-replacement-modes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1 Replacement Modes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-security-requirements-normative" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Security Requirements (Normative)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-policy-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Policy Model
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. Policy Model">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#61-sink-allow-lists" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.1 Sink Allow-Lists
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#62-limits" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.2 Limits
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-capability-format" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Capability Format
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. Capability Format">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#71-claims-json" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.1 Claims (JSON)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#72-encoding-recommended-lightweight" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.2 Encoding (recommended, lightweight)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-operations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Operations
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8. Operations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#81-response-envelope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.1 Response Envelope
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-tokenize" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. tokenize
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="9. tokenize">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#91-purpose" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.1 Purpose
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#92-request" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.2 Request
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#93-result" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.3 Result
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-resolve-selective-disclosure-fallback" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. resolve (Selective Disclosure, fallback)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10. resolve (Selective Disclosure, fallback)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#101-purpose" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.1 Purpose
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#102-request" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.2 Request
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#103-result" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.3 Result
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-deliver-preferred" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. deliver (Preferred)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="11. deliver (Preferred)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#111-purpose" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11.1 Purpose
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#112-request" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11.2 Request
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#113-result" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11.3 Result
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12-error-codes-standard" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12. Error Codes (Standard)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#13-audit-events" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13. Audit Events
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#14-detection-engines" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        14. Detection Engines
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#15-compatibility-notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15. Compatibility Notes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#16-appendix-minimal-end-to-end-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        16. Appendix: Minimal End-to-End Example
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+  <h1>Protocol Specification</h1>
+
+<div class="highlight"><pre><span></span><code><span class="gh"># Privacy Vault Protocol (PVP) v1 — Specification</span>
+
+<span class="gs">**Project:**</span> mcp-pvp  
+<span class="gs">**Status:**</span> Draft (v1)  
+<span class="gs">**Scope:**</span> Local-first tokenization of sensitive data, policy-gated disclosure, and “deliver mode” injection for MCP tool calls.
+
+<span class="k">&gt; </span><span class="ge">**Tokenize → Policy → Deliver → Audit**  </span>
+<span class="k">&gt; </span><span class="ge">Agents and LLMs operate on **references**, not raw values.</span>
+
+---
+
+<span class="gu">## 1. Motivation</span>
+
+MCP-based agents frequently handle sensitive inputs (PII, secrets). Sending raw values into LLM prompts, logs, telemetry, or cloud orchestration increases the risk of leakage.
+
+PVP defines a local-first protocol where:
+<span class="k">-</span><span class="w"> </span>sensitive values are replaced with typed opaque tokens,
+<span class="k">-</span><span class="w"> </span>raw values are stored only in a local vault session,
+<span class="k">-</span><span class="w"> </span>disclosure is allowed only to approved sinks under policy,
+<span class="k">-</span><span class="w"> </span><span class="gs">**deliver mode**</span> injects sensitive values locally at the tool boundary so raw values never return to the agent/LLM.
+
+---
+
+<span class="gu">## 2. Definitions</span>
+
+<span class="gu">### 2.1 Vault</span>
+A local service responsible for:
+<span class="k">-</span><span class="w"> </span>detecting sensitive spans (PII/secrets),
+<span class="k">-</span><span class="w"> </span>replacing them with tokens,
+<span class="k">-</span><span class="w"> </span>storing raw values in a short-lived session,
+<span class="k">-</span><span class="w"> </span>enforcing disclosure policies,
+<span class="k">-</span><span class="w"> </span>auditing tokenization/disclosure actions,
+<span class="k">-</span><span class="w"> </span>optionally executing or dispatching tool calls (deliver mode).
+
+<span class="gu">### 2.2 Vault Session (`vault_session`)</span>
+A scope container for tokens. Tokens are valid only within a session.
+
+Properties:
+<span class="k">-</span><span class="w"> </span><span class="gs">**unguessable**</span> identifier (e.g., <span class="sb">`vs_...`</span>)
+<span class="k">-</span><span class="w"> </span><span class="gs">**TTL-based**</span> (expires automatically)
+<span class="k">-</span><span class="w"> </span>optionally bound to workflow run/step context
+
+<span class="gu">### 2.3 Token Reference (`pii_ref`)</span>
+An opaque identifier (e.g., <span class="sb">`tkn_...`</span>) representing a stored sensitive value inside a vault session.
+
+<span class="gu">### 2.4 Sink</span>
+A destination where sensitive values may be disclosed/delivered:
+<span class="k">-</span><span class="w"> </span><span class="sb">`tool`</span>: a named tool invocation (preferred)
+<span class="k">-</span><span class="w"> </span><span class="sb">`engine`</span>: a cloud workflow engine/orchestrator (default deny)
+<span class="k">-</span><span class="w"> </span><span class="sb">`llm`</span>: a model prompt/response pipeline (default deny)
+
+<span class="gu">### 2.5 Capability (`cap`)</span>
+A signed authorization blob that permits disclosure/delivery of a specific token to a specific sink/argument path for a limited time.
+
+Capabilities are the primary defense against:
+<span class="k">-</span><span class="w"> </span>prompt injection (“restore everything”)
+<span class="k">-</span><span class="w"> </span>token spoofing (LLM hallucinating <span class="sb">`tkn_...`</span>)
+<span class="k">-</span><span class="w"> </span>over-broad restoration requests
+
+---
+
+<span class="gu">## 3. Token Formats</span>
+
+PVP defines two standard token representations.
+
+<span class="gu">### 3.1 Text Token (LLM-safe)</span>
+</code></pre></div>
+<p>[[PII:<TYPE>:<REF>]]</p>
+<div class="highlight"><pre><span></span><code>Example:
+</code></pre></div>
+<p>[[PII:EMAIL:tkn_a1b2c3]]</p>
+<div class="highlight"><pre><span></span><code>### 3.2 JSON Token Object (preferred for tool args)
+```json
+{ &quot;$pii_ref&quot;: &quot;tkn_a1b2c3&quot;, &quot;type&quot;: &quot;EMAIL&quot;, &quot;cap&quot;: &quot;cap_...&quot; }
+</code></pre></div>
+<p>Rules:</p>
+<ul>
+<li><code>type</code> is informational; the vault uses stored metadata + capability claims.</li>
+<li><code>cap</code> is <strong>RECOMMENDED</strong> and in most deployments treated as <strong>REQUIRED</strong> for any disclosure.</li>
+</ul>
+<hr />
+<h2 id="4-pii-type-registry-v1">4. PII Type Registry (v1)<a class="headerlink" href="#4-pii-type-registry-v1" title="Permanent link">&para;</a></h2>
+<p>Initial recommended types:</p>
+<ul>
+<li><code>EMAIL</code></li>
+<li><code>PHONE</code></li>
+<li><code>IPV4</code></li>
+<li><code>CC</code> (credit card-like values)</li>
+<li><code>API_KEY</code> (secret-like tokens)</li>
+</ul>
+<h3 id="41-replacement-modes">4.1 Replacement Modes<a class="headerlink" href="#41-replacement-modes" title="Permanent link">&para;</a></h3>
+<p>Each type may be configured as:</p>
+<ul>
+<li><code>TOKENIZE</code> (reversible): store raw value and return token</li>
+<li><code>MASK</code> (irreversible default): return masked placeholder without storing raw</li>
+</ul>
+<p>Recommended defaults:</p>
+<ul>
+<li><code>EMAIL</code>, <code>PHONE</code>, <code>IPV4</code>: <code>TOKENIZE</code></li>
+<li><code>CC</code>, <code>API_KEY</code>: <code>MASK</code> (tokenization allowed only if explicitly enabled)</li>
+</ul>
+<hr />
+<h2 id="5-security-requirements-normative">5. Security Requirements (Normative)<a class="headerlink" href="#5-security-requirements-normative" title="Permanent link">&para;</a></h2>
+<p>A compliant vault <strong>MUST</strong>:</p>
+<ol>
+<li><strong>Default deny</strong> disclosure unless explicitly permitted by policy.</li>
+<li>Deny disclosure to sink kinds <code>llm</code> and <code>engine</code> unless explicitly enabled.</li>
+<li>Bind tokens to a <code>vault_session</code>; tokens <strong>MUST NOT</strong> be globally valid.</li>
+<li>Enforce session TTL and reject expired sessions.</li>
+<li>Not log raw sensitive values (audit only metadata).</li>
+<li>Validate capabilities (if enabled): signature, expiration, and claim matches.</li>
+<li>Enforce rate/size limits on disclosure to reduce exfiltration blast radius.</li>
+</ol>
+<hr />
+<h2 id="6-policy-model">6. Policy Model<a class="headerlink" href="#6-policy-model" title="Permanent link">&para;</a></h2>
+<p>Policy evaluation occurs <strong>inside the vault</strong>.</p>
+<h3 id="61-sink-allow-lists">6.1 Sink Allow-Lists<a class="headerlink" href="#61-sink-allow-lists" title="Permanent link">&para;</a></h3>
+<p>Policy rules allow specific types to be disclosed to specific tool sinks and optionally restrict to specific argument paths.</p>
+<p>Example:</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;sinks&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;tool:send_email&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;allow&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">        </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;EMAIL&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;arg_paths&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;to&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;cc&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;bcc&quot;</span><span class="p">]</span><span class="w"> </span><span class="p">}</span>
+<span class="w">      </span><span class="p">]</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="w">  </span><span class="nt">&quot;defaults&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;allow&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span><span class="w"> </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<h3 id="62-limits">6.2 Limits<a class="headerlink" href="#62-limits" title="Permanent link">&para;</a></h3>
+<p>Recommended limits (per workflow step):</p>
+<ul>
+<li><code>max_disclosures_per_step</code></li>
+<li><code>max_total_disclosed_bytes_per_step</code></li>
+</ul>
+<p>The vault should track disclosures by <code>(workflow_run_id, step_id)</code> when provided.</p>
+<hr />
+<h2 id="7-capability-format">7. Capability Format<a class="headerlink" href="#7-capability-format" title="Permanent link">&para;</a></h2>
+<h3 id="71-claims-json">7.1 Claims (JSON)<a class="headerlink" href="#71-claims-json" title="Permanent link">&para;</a></h3>
+<p>A capability binds token usage to a sink and (optionally) to run context.</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;v&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;vault_session&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;vs_...&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;pii_ref&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;tkn_...&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;pii_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;EMAIL&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;sink&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;kind&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;tool&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;send_email&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;arg_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;to&quot;</span><span class="w"> </span><span class="p">},</span>
+<span class="w">  </span><span class="nt">&quot;run&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;workflow_run_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;wr_...&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;step_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;s2&quot;</span><span class="w"> </span><span class="p">},</span>
+<span class="w">  </span><span class="nt">&quot;exp&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1730000000</span>
+<span class="p">}</span>
+</code></pre></div>
+<h3 id="72-encoding-recommended-lightweight">7.2 Encoding (recommended, lightweight)<a class="headerlink" href="#72-encoding-recommended-lightweight" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>cap = base64url(json_bytes) + "." + base64url(hmac_sha256(secret, json_bytes))</code></li>
+</ul>
+<p>Verification:</p>
+<ul>
+<li>signature matches</li>
+<li><code>exp</code> not exceeded</li>
+<li>claims match requested sink/run constraints</li>
+</ul>
+<hr />
+<h2 id="8-operations">8. Operations<a class="headerlink" href="#8-operations" title="Permanent link">&para;</a></h2>
+<p>PVP defines three primary operations:</p>
+<ul>
+<li><code>tokenize</code></li>
+<li><code>resolve</code> (fallback)</li>
+<li><code>deliver</code> (recommended)</li>
+</ul>
+<p>All operations return an envelope:</p>
+<h3 id="81-response-envelope">8.1 Response Envelope<a class="headerlink" href="#81-response-envelope" title="Permanent link">&para;</a></h3>
+<p>Success:</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"> </span><span class="nt">&quot;ok&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;result&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="err">...</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="nt">&quot;error&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="w"> </span><span class="p">}</span>
+</code></pre></div>
+<p>Failure:</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;ok&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;result&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;error&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;code&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ERR_POLICY_DENIED&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;message&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Disclosure denied by policy&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;details&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;rule&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;tool:send_email allows EMAIL only for to/cc/bcc&quot;</span><span class="w"> </span><span class="p">}</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<hr />
+<h2 id="9-tokenize">9. <code>tokenize</code><a class="headerlink" href="#9-tokenize" title="Permanent link">&para;</a></h2>
+<h3 id="91-purpose">9.1 Purpose<a class="headerlink" href="#91-purpose" title="Permanent link">&para;</a></h3>
+<p>Detect sensitive spans in content, replace with tokens, and store raw values locally.</p>
+<h3 id="92-request">9.2 Request<a class="headerlink" href="#92-request" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;vault_session&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;content&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Contact me at mitiku@example.com&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;content_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;text/plain&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;run&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;workflow_run_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;wr_...&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;step_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;s1&quot;</span><span class="w"> </span><span class="p">},</span>
+<span class="w">  </span><span class="nt">&quot;policy_context&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;org_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;org_...&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;user_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;u_...&quot;</span><span class="w"> </span><span class="p">},</span>
+<span class="w">  </span><span class="nt">&quot;options&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;token_format&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;TEXT&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;include_caps&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;types&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;EMAIL&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;PHONE&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;IPV4&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;CC&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;API_KEY&quot;</span><span class="p">]</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<h3 id="93-result">9.3 Result<a class="headerlink" href="#93-result" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;vault_session&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;vs_01J...&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;redacted&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Contact me at [[PII:EMAIL:tkn_a1]]&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;tokens&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;ref&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;tkn_a1&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;EMAIL&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;occurrences&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;caps&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">&quot;sink&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;kind&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;tool&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;send_email&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;arg_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;to&quot;</span><span class="w"> </span><span class="p">},</span>
+<span class="w">          </span><span class="nt">&quot;cap&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;cap_...&quot;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">      </span><span class="p">]</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">],</span>
+<span class="w">  </span><span class="nt">&quot;stats&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;EMAIL&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>Notes:</p>
+<ul>
+<li>If <code>vault_session</code> is null, vault creates one.</li>
+<li>If a type is configured as <code>MASK</code>, vault may output a masked marker instead of issuing a token.</li>
+</ul>
+<hr />
+<h2 id="10-resolve-selective-disclosure-fallback">10. <code>resolve</code> (Selective Disclosure, fallback)<a class="headerlink" href="#10-resolve-selective-disclosure-fallback" title="Permanent link">&para;</a></h2>
+<h3 id="101-purpose">10.1 Purpose<a class="headerlink" href="#101-purpose" title="Permanent link">&para;</a></h3>
+<p>Return raw values for specific token refs, only if permitted.</p>
+<h3 id="102-request">10.2 Request<a class="headerlink" href="#102-request" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;vault_session&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;vs_01J...&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;need&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;ref&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;tkn_a1&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;cap&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;cap_...&quot;</span><span class="w"> </span><span class="p">}</span>
+<span class="w">  </span><span class="p">],</span>
+<span class="w">  </span><span class="nt">&quot;sink&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;kind&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;tool&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;send_email&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;arg_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;to&quot;</span><span class="w"> </span><span class="p">},</span>
+<span class="w">  </span><span class="nt">&quot;run&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;workflow_run_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;wr_...&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;step_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;s2&quot;</span><span class="w"> </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<h3 id="103-result">10.3 Result<a class="headerlink" href="#103-result" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;values&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;tkn_a1&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;mitiku@example.com&quot;</span><span class="w"> </span><span class="p">},</span>
+<span class="w">  </span><span class="nt">&quot;audit_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;aud_...&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;disclosed&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;ref&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;tkn_a1&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;EMAIL&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;bytes&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">17</span><span class="w"> </span><span class="p">}</span>
+<span class="w">  </span><span class="p">]</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>Security stance:</p>
+<ul>
+<li>Prefer <code>deliver</code> over <code>resolve</code> so raw PII does not transit back to agents/cloud.</li>
+</ul>
+<hr />
+<h2 id="11-deliver-preferred">11. <code>deliver</code> (Preferred)<a class="headerlink" href="#11-deliver-preferred" title="Permanent link">&para;</a></h2>
+<h3 id="111-purpose">11.1 Purpose<a class="headerlink" href="#111-purpose" title="Permanent link">&para;</a></h3>
+<p>Safely inject sensitive values into tool calls locally under policy and capability checks.</p>
+<h3 id="112-request">11.2 Request<a class="headerlink" href="#112-request" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;vault_session&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;vs_01J...&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;tool_call&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;send_email&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;args&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;to&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;$pii_ref&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;tkn_a1&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;EMAIL&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;cap&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;cap_...&quot;</span><span class="w"> </span><span class="p">},</span>
+<span class="w">      </span><span class="nt">&quot;subject&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Hello&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;body&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;...&quot;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="w">  </span><span class="nt">&quot;run&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;workflow_run_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;wr_...&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;step_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;s3&quot;</span><span class="w"> </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<h3 id="113-result">11.3 Result<a class="headerlink" href="#113-result" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;delivered&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;tool_result&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;message_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;m_...&quot;</span><span class="w"> </span><span class="p">},</span>
+<span class="w">  </span><span class="nt">&quot;audit_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;aud_...&quot;</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>Behavior:</p>
+<ul>
+<li>
+<p>For each token object in args:</p>
+</li>
+<li>
+<p>validate session + token existence</p>
+</li>
+<li>validate cap (if enabled)</li>
+<li>validate policy for <code>tool:&lt;name&gt;</code> at the argument path</li>
+<li>enforce limits</li>
+<li>Inject raw values just-in-time at the tool boundary.</li>
+<li>Never log raw values.</li>
+</ul>
+<p>Execution model:</p>
+<ul>
+<li>Vault may execute tools itself or dispatch to a trusted local runner.</li>
+</ul>
+<hr />
+<h2 id="12-error-codes-standard">12. Error Codes (Standard)<a class="headerlink" href="#12-error-codes-standard" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>ERR_INVALID_REQUEST</code></li>
+<li><code>ERR_UNAUTHENTICATED</code></li>
+<li><code>ERR_UNAUTHORIZED</code></li>
+<li><code>ERR_VAULT_SESSION_UNKNOWN</code></li>
+<li><code>ERR_VAULT_SESSION_EXPIRED</code></li>
+<li><code>ERR_TOKEN_UNKNOWN</code></li>
+<li><code>ERR_CAP_INVALID</code></li>
+<li><code>ERR_CAP_EXPIRED</code></li>
+<li><code>ERR_POLICY_DENIED</code></li>
+<li><code>ERR_LIMIT_EXCEEDED</code></li>
+<li><code>ERR_INTERNAL</code></li>
+</ul>
+<hr />
+<h2 id="13-audit-events">13. Audit Events<a class="headerlink" href="#13-audit-events" title="Permanent link">&para;</a></h2>
+<p>A compliant implementation should emit audit events locally (no raw values), including:</p>
+<ul>
+<li><code>TOKENIZE</code>: counts by type, session id, run context</li>
+<li><code>RESOLVE</code>: sink/tool, arg_path, types disclosed, allowed/denied</li>
+<li><code>DELIVER</code>: tool name, arg_paths injected, types disclosed, allowed/denied</li>
+</ul>
+<p>Audit entries should include correlation fields when available:</p>
+<ul>
+<li><code>vault_session</code></li>
+<li><code>workflow_run_id</code></li>
+<li><code>step_id</code></li>
+<li><code>audit_id</code></li>
+</ul>
+<hr />
+<h2 id="14-detection-engines">14. Detection Engines<a class="headerlink" href="#14-detection-engines" title="Permanent link">&para;</a></h2>
+<p>PVP does not mandate a specific detection engine. Implementations may use:</p>
+<ul>
+<li><strong>Microsoft Presidio</strong> (recommended default when installed)</li>
+<li>a lightweight regex fallback for environments without Presidio</li>
+</ul>
+<p>Regardless of detector:</p>
+<ul>
+<li>disclosure and delivery semantics remain the same</li>
+<li>masking/tokenization modes per type must be enforced consistently</li>
+</ul>
+<hr />
+<h2 id="15-compatibility-notes">15. Compatibility Notes<a class="headerlink" href="#15-compatibility-notes" title="Permanent link">&para;</a></h2>
+<ul>
+<li>
+<p>The protocol is transport-agnostic and can be exposed via:</p>
+</li>
+<li>
+<p>MCP tools: <code>pvp.tokenize</code>, <code>pvp.resolve</code>, <code>pvp.deliver</code></p>
+</li>
+<li>HTTP endpoints (localhost binding recommended)</li>
+<li>All integrations should preserve token objects and avoid “restoring into prompts.”</li>
+</ul>
+<hr />
+<h2 id="16-appendix-minimal-end-to-end-example">16. Appendix: Minimal End-to-End Example<a class="headerlink" href="#16-appendix-minimal-end-to-end-example" title="Permanent link">&para;</a></h2>
+<ol>
+<li>
+<p>Tokenize:</p>
+</li>
+<li>
+<p>input: <code>Email me at mitiku@example.com</code></p>
+</li>
+<li>
+<p>redacted: <code>Email me at [[PII:EMAIL:tkn_a1]]</code></p>
+</li>
+<li>
+<p>LLM tool plan references token:</p>
+</li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;action&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;send_email&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;args&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;to&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;$pii_ref&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;tkn_a1&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;EMAIL&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;cap&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;cap_...&quot;</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<ol>
+<li>
+<p>Deliver injects locally and executes:</p>
+</li>
+<li>
+<p>returns tool result, not raw PII</p>
+</li>
+</ol>
+<div class="highlight"><pre><span></span><code>{ &quot;delivered&quot;: true, &quot;tool_result&quot;: { &quot;message_id&quot;: &quot;m_123&quot; } }
+</code></pre></div>
+<div class="highlight"><pre><span></span><code>::contentReference[oaicite:0]{index=0}
+</code></pre></div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/Spidux-ai/mcp-pvp" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.instant", "navigation.sections", "navigation.top"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>
