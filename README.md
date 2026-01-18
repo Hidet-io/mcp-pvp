@@ -3,7 +3,6 @@
 **Tokenize sensitive data before the LLM sees it.**  
 `mcp-pvp` is a lightweight security/runtime layer for MCP-based agents and workflows that prevents accidental leakage of PII and secrets by design.
 
-> **Tokenize → Policy → Deliver → Audit**  
 > Agents operate on *references*, not raw values.
 
 Maintained by the team behind **Hidet** (hidet.io), and usable standalone.
@@ -22,7 +21,6 @@ Most systems either:
 - send raw values to an LLM (high risk), or
 - do brittle redaction that breaks workflows (hard to restore safely)
 
-`mcp-pvp` introduces a local **Privacy Vault** that stores sensitive values and issues **typed opaque tokens**. Tokens flow through prompts and tool plans. Raw values are **disclosed only when policy allows**, ideally via **deliver mode** so they never return to the agent/LLM.
 
 > This is **not** a vulnerability scanner/fuzzer for MCP servers.  
 > It’s a **privacy vault + policy enforcement runtime** for sensitive data in MCP workflows.
@@ -302,6 +300,24 @@ npx @modelcontextprotocol/inspector
 ## Usage
 
 See [examples/safe_email_sender/](examples/safe_email_sender/) for a complete example.
+
+---
+## Documentation
+
+Full API and architecture docs are generated with MkDocs (Material theme + mkdocstrings) and published to GitHub Pages at https://spidux-ai.github.io/mcp-pvp/.
+
+```bash
+# Preview locally (requires docs deps via .[docs] or .[dev])
+make docs
+
+# Build artifacts for publishing
+make docs-build
+
+# Push the generated site (requires GH_TOKEN)
+make docs-deploy
+```
+
+Install the necessary dependencies with `uv pip install -e "./[docs]"` or include the docs extra in your dev environment.
 
 ---
 

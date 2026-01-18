@@ -1,0 +1,51 @@
+site_name: mcp-pvp Documentation
+site_description: Tokenize sensitive data before the LLM sees it.
+site_url: https://spidux-ai.github.io/mcp-pvp/
+repo_url: https://github.com/Spidux-ai/mcp-pvp
+repo_name: Spidux-ai/mcp-pvp
+
+theme:
+  name: material
+  language: en
+  palette:
+    primary: teal
+    accent: amber
+  features:
+    - navigation.instant
+    - navigation.sections
+    - navigation.top
+
+nav:
+  - Home: index.md
+  - Getting Started: getting-started.md
+  - Architecture & Security:
+      - Capability Security: CAPABILITY_SECURITY.md
+      - Observability: OBSERVABILITY.md
+      - Threat Model: THREAT_MODEL.md
+      - Protocol Specification: SPEC.md
+      - Release Snapshot: v0.2.0-RELEASE-SUMMARY.md
+  - API Reference: api.md
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          paths:
+            - src
+          options:
+            docstring_style: google
+
+markdown_extensions:
+  - admonition
+  - toc:
+      permalink: true
+  - pymdownx.superfences
+  - pymdownx.highlight
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/Spidux-ai/mcp-pvp

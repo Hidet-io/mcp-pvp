@@ -1,4 +1,4 @@
-.PHONY: help install install-dev install-all clean test test-cov lint format typecheck security pre-commit run-http run-mcp build example version bump-major bump-minor bump-patch bump-version
+.PHONY: help install install-dev install-all clean test test-cov lint format typecheck security pre-commit run-http run-mcp build example version bump-major bump-minor bump-patch bump-version docs docs-build docs-deploy
 
 # Default target
 help:
@@ -95,6 +95,15 @@ pre-commit:
 
 pre-commit-install:
 	pre-commit install
+
+docs:
+	uv run mkdocs serve --dev-addr=127.0.0.1:8000
+
+docs-build:
+	uv run mkdocs build
+
+docs-deploy:
+	uv run mkdocs gh-deploy --clean --force
 
 # Combined check (run before commits)
 check: lint format-check typecheck security test

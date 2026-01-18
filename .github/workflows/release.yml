@@ -9,6 +9,9 @@ permissions:
   contents: write
   id-token: write  # For PyPI trusted publishing
 
+env:
+  PUBLISH_PYPI: 'false'
+
 jobs:
   validate:
     runs-on: ubuntu-latest
@@ -110,6 +113,7 @@ jobs:
   publish-pypi:
     needs: release
     runs-on: ubuntu-latest
+    if: ${{ env.PUBLISH_PYPI == 'true' }}
     environment:
       name: pypi
       url: https://pypi.org/project/mcp-pvp/
