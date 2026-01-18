@@ -30,9 +30,9 @@ from mcp_pvp import (
 
 def main() -> None:
     """Run safe email sender example with detailed output."""
-    print("="*70)
+    print("=" * 70)
     print("  SAFE EMAIL SENDER - PII PROTECTION DEMONSTRATION")
-    print("="*70)
+    print("=" * 70)
     print()
     print("Scenario: User wants to email alice@example.com with Q4 report")
     print("Challenge: How to let AI agent do this without exposing the email?")
@@ -186,9 +186,9 @@ def main() -> None:
     # =========================================================================
     # SUMMARY: END-TO-END PII PROTECTION
     # =========================================================================
-    print("="*70)
+    print("=" * 70)
     print("  PII PROTECTION SUMMARY")
-    print("="*70)
+    print("=" * 70)
     print()
     print("Where 'alice@example.com' appeared:")
     print("  ✓ Vault storage (encrypted)")
@@ -209,7 +209,7 @@ def main() -> None:
     print("  • Compliance-ready audit trails")
     print("  • Policy-enforced access control")
     print()
-    print("="*70)
+    print("=" * 70)
 
 
 if __name__ == "__main__":

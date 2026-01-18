@@ -1,4 +1,4 @@
-.PHONY: help install install-dev install-all clean test test-cov lint format typecheck pre-commit run-http run-mcp build example
+.PHONY: help install install-dev install-all clean test test-cov lint format typecheck security pre-commit run-http run-mcp build example
 
 # Default target
 help:
@@ -83,6 +83,9 @@ format-check:
 typecheck:
 	mypy src/
 
+security:
+	uv run bandit -r src/ -c pyproject.toml
+
 # Pre-commit
 pre-commit:
 	pre-commit run --all-files
@@ -91,7 +94,7 @@ pre-commit-install:
 	pre-commit install
 
 # Combined check (run before commits)
-check: lint format-check typecheck test
+check: lint format-check typecheck security test
 	@echo "✅ All checks passed!"
 
 # Run services
