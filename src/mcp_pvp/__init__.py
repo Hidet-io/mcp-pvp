@@ -4,7 +4,7 @@ mcp-pvp: Privacy Vault Protocol for MCP.
 Tokenize sensitive data before the LLM sees it.
 """
 
-__version__ = "0.5.1"
+__version__ = "0.5.2"
 
 from mcp_pvp.errors import (
     CapabilityInvalidError,

@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### [0.5.2] - 2026-01-20
+### Fixed a bug in docs workflow
+- **Documentation Deployment**: Fixed an issue in the GitHub Actions workflow that prevented successful deployment
+  - Corrected pip install command in `.github/workflows/docs.yml`
+
 ### [0.5.1] - 2026-01-18
 ### Added github pages deployment workflow
 - **GitHub Actions Workflow**: Automated deployment of documentation to GitHub Pages
