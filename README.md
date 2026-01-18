@@ -340,7 +340,7 @@ Policies are enforced **inside the vault**, with a default-deny stance:
 
 ### Deliver mode (recommended)
 
-Instead of returning raw PII back to the cloud engine/agent, the vault **injects PII locally** into tool calls and executes them (or hands off to a trusted local runner).
+Instead of returning raw PII back to the cloud engine/agent, the vault **injects PII locally** into tool calls and executes them (or hands off to a trusted local runner). The response now contains tokenized tool results via `DeliverResponse.tool_result`, along with `result_tokens` that describe every detected PII span, so agents never receive raw values even if the tool emits sensitive data.
 This is the biggest reduction in leak surface.
 
 ---
@@ -348,16 +348,12 @@ This is the biggest reduction in leak surface.
 ## What you get (v0.1 scope)
 
 * ✅ PII detection (regex-first, no heavy deps)
-* ✅ Tokenization with typed opaque refs
-* ✅ Local vault session store with TTL
-* ✅ Policy enforcement (sink allow-lists + limits)
-* ✅ Capabilities (HMAC-signed)
-* ✅ Audit events (no raw values)
-* ✅ MCP tool binding:
-
-  * `pvp.tokenize`
-  * `pvp.resolve` (fallback)
-  * `pvp.deliver` (recommended)
+* ✅ Tokenization with typed opaque refs, structured tokens, and session TTLs
+* ✅ Policy enforcement (sink allow-lists + limits) with capability checks
+* ✅ Capabilities (HMAC-signed) paired with audit events (no raw values leaked)
+* ✅ Deliver mode that also tokenizes tool results and returns `result_tokens`
+* ✅ MCP tool binding plus HTTP server (`pvp.tokenize`, `pvp.resolve`, `pvp.deliver`)
+* ✅ Observability stack (structlog, Prometheus, optional Sentry) and production docs
 
 ---
 
