@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.2.0] - 2026-01-18
+## [0.1.0] - 2026-01-15
 
 ### Added
 - ToolExecutor interface for pluggable tool execution in deliver mode
@@ -16,38 +16,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Comprehensive security documentation in `docs/CAPABILITY_SECURITY.md`
 - Sink-bound capabilities preventing cross-tool/sink reuse attacks
 - 5 new tests for ToolExecutor integration (59 total tests)
-
-### Changed
-- **BREAKING**: Capabilities now bound to specific sink (tool + arg_path)
-- **BREAKING**: Removed wildcard LOCAL capability reuse (security hardening)
-- **BREAKING**: Capabilities issued on-demand after policy check (not at tokenization)
-- **BREAKING**: Vault.deliver() now uses ToolExecutor instead of stub implementation
-- ResolveTokenRequest.cap is now optional (vault issues if None)
-- Updated all 15 adversarial tests to reflect new security model
-
-### Security
-- Fixed capability reuse attack vector allowing cross-tool PII disclosure
-- Capabilities now expire after 5 minutes (not reusable across sessions)
-- Policy check happens BEFORE capability issuance (defense in depth)
-- Documented PII memory exposure timeline in executor.py
-- Strict sink matching: capability must match exact tool + arg_path
-
-### Migration Guide (0.1.0 → 0.2.0)
-1. **Tokenization**: Tokens no longer include capabilities by default
-   - Old: `token.cap` contained capability string
-   - New: `token.cap` is `None`; use `resolve()` to get capabilities
-   
-2. **Capabilities**: No longer reusable across tools
-   - Old: One capability worked for multiple tools with LOCAL sink
-   - New: Each tool/sink requires its own capability
-   
-3. **Deliver Mode**: Requires ToolExecutor
-   - Old: `deliver()` returned stub response
-   - New: Provide `executor=` parameter or use `DummyExecutor` (default)
-
-## [0.1.0] - 2026-01-15
-
-### Added
 - Initial alpha release
 - Core vault operations: tokenize, resolve, deliver
 - PII detection with Presidio and regex fallback
@@ -59,6 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - HTTP binding with FastAPI
 - MCP binding (stub)
 - 54 tests with 77% coverage
+
 
 ### Core Features
 - **Tokenization**: Replace PII with tokens before LLM sees data
