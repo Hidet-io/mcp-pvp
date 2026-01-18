@@ -127,14 +127,6 @@ pip install mcp-pvp[presidio]
 - **Fallback**: Regex detector (built-in, no extra deps)
 
 ```bash
-# HTTP binding
-pip install mcp-pvp[http]
-```
-- **What**: FastAPI + Uvicorn HTTP server
-- **When**: Exposing vault as REST API, testing with curl/Postman
-- **Includes**: FastAPI, Uvicorn with standard extras
-
-```bash
 # MCP executor (for real tool execution)
 pip install mcp-pvp[mcp]
 ```
@@ -146,7 +138,7 @@ pip install mcp-pvp[mcp]
 # All extras (everything)
 pip install mcp-pvp[all]
 ```
-- **What**: Presidio + HTTP + all optional features
+- **What**: Presidio + mkdocs tooling + all optional features
 - **When**: Full-featured development or deployment
 
 ```bash
@@ -208,24 +200,6 @@ deliver_response = vault.deliver(
         tool_call=ToolCall(name="send_email", args={...})
     )
 )
-```
-
-### HTTP Server
-
-```bash
-# Start HTTP server (localhost:8765)
-mcp-pvp-http
-
-# Or with custom config
-PVP_HTTP_PORT=9000 mcp-pvp-http
-```
-
-Then use the API:
-
-```bash
-curl -X POST http://localhost:8765/pvp/v1/tokenize \
-  -H "Content-Type: application/json" \
-  -d '{"content": "Email alice@example.com", "token_format": "JSON"}'
 ```
 
 ### MCP Tool Server

@@ -1,4 +1,3 @@
-```markdown
 # Privacy Vault Protocol (PVP) v1 — Specification
 
 **Project:** mcp-pvp  
@@ -76,12 +75,12 @@ Example:
 
 [[PII:EMAIL:tkn_a1b2c3]]
 
-````
+```
 
 ### 3.2 JSON Token Object (preferred for tool args)
 ```json
 { "$pii_ref": "tkn_a1b2c3", "type": "EMAIL", "cap": "cap_..." }
-````
+```
 
 Rules:
 
