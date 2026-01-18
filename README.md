@@ -305,6 +305,7 @@ See [examples/safe_email_sender/](examples/safe_email_sender/) for a complete ex
 ## Documentation
 
 Full API and architecture docs are generated with MkDocs (Material theme + mkdocstrings) and published to GitHub Pages at https://spidux-ai.github.io/mcp-pvp/.
+Visit the live docs at the same address for API reference, architecture guides, and operational playbooks.
 
 ```bash
 # Preview locally (requires docs deps via .[docs] or .[dev])
