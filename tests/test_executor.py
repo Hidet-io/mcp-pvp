@@ -1,5 +1,6 @@
 """Tests for ToolExecutor integration."""
 
+import json
 import pytest
 
 from mcp_pvp import (
@@ -71,10 +72,11 @@ def test_custom_executor_integration():
     assert "to" in execution["args"]
     # Raw PII was injected
     assert execution["args"]["to"] == "alice@example.com"
+    tool_result = json.loads(deliver_resp.tool_result)
 
     # Verify response
     assert deliver_resp.delivered is True
-    assert deliver_resp.tool_result["success"] is True
+    assert tool_result["success"] is True
 
 
 def test_dummy_executor_stub_response():

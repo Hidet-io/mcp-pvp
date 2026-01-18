@@ -1,5 +1,6 @@
 """Main Vault service implementing tokenize/resolve/deliver operations."""
 
+import json
 import secrets
 
 import structlog
@@ -435,6 +436,29 @@ class Vault:
             )
             raise
 
+        # SECURITY: Tokenize tool result to prevent PII leakage
+        # We need to detect PII in the result and replace with tokens
+        result_tokens: list[JSONToken] = []
+        if tool_result is not None and isinstance(tool_result, (dict, list, str)):
+            # Serialize result to string for PII detection
+            result_str = json.dumps(tool_result) if not isinstance(tool_result, str) else tool_result
+            
+            # Tokenize to detect PII using TEXT format for simple replacement
+            result_tokenization = self.tokenize(
+                TokenizeRequest(
+                    content=result_str,
+                    vault_session=request.vault_session,
+                    token_format=TokenFormat.TEXT,  # Use TEXT for [[PII:TYPE:REF]] format
+                )
+            )
+            
+            result_tokens = result_tokenization.tokens
+            # Use the redacted string representation with PII tokens
+            tokenized_result = result_tokenization.redacted
+        else:
+            # Non-serializable or None result - return as is
+            tokenized_result = tool_result
+
         # Audit
         event = create_deliver_event(
             vault_session=request.vault_session,
@@ -449,10 +473,12 @@ class Vault:
             vault_session=request.vault_session,
             tool_name=request.tool_call.name,
             disclosed_count=len(replacements),
+            result_tokens_found=len(result_tokens),
         )
 
         return DeliverResponse(
             delivered=True,
-            tool_result=tool_result,
+            tool_result=tokenized_result,
+            result_tokens=result_tokens,
             audit_id=event.audit_id,
         )

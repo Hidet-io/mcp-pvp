@@ -209,6 +209,49 @@ class TestDeliverModeBoundary:
         assert "alice@example.com" not in result_str, "PII leaked in deliver response!"
         assert deliver_resp.delivered is True
 
+    def test_tool_result_pii_is_tokenized(self):
+        """Tool results containing PII should be automatically tokenized."""
+        from mcp_pvp.executor import ToolExecutor
+
+        # Custom executor that returns PII in the result
+        class PIIReturningExecutor(ToolExecutor):
+            def execute(self, tool_name: str, injected_args: dict) -> dict:
+                # Simulate a tool that returns user data with PII
+                return {
+                    "status": "success",
+                    "user_email": "sensitive@company.com",
+                    "user_phone": "+1-555-123-4567",
+                    "message": "User data retrieved successfully",
+                }
+
+        policy = Policy()
+        vault = Vault(policy=policy, executor=PIIReturningExecutor())
+
+        # Tokenize some content to create a session
+        tok_req = TokenizeRequest(content="Email: test@test.com")
+        tok_resp = vault.tokenize(tok_req)
+
+        # Deliver a tool call
+        deliver_req = DeliverRequest(
+            vault_session=tok_resp.vault_session,
+            tool_call={
+                "name": "get_user_data",
+                "args": {"user_id": 123},
+            },
+        )
+        deliver_resp = vault.deliver(deliver_req)
+
+        # Tool result should be tokenized - no raw PII
+        result_str = str(deliver_resp.tool_result)
+        assert "sensitive@company.com" not in result_str, "Email PII leaked in tool result!"
+        assert "+1-555-123-4567" not in result_str, "Phone PII leaked in tool result!"
+
+        # Should have tokens for the PII found in result
+        assert len(deliver_resp.result_tokens) > 0, "No tokens created for tool result PII!"
+
+        # Verify tokens contain references to detected PII
+        assert deliver_resp.delivered is True
+
 
 class TestDefaultDeny:
     """Test default-deny policy enforcement for sensitive sinks."""

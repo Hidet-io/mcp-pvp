@@ -226,7 +226,10 @@ class DeliverResponse(BaseModel):
     """Response from deliver operation."""
 
     delivered: bool
-    tool_result: Any = None  # Result from tool execution (stub)
+    tool_result: Any = None  # Tokenized result from tool execution
+    result_tokens: list[JSONToken | TextToken] = Field(
+        default_factory=list
+    )  # Tokens found in result
     audit_id: str
 
 

@@ -1,6 +1,6 @@
 [project]
 name = "mcp-pvp"
-version = "0.4.0"
+version = "0.5.0"
 description = "Privacy Vault Protocol for MCP: tokenize sensitive data before the LLM sees it"
 authors = [{name = "Spidux.ai Team", email = "team@hidet.io"}]
 license = {text = "Apache-2.0"}
