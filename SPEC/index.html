@@ -78,7 +78,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#4-pii-type-registry-v1" class="md-skip">
+        <a href="#privacy-vault-protocol-pvp-v1-specification" class="md-skip">
           Skip to content
         </a>
       
@@ -432,6 +432,8 @@
       <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
       
       
+        
+      
       
         <label class="md-nav__link md-nav__link--active" for="__toc">
           
@@ -474,12 +476,136 @@
   
   
   
+    
+  
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
       Table of contents
     </label>
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-motivation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Motivation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-definitions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Definitions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Definitions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-vault" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 Vault
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-vault-session-vault_session" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2 Vault Session (vault_session)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23-token-reference-pii_ref" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.3 Token Reference (pii_ref)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#24-sink" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.4 Sink
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#25-capability-cap" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.5 Capability (cap)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-token-formats" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Token Formats
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Token Formats">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-text-token-llm-safe" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 Text Token (LLM-safe)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-json-token-object-preferred-for-tool-args" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 JSON Token Object (preferred for tool args)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
       
         <li class="md-nav__item">
   <a href="#4-pii-type-registry-v1" class="md-nav__link">
@@ -919,12 +1045,136 @@
   
   
   
+    
+  
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
       Table of contents
     </label>
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-motivation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Motivation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-definitions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Definitions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Definitions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-vault" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 Vault
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-vault-session-vault_session" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2 Vault Session (vault_session)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23-token-reference-pii_ref" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.3 Token Reference (pii_ref)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#24-sink" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.4 Sink
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#25-capability-cap" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.5 Capability (cap)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-token-formats" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Token Formats
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Token Formats">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-text-token-llm-safe" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 Text Token (LLM-safe)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-json-token-object-preferred-for-tool-args" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 JSON Token Object (preferred for tool args)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
       
         <li class="md-nav__item">
   <a href="#4-pii-type-registry-v1" class="md-nav__link">
@@ -1296,82 +1546,62 @@
   
 
 
-  <h1>Protocol Specification</h1>
-
-<div class="highlight"><pre><span></span><code><span class="gh"># Privacy Vault Protocol (PVP) v1 — Specification</span>
-
-<span class="gs">**Project:**</span> mcp-pvp  
-<span class="gs">**Status:**</span> Draft (v1)  
-<span class="gs">**Scope:**</span> Local-first tokenization of sensitive data, policy-gated disclosure, and “deliver mode” injection for MCP tool calls.
-
-<span class="k">&gt; </span><span class="ge">**Tokenize → Policy → Deliver → Audit**  </span>
-<span class="k">&gt; </span><span class="ge">Agents and LLMs operate on **references**, not raw values.</span>
-
----
-
-<span class="gu">## 1. Motivation</span>
-
-MCP-based agents frequently handle sensitive inputs (PII, secrets). Sending raw values into LLM prompts, logs, telemetry, or cloud orchestration increases the risk of leakage.
-
-PVP defines a local-first protocol where:
-<span class="k">-</span><span class="w"> </span>sensitive values are replaced with typed opaque tokens,
-<span class="k">-</span><span class="w"> </span>raw values are stored only in a local vault session,
-<span class="k">-</span><span class="w"> </span>disclosure is allowed only to approved sinks under policy,
-<span class="k">-</span><span class="w"> </span><span class="gs">**deliver mode**</span> injects sensitive values locally at the tool boundary so raw values never return to the agent/LLM.
-
----
-
-<span class="gu">## 2. Definitions</span>
-
-<span class="gu">### 2.1 Vault</span>
-A local service responsible for:
-<span class="k">-</span><span class="w"> </span>detecting sensitive spans (PII/secrets),
-<span class="k">-</span><span class="w"> </span>replacing them with tokens,
-<span class="k">-</span><span class="w"> </span>storing raw values in a short-lived session,
-<span class="k">-</span><span class="w"> </span>enforcing disclosure policies,
-<span class="k">-</span><span class="w"> </span>auditing tokenization/disclosure actions,
-<span class="k">-</span><span class="w"> </span>optionally executing or dispatching tool calls (deliver mode).
-
-<span class="gu">### 2.2 Vault Session (`vault_session`)</span>
-A scope container for tokens. Tokens are valid only within a session.
-
-Properties:
-<span class="k">-</span><span class="w"> </span><span class="gs">**unguessable**</span> identifier (e.g., <span class="sb">`vs_...`</span>)
-<span class="k">-</span><span class="w"> </span><span class="gs">**TTL-based**</span> (expires automatically)
-<span class="k">-</span><span class="w"> </span>optionally bound to workflow run/step context
-
-<span class="gu">### 2.3 Token Reference (`pii_ref`)</span>
-An opaque identifier (e.g., <span class="sb">`tkn_...`</span>) representing a stored sensitive value inside a vault session.
-
-<span class="gu">### 2.4 Sink</span>
-A destination where sensitive values may be disclosed/delivered:
-<span class="k">-</span><span class="w"> </span><span class="sb">`tool`</span>: a named tool invocation (preferred)
-<span class="k">-</span><span class="w"> </span><span class="sb">`engine`</span>: a cloud workflow engine/orchestrator (default deny)
-<span class="k">-</span><span class="w"> </span><span class="sb">`llm`</span>: a model prompt/response pipeline (default deny)
-
-<span class="gu">### 2.5 Capability (`cap`)</span>
-A signed authorization blob that permits disclosure/delivery of a specific token to a specific sink/argument path for a limited time.
-
-Capabilities are the primary defense against:
-<span class="k">-</span><span class="w"> </span>prompt injection (“restore everything”)
-<span class="k">-</span><span class="w"> </span>token spoofing (LLM hallucinating <span class="sb">`tkn_...`</span>)
-<span class="k">-</span><span class="w"> </span>over-broad restoration requests
-
----
-
-<span class="gu">## 3. Token Formats</span>
-
-PVP defines two standard token representations.
-
-<span class="gu">### 3.1 Text Token (LLM-safe)</span>
+<h1 id="privacy-vault-protocol-pvp-v1-specification">Privacy Vault Protocol (PVP) v1 — Specification<a class="headerlink" href="#privacy-vault-protocol-pvp-v1-specification" title="Permanent link">&para;</a></h1>
+<p><strong>Project:</strong> mcp-pvp<br />
+<strong>Status:</strong> Draft (v1)<br />
+<strong>Scope:</strong> Local-first tokenization of sensitive data, policy-gated disclosure, and “deliver mode” injection for MCP tool calls.</p>
+<blockquote>
+<p><strong>Tokenize → Policy → Deliver → Audit</strong><br />
+Agents and LLMs operate on <strong>references</strong>, not raw values.</p>
+</blockquote>
+<hr />
+<h2 id="1-motivation">1. Motivation<a class="headerlink" href="#1-motivation" title="Permanent link">&para;</a></h2>
+<p>MCP-based agents frequently handle sensitive inputs (PII, secrets). Sending raw values into LLM prompts, logs, telemetry, or cloud orchestration increases the risk of leakage.</p>
+<p>PVP defines a local-first protocol where:
+- sensitive values are replaced with typed opaque tokens,
+- raw values are stored only in a local vault session,
+- disclosure is allowed only to approved sinks under policy,
+- <strong>deliver mode</strong> injects sensitive values locally at the tool boundary so raw values never return to the agent/LLM.</p>
+<hr />
+<h2 id="2-definitions">2. Definitions<a class="headerlink" href="#2-definitions" title="Permanent link">&para;</a></h2>
+<h3 id="21-vault">2.1 Vault<a class="headerlink" href="#21-vault" title="Permanent link">&para;</a></h3>
+<p>A local service responsible for:
+- detecting sensitive spans (PII/secrets),
+- replacing them with tokens,
+- storing raw values in a short-lived session,
+- enforcing disclosure policies,
+- auditing tokenization/disclosure actions,
+- optionally executing or dispatching tool calls (deliver mode).</p>
+<h3 id="22-vault-session-vault_session">2.2 Vault Session (<code>vault_session</code>)<a class="headerlink" href="#22-vault-session-vault_session" title="Permanent link">&para;</a></h3>
+<p>A scope container for tokens. Tokens are valid only within a session.</p>
+<p>Properties:
+- <strong>unguessable</strong> identifier (e.g., <code>vs_...</code>)
+- <strong>TTL-based</strong> (expires automatically)
+- optionally bound to workflow run/step context</p>
+<h3 id="23-token-reference-pii_ref">2.3 Token Reference (<code>pii_ref</code>)<a class="headerlink" href="#23-token-reference-pii_ref" title="Permanent link">&para;</a></h3>
+<p>An opaque identifier (e.g., <code>tkn_...</code>) representing a stored sensitive value inside a vault session.</p>
+<h3 id="24-sink">2.4 Sink<a class="headerlink" href="#24-sink" title="Permanent link">&para;</a></h3>
+<p>A destination where sensitive values may be disclosed/delivered:
+- <code>tool</code>: a named tool invocation (preferred)
+- <code>engine</code>: a cloud workflow engine/orchestrator (default deny)
+- <code>llm</code>: a model prompt/response pipeline (default deny)</p>
+<h3 id="25-capability-cap">2.5 Capability (<code>cap</code>)<a class="headerlink" href="#25-capability-cap" title="Permanent link">&para;</a></h3>
+<p>A signed authorization blob that permits disclosure/delivery of a specific token to a specific sink/argument path for a limited time.</p>
+<p>Capabilities are the primary defense against:
+- prompt injection (“restore everything”)
+- token spoofing (LLM hallucinating <code>tkn_...</code>)
+- over-broad restoration requests</p>
+<hr />
+<h2 id="3-token-formats">3. Token Formats<a class="headerlink" href="#3-token-formats" title="Permanent link">&para;</a></h2>
+<p>PVP defines two standard token representations.</p>
+<h3 id="31-text-token-llm-safe">3.1 Text Token (LLM-safe)<a class="headerlink" href="#31-text-token-llm-safe" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>[[PII:&lt;TYPE&gt;:&lt;REF&gt;]]
 </code></pre></div>
-<p>[[PII:<TYPE>:<REF>]]</p>
-<div class="highlight"><pre><span></span><code>Example:
-</code></pre></div>
-<p>[[PII:EMAIL:tkn_a1b2c3]]</p>
-<div class="highlight"><pre><span></span><code>### 3.2 JSON Token Object (preferred for tool args)
-```json
-{ &quot;$pii_ref&quot;: &quot;tkn_a1b2c3&quot;, &quot;type&quot;: &quot;EMAIL&quot;, &quot;cap&quot;: &quot;cap_...&quot; }
+<p>Example:
+<div class="highlight"><pre><span></span><code>[[PII:EMAIL:tkn_a1b2c3]]
+</code></pre></div></p>
+<h3 id="32-json-token-object-preferred-for-tool-args">3.2 JSON Token Object (preferred for tool args)<a class="headerlink" href="#32-json-token-object-preferred-for-tool-args" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"> </span><span class="nt">&quot;$pii_ref&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;tkn_a1b2c3&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;EMAIL&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;cap&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;cap_...&quot;</span><span class="w"> </span><span class="p">}</span>
 </code></pre></div>
 <p>Rules:</p>
 <ul>
