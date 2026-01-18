@@ -1,0 +1,458 @@
+"""Main Vault service implementing tokenize/resolve/deliver operations."""
+
+import secrets
+from typing import Any
+
+import structlog
+
+from mcp_pvp.audit import (
+    AuditLogger,
+    InMemoryAuditLogger,
+    create_deliver_event,
+    create_policy_denied_event,
+    create_resolve_event,
+    create_tokenize_event,
+)
+from mcp_pvp.caps import CapabilityManager
+from mcp_pvp.detectors.base import PIIDetector
+from mcp_pvp.detectors.regex import RegexDetector
+from mcp_pvp.errors import PolicyDeniedError
+from mcp_pvp.executor import DummyExecutor, ToolExecutor
+from mcp_pvp.models import (
+    DeliverRequest,
+    DeliverResponse,
+    JSONToken,
+    PIIType,
+    Policy,
+    ResolveRequest,
+    ResolveResponse,
+    RunContext,
+    Sink,
+    SinkKind,
+    TextToken,
+    TokenFormat,
+    TokenizeRequest,
+    TokenizeResponse,
+    TokenStats,
+)
+from mcp_pvp.policy import PolicyEvaluator
+from mcp_pvp.store import SessionStore
+from mcp_pvp.tokens import extract_json_tokens, redact_content, replace_json_tokens
+
+logger = structlog.get_logger(__name__)
+
+
+class Vault:
+    """Main PVP Vault service."""
+
+    def __init__(
+        self,
+        policy: Policy | None = None,
+        detector: PIIDetector | None = None,
+        secret_key: bytes | None = None,
+        audit_logger: AuditLogger | None = None,
+        executor: ToolExecutor | None = None,
+    ):
+        """
+        Initialize Vault.
+
+        Args:
+            policy: Policy specification (default: deny all)
+            detector: PII detector (default: try Presidio, fallback to regex)
+            secret_key: Secret key for capabilities (default: generate random)
+            audit_logger: Audit logger (default: in-memory)
+            executor: ToolExecutor for deliver mode (default: DummyExecutor)
+                     Provide your own executor to enable real tool execution
+        """
+        self.policy = policy or Policy()
+        self.policy_evaluator = PolicyEvaluator(self.policy)
+        self.store = SessionStore()
+        self.audit_logger = audit_logger or InMemoryAuditLogger()
+        self.executor = executor or DummyExecutor()
+
+        # Initialize detector
+        if detector is None:
+            try:
+                from mcp_pvp.detectors.presidio import PresidioDetector
+
+                self.detector = PresidioDetector()
+                logger.info("vault_initialized", detector="presidio")
+            except ImportError:
+                self.detector = RegexDetector()
+                logger.info("vault_initialized", detector="regex_fallback")
+        else:
+            self.detector = detector
+
+        # Initialize capability manager
+        if secret_key is None:
+            secret_key = secrets.token_bytes(32)
+        self.cap_manager = CapabilityManager(secret_key)
+
+    def issue_capability(
+        self,
+        vault_session: str,
+        pii_ref: str,
+        pii_type: PIIType,
+        sink: Sink,
+        run: RunContext | None = None,
+        ttl_seconds: int = 300,
+    ) -> str:
+        """
+        Issue a sink-specific capability after policy validation.
+
+        SECURITY: This method should only be called AFTER policy.check_disclosure()
+        succeeds. It creates a capability bound to the specific sink, tool name,
+        and arg_path, preventing capability reuse attacks.
+
+        Args:
+            vault_session: Vault session ID
+            pii_ref: PII token reference
+            pii_type: PII type
+            sink: Sink specification (kind, name, arg_path)
+            run: Run context (optional)
+            ttl_seconds: Capability TTL in seconds (default: 300 = 5 min)
+
+        Returns:
+            Capability string bound to the specific sink
+
+        Example:
+            >>> # After policy check passes:
+            >>> cap = vault.issue_capability(
+            ...     vault_session=\"vs_123\",
+            ...     pii_ref=\"tkn_abc\",
+            ...     pii_type=PIIType.EMAIL,
+            ...     sink=Sink(kind=SinkKind.TOOL, name=\"send_email\", arg_path=\"to\"),
+            ... )
+        """
+        return self.cap_manager.issue(
+            vault_session=vault_session,
+            pii_ref=pii_ref,
+            pii_type=pii_type,
+            sink=sink,
+            run=run,
+            ttl_seconds=ttl_seconds,
+        )
+
+    def tokenize(self, request: TokenizeRequest) -> TokenizeResponse:
+        """
+        Tokenize content containing PII.
+
+        Args:
+            request: TokenizeRequest
+
+        Returns:
+            TokenizeResponse with vault_session, redacted content, and tokens
+        """
+        logger.info(
+            "vault_tokenize_start",
+            content_length=len(request.content),
+            token_format=request.token_format.value,
+            workflow_run_id=request.run.workflow_run_id if request.run else None,
+            step_id=request.run.step_id if request.run else None,
+        )
+
+        # Create vault session
+        session = self.store.create_session(ttl_seconds=request.session_ttl_seconds)
+
+        # Detect PII
+        detections = self.detector.detect(request.content, types=request.types)
+
+        # Tokenize detections
+        tokens: list[TextToken | JSONToken] = []
+        token_replacements: list[tuple[int, int, str]] = []
+        type_counts: dict[PIIType, int] = {}
+
+        for detection in detections:
+            # Store PII in vault
+            stored = self.store.store_pii(
+                session_id=session.session_id,
+                pii_type=detection.pii_type.value,
+                value=detection.text,
+            )
+
+            # Track type counts
+            type_counts[detection.pii_type] = type_counts.get(detection.pii_type, 0) + 1
+
+            # Create token
+            if request.token_format == TokenFormat.TEXT:
+                token = TextToken(ref=stored.ref, pii_type=detection.pii_type)
+                token_str = token.to_text()
+                tokens.append(token)
+            else:  # JSON
+                # SECURITY: Capabilities are NO LONGER issued during tokenization
+                # They must be requested explicitly via vault.issue_capability()
+                # after policy check in resolve/deliver operations.
+                # This prevents capability reuse attacks.
+                token = JSONToken(
+                    pii_ref=stored.ref,
+                    type=detection.pii_type,
+                    cap=None,  # No capability at tokenization time
+                )
+                token_str = f"{{{token.model_dump_json()}}}"  # Simplified JSON representation
+                tokens.append(token)
+
+            # Record replacement
+            token_replacements.append((detection.start, detection.end, token_str))
+
+        # Redact content
+        redacted = redact_content(request.content, token_replacements)
+
+        # Create response
+        stats = TokenStats(
+            detections=len(detections),
+            tokens_created=len(tokens),
+            types=type_counts,
+        )
+
+        # Audit
+        event = create_tokenize_event(
+            vault_session=session.session_id,
+            run=request.run,
+            detections=stats.detections,
+            tokens_created=stats.tokens_created,
+            types=stats.types,
+        )
+        self.audit_logger.log_event(event)
+
+        logger.info(
+            "vault_tokenize_complete",
+            vault_session=session.session_id,
+            detections=stats.detections,
+            tokens_created=stats.tokens_created,
+        )
+
+        return TokenizeResponse(
+            vault_session=session.session_id,
+            redacted=redacted,
+            tokens=tokens,
+            stats=stats,
+            expires_at=session.expires_at,
+        )
+
+    def resolve(self, request: ResolveRequest) -> ResolveResponse:
+        """
+        Resolve tokens to raw values (with policy enforcement).
+
+        Args:
+            request: ResolveRequest
+
+        Returns:
+            ResolveResponse with raw values
+
+        Raises:
+            PolicyDeniedError: If policy denies disclosure
+            CapabilityInvalidError: If capability is invalid
+        """
+        logger.info(
+            "vault_resolve_start",
+            vault_session=request.vault_session,
+            sink_kind=request.sink.kind.value,
+            sink_name=request.sink.name,
+            token_count=len(request.tokens),
+        )
+
+        # Get session
+        session = self.store.get_session(request.vault_session)
+
+        values: dict[str, str] = {}
+        disclosed_types: dict[PIIType, int] = {}
+
+        for token_req in request.tokens:
+            # Get stored PII
+            stored = self.store.get_pii(request.vault_session, token_req.ref)
+
+            # Check policy FIRST (before issuing capability)
+            try:
+                self.policy_evaluator.check_disclosure(
+                    session=session,
+                    pii_type=stored.pii_type,
+                    sink=request.sink,
+                    run=request.run,
+                    value_size=len(stored.value),
+                )
+            except PolicyDeniedError as e:
+                # Log policy denial
+                self.audit_logger.log_event(
+                    create_policy_denied_event(
+                        vault_session=request.vault_session,
+                        pii_type=stored.pii_type,
+                        sink_kind=request.sink.kind.value,
+                        sink_name=request.sink.name,
+                        run=request.run,
+                        reason=str(e),
+                    )
+                )
+                raise
+
+            # Issue capability if not provided (security: on-demand issuance)
+            cap_string = token_req.cap
+            if cap_string is None:
+                cap_string = self.issue_capability(
+                    vault_session=request.vault_session,
+                    pii_ref=token_req.ref,
+                    pii_type=stored.pii_type,
+                    sink=request.sink,
+                    run=request.run,
+                    ttl_seconds=300,  # 5 minutes
+                )
+
+            # Verify capability (even if we just issued it - validates structure)
+            self.cap_manager.verify(
+                cap_string=cap_string,
+                vault_session=request.vault_session,
+                pii_ref=token_req.ref,
+                sink=request.sink,
+                run=request.run,
+            )
+
+            # Record disclosure
+            self.policy_evaluator.record_disclosure(session, len(stored.value))
+
+            # Add to result
+            values[token_req.ref] = stored.value
+            disclosed_types[stored.pii_type] = disclosed_types.get(stored.pii_type, 0) + 1
+
+        # Audit
+        event = create_resolve_event(
+            vault_session=request.vault_session,
+            run=request.run,
+            sink_kind=request.sink.kind.value,
+            sink_name=request.sink.name,
+            disclosed=disclosed_types,
+        )
+        self.audit_logger.log_event(event)
+
+        logger.info(
+            "vault_resolve_complete",
+            vault_session=request.vault_session,
+            disclosed_count=len(values),
+        )
+
+        return ResolveResponse(
+            values=values,
+            audit_id=event.audit_id,
+            disclosed=disclosed_types,
+        )
+
+    def deliver(self, request: DeliverRequest) -> DeliverResponse:
+        """
+        Deliver: inject PII into tool call and execute (stub).
+
+        Args:
+            request: DeliverRequest
+
+        Returns:
+            DeliverResponse
+
+        Raises:
+            PolicyDeniedError: If policy denies disclosure
+            CapabilityInvalidError: If capability is invalid
+        """
+        logger.info(
+            "vault_deliver_start",
+            vault_session=request.vault_session,
+            tool_name=request.tool_call.name,
+        )
+
+        # Get session
+        session = self.store.get_session(request.vault_session)
+
+        # Extract JSON tokens from args with their paths
+        json_token_paths = extract_json_tokens(request.tool_call.args)
+
+        # Build replacements and verify
+        replacements: dict[str, str] = {}
+        disclosed_types: dict[PIIType, int] = {}
+
+        for token, path in json_token_paths:
+            # Extract just the top-level key from path (e.g., "to" from "to.nested")
+            arg_path = path.split(".")[0] if path else None
+            
+            sink = Sink(
+                kind=SinkKind.TOOL,
+                name=request.tool_call.name,
+                arg_path=arg_path,
+            )
+
+            # Get stored PII
+            stored = self.store.get_pii(request.vault_session, token.pii_ref)
+
+            # Verify capability if provided
+            if token.cap:
+                self.cap_manager.verify(
+                    cap_string=token.cap,
+                    vault_session=request.vault_session,
+                    pii_ref=token.pii_ref,
+                    sink=sink,
+                    run=request.run,
+                )
+
+            # Check policy
+            try:
+                self.policy_evaluator.check_disclosure(
+                    session=session,
+                    pii_type=stored.pii_type,
+                    sink=sink,
+                    run=request.run,
+                    value_size=len(stored.value),
+                )
+            except PolicyDeniedError as e:
+                # Audit denial
+                event = create_policy_denied_event(
+                    vault_session=request.vault_session,
+                    run=request.run,
+                    pii_type=stored.pii_type,
+                    sink_kind=sink.kind.value,
+                    sink_name=sink.name,
+                    reason=e.message,
+                )
+                self.audit_logger.log_event(event)
+                raise
+
+            # Record disclosure
+            self.policy_evaluator.record_disclosure(session, len(stored.value))
+
+            # Add to replacements
+            replacements[token.pii_ref] = stored.value
+            disclosed_types[stored.pii_type] = disclosed_types.get(stored.pii_type, 0) + 1
+
+        # Inject values into args
+        injected_args = replace_json_tokens(request.tool_call.args, replacements)
+
+        # SECURITY: Raw PII exists in injected_args - handle with care
+        # Execute tool call via executor
+        try:
+            tool_result = self.executor.execute(
+                tool_name=request.tool_call.name,
+                injected_args=injected_args,
+            )
+        except Exception as e:
+            # Log execution failure but don't expose injected_args
+            logger.error(
+                "tool_execution_failed",
+                tool_name=request.tool_call.name,
+                error=str(e),
+            )
+            raise
+
+        # Audit
+        event = create_deliver_event(
+            vault_session=request.vault_session,
+            run=request.run,
+            tool_name=request.tool_call.name,
+            disclosed=disclosed_types,
+        )
+        self.audit_logger.log_event(event)
+
+        logger.info(
+            "vault_deliver_complete",
+            vault_session=request.vault_session,
+            tool_name=request.tool_call.name,
+            disclosed_count=len(replacements),
+        )
+
+        return DeliverResponse(
+            delivered=True,
+            tool_result=tool_result,
+            audit_id=event.audit_id,
+        )

@@ -29,6 +29,261 @@ Most systems either:
 
 ---
 
+## Installation
+
+### Using uv (recommended)
+
+```bash
+# Install uv
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Clone the repository
+git clone https://github.com/Spidux-ai/mcp-pvp.git
+cd mcp-pvp
+
+# Create virtual environment and install
+uv venv
+source .venv/bin/activate  # or .venv\Scripts\activate on Windows
+uv pip install -e ".[all]"
+
+# Or use the Makefile
+make install-all
+```
+
+### Using pip
+
+```bash
+# Basic installation (regex detector)
+pip install mcp-pvp
+
+# With Presidio detector (recommended)
+pip install mcp-pvp[presidio]
+
+# With HTTP binding
+pip install mcp-pvp[http]
+
+# All extras
+pip install mcp-pvp[all]
+```
+
+### Quick Start with Makefile
+
+Once installed with Poetry, use the Makefile for common tasks:
+
+```bash
+make help          # Show all available commands
+make test          # Run tests
+make lint          # Run linter
+make format        # Format code
+make check         # Run all checks (lint, format, typecheck, test)
+make run-http      # Start HTTP API server
+```
+
+---
+
+## Compatibility & Requirements
+
+### Python Versions
+
+- **Required**: Python 3.11+
+- **Tested**: Python 3.11, 3.12
+- **Not Supported**: Python 3.10 and below (uses modern type hints)
+
+### MCP SDK
+
+- **Required**: MCP SDK 1.25.0+
+- **Tested with**: 1.25.x, 1.26.x
+- **Note**: MCP protocol is evolving; ensure SDK compatibility
+
+### Optional Dependencies (Extras)
+
+Install extras based on your use case:
+
+```bash
+# Presidio detector (recommended for production)
+pip install mcp-pvp[presidio]
+```
+- **What**: Microsoft Presidio for high-quality PII detection
+- **When**: Production deployments, multi-language PII, advanced patterns
+- **Fallback**: Regex detector (built-in, no extra deps)
+
+```bash
+# HTTP binding
+pip install mcp-pvp[http]
+```
+- **What**: FastAPI + Uvicorn HTTP server
+- **When**: Exposing vault as REST API, testing with curl/Postman
+- **Includes**: FastAPI, Uvicorn with standard extras
+
+```bash
+# MCP executor (for real tool execution)
+pip install mcp-pvp[mcp]
+```
+- **What**: MCP SDK for executing real tools in deliver mode
+- **When**: Using `MCP_ToolExecutor` to call actual MCP tools
+- **Note**: Already included in base dependencies
+
+```bash
+# All extras (everything)
+pip install mcp-pvp[all]
+```
+- **What**: Presidio + HTTP + all optional features
+- **When**: Full-featured development or deployment
+
+```bash
+# Development tools
+pip install mcp-pvp[dev]
+```
+- **What**: pytest, ruff, mypy, pre-commit, build tools
+- **When**: Contributing to mcp-pvp or running tests locally
+
+### Platform Support
+
+- **Linux**: Fully supported ✅
+- **macOS**: Fully supported ✅
+- **Windows**: Supported ⚠️ (Presidio may require WSL for some languages)
+
+### Breaking Changes (0.x → 0.2)
+
+If upgrading from 0.1.0, note these **BREAKING** changes:
+
+1. **Capabilities no longer included at tokenization**
+   - Old: `tokenize()` returned tokens with `.cap` field
+   - New: `.cap` is `None` by default; issued on-demand in `resolve()`
+   - **Migration**: If you relied on capabilities at tokenization, update to request capabilities explicitly or use `resolve()` 
+
+2. **Wildcard LOCAL capabilities removed**
+   - Old: Capabilities with `sink.kind=LOCAL, sink.name="local"` worked for any tool
+   - New: Capabilities strictly bound to specific sink (tool + arg_path)
+   - **Migration**: Capabilities are now sink-specific; reuse across tools blocked
+
+3. **ToolExecutor required for deliver mode**
+   - Old: `deliver()` returned stub responses
+   - New: Requires `ToolExecutor` implementation (defaults to `DummyExecutor`)
+   - **Migration**: Provide custom executor or accept stub responses
+
+See [CHANGELOG.md](CHANGELOG.md) for detailed migration guide.
+
+---
+
+## Quick Start
+
+### Library Usage
+
+```python
+from mcp_pvp import Vault, TokenizeRequest, DeliverRequest, ToolCall, Policy
+
+# Initialize vault
+vault = Vault(policy=Policy())
+
+# Tokenize sensitive content
+request = TokenizeRequest(content="Email me at alice@example.com")
+response = vault.tokenize(request)
+
+print(response.redacted)  # "Email me at [[PII:EMAIL:tkn_xyz]]"
+
+# Use deliver mode (recommended)
+deliver_response = vault.deliver(
+    DeliverRequest(
+        vault_session=response.vault_session,
+        tool_call=ToolCall(name="send_email", args={...})
+    )
+)
+```
+
+### HTTP Server
+
+```bash
+# Start HTTP server (localhost:8765)
+mcp-pvp-http
+
+# Or with custom config
+PVP_HTTP_PORT=9000 mcp-pvp-http
+```
+
+Then use the API:
+
+```bash
+curl -X POST http://localhost:8765/pvp/v1/tokenize \
+  -H "Content-Type: application/json" \
+  -d '{"content": "Email alice@example.com", "token_format": "JSON"}'
+```
+
+### MCP Tool Server
+
+The MCP binding exposes `pvp.tokenize`, `pvp.resolve`, and `pvp.deliver` as real MCP tools using the official MCP Python SDK.
+
+#### Running as MCP Server
+
+```bash
+# Start the MCP server with stdio transport
+mcp-pvp-mcp
+```
+
+#### Integrating with Claude Desktop
+
+Add to your `claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "pvp": {
+      "command": "mcp-pvp-mcp",
+      "env": {}
+    }
+  }
+}
+```
+
+#### Using with MCP Inspector
+
+Test the server interactively:
+
+```bash
+# Install MCP Inspector
+npx @modelcontextprotocol/inspector
+
+# Connect to mcp-pvp server
+# The inspector will prompt for the command: mcp-pvp-mcp
+```
+
+#### Available Tools
+
+- **`pvp.tokenize`**: Tokenize sensitive content and return redacted text with capabilities
+  ```json
+  {
+    "content": "Email: user@example.com",
+    "token_format": "TEXT",
+    "session_ttl_seconds": 3600
+  }
+  ```
+
+- **`pvp.resolve`**: Resolve tokens back to original values (with capability verification)
+  ```json
+  {
+    "vault_session": "vs_...",
+    "tokens": [{"ref": "tkn_...", "cap": "eyJ..."}],
+    "sink": {"kind": "tool", "name": "send_email"}
+  }
+  ```
+
+- **`pvp.deliver`**: Inject PII into tool call args without returning raw values
+  ```json
+  {
+    "vault_session": "vs_...",
+    "tool_call": {
+      "name": "send_email",
+      "args": {"to": "EMAIL_TOKEN_001"}
+    }
+  }
+  ```
+
+## Usage
+
+See [examples/safe_email_sender/](examples/safe_email_sender/) for a complete example.
+
+---
+
 ## Core concepts
 
 ### Tokens (references, not values)
@@ -223,17 +478,17 @@ It’s a **Privacy Vault runtime** for MCP workflows: tokenize → policy → de
 | Audit trail for disclosure (without raw values) | ✅ | ⚠️ | ⚠️ | ✅ | ✅ |
 
 **Notes**
-- Presidio excels at detection + anonymization, but it’s not a vault/session + disclosure protocol. :contentReference[oaicite:0]{index=0}  
-- LangChain provides PII middleware that redacts before model calls and restores values for tool execution—conceptually close, but framework-tied and not MCP-native. :contentReference[oaicite:1]{index=1}  
-- Guardrails ecosystems (Guardrails AI, Portkey guardrails) are great for validation/redaction pipelines, but they typically don’t provide a local vault + deliver-mode execution pattern. :contentReference[oaicite:2]{index=2}  
-- HashiCorp’s Vault MCP server integrates MCP with *secrets management* (credentials, mounts, policies). It’s complementary, not a replacement for PII-flow minimization. :contentReference[oaicite:3]{index=3}  
+- Presidio excels at detection + anonymization, but it’s not a vault/session + disclosure protocol. 
+- LangChain provides PII middleware that redacts before model calls and restores values for tool execution—conceptually close, but framework-tied and not MCP-native. 
+- Guardrails ecosystems (Guardrails AI, Portkey guardrails) are great for validation/redaction pipelines, but they typically don’t provide a local vault + deliver-mode execution pattern.
+- HashiCorp’s Vault MCP server integrates MCP with *secrets management* (credentials, mounts, policies). It’s complementary, not a replacement for PII-flow minimization.
 
 ---
 
 ### Differentiation (why mcp-pvp exists)
 
 #### 1) Presidio-grade detection + MCP-native runtime
-We use **Microsoft Presidio** as the default detection/anonymization engine, so we don’t reinvent detection quality. We focus on the missing layer: **MCP-native privacy runtime** that safely carries sensitive values through tool plans without leaking them. :contentReference[oaicite:4]{index=4}
+We use **Microsoft Presidio** as the default detection/anonymization engine, so we don’t reinvent detection quality. We focus on the missing layer: **MCP-native privacy runtime** that safely carries sensitive values through tool plans without leaking them. 
 
 #### 2) Tokens are first-class (agents operate on references)
 mcp-pvp replaces sensitive spans with **typed opaque tokens** (text + JSON forms). Tokens are scoped to a **vault session** with TTL, reducing replay and accidental reuse.
@@ -247,7 +502,7 @@ Most approaches do: redact → restore → call tool (raw PII passes through the
 mcp-pvp can do: **tokenize → plan with tokens → deliver locally**, injecting PII only at the tool boundary—so raw PII never returns to the agent/LLM.
 
 #### 5) Policy enforcement lives where it must: locally
-mcp-pvp enforces allow-lists and limits in the local vault (default deny), aligning with MCP ecosystem security best practices and reducing trust in cloud components. :contentReference[oaicite:5]{index=5}
+mcp-pvp enforces allow-lists and limits in the local vault (default deny), aligning with MCP ecosystem security best practices and reducing trust in cloud components.
 
 
 ## Roadmap
