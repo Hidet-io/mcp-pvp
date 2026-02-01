@@ -95,6 +95,7 @@ class StoredPII(BaseModel):
     ref: str
     pii_type: PIIType
     value: str
+    vault_session: str  # Session that owns this token
     created_at: datetime = Field(default_factory=utc_now)
 
 
@@ -163,6 +164,8 @@ class TokenizeRequest(BaseModel):
     include_caps: bool = True
     types: list[PIIType] | None = None  # If None, detect all types
     session_ttl_seconds: int = Field(default=3600, ge=60, le=86400)
+    vault_session: str | None = None  # If provided, reuse existing session instead of creating new
+    parent_audit_id: str | None = None  # If provided, link audit event to parent
 
 
 class TokenStats(BaseModel):
@@ -231,6 +234,7 @@ class DeliverResponse(BaseModel):
         default_factory=list
     )  # Tokens found in result
     audit_id: str
+    error: str | None = None  # Scrubbed error message if delivery failed
 
 
 # ============================================================================

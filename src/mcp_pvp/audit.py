@@ -37,6 +37,7 @@ class AuditEvent(BaseModel):
     event_type: AuditEventType
     vault_session: str | None = None
     run: RunContext | None = None
+    parent_audit_id: str | None = None  # Link to parent event (e.g., DELIVER -> TOKENIZE)
     details: dict[str, Any] = Field(default_factory=dict)
 
     # NEVER include raw PII values
@@ -100,6 +101,7 @@ class InMemoryAuditLogger(AuditLogger):
             audit_id=event.audit_id,
             event_type=event.event_type.value,
             vault_session=event.vault_session,
+            parent_audit_id=event.parent_audit_id,
             workflow_run_id=event.run.workflow_run_id if event.run else None,
             step_id=event.run.step_id if event.run else None,
             **event.details,
@@ -142,12 +144,14 @@ def create_tokenize_event(
     detections: int,
     tokens_created: int,
     types: dict[PIIType, int],
+    parent_audit_id: str | None = None,
 ) -> AuditEvent:
     """Create a TOKENIZE audit event."""
     return AuditEvent(
         event_type=AuditEventType.TOKENIZE,
         vault_session=vault_session,
         run=run,
+        parent_audit_id=parent_audit_id,
         details={
             "detections": detections,
             "tokens_created": tokens_created,

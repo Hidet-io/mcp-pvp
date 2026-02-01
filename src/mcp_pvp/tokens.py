@@ -1,6 +1,7 @@
 """Token parsing, extraction, and substitution utilities."""
 
 import re
+from enum import Enum
 from typing import Any
 
 from mcp_pvp.errors import TokenInvalidError
@@ -8,6 +9,160 @@ from mcp_pvp.models import JSONToken, PIIType, TextToken
 
 # Text token pattern: [[PII:TYPE:REF]]
 TEXT_TOKEN_PATTERN = re.compile(r"\[\[PII:([A-Z_]+):([a-zA-Z0-9_-]+)\]\]")
+
+
+class ScanState(Enum):
+    """States for token scanner state machine."""
+
+    TEXT = "TEXT"  # Normal text
+    BRACKET1 = "BRACKET1"  # After first [
+    BRACKET2 = "BRACKET2"  # After second [
+    PII = "PII"  # Reading 'PII'
+    COLON1 = "COLON1"  # After first :
+    TYPE = "TYPE"  # Reading TYPE
+    COLON2 = "COLON2"  # After second :
+    REF = "REF"  # Reading REF
+    CLOSE1 = "CLOSE1"  # After first ]
+
+
+class TokenScanner:
+    """Linear-time scanner for TEXT tokens using state machine."""
+
+    def __init__(self, content: str):
+        """Initialize scanner with content."""
+        self.content = content
+        self.pos = 0
+        self.length = len(content)
+
+    def scan_tokens(self) -> list[TextToken]:
+        """
+        Scan content for TEXT tokens using state machine.
+
+        Returns:
+            List of TextToken instances found in content
+
+        This uses a single-pass character-by-character scan with O(n) time complexity,
+        avoiding backtracking and catastrophic regex issues with malformed tokens.
+        """
+        tokens: list[TextToken] = []
+        state = ScanState.TEXT
+        token_start = 0
+        type_start = 0
+        type_end = 0
+        ref_start = 0
+
+        i = 0
+        while i < self.length:
+            ch = self.content[i]
+
+            if state == ScanState.TEXT:
+                if ch == "[":
+                    state = ScanState.BRACKET1
+                    token_start = i
+                i += 1
+
+            elif state == ScanState.BRACKET1:
+                if ch == "[":
+                    state = ScanState.BRACKET2
+                    i += 1
+                else:
+                    # Not a second '[', go back to TEXT and reprocess this character
+                    state = ScanState.TEXT
+                    # Check if this character is '[' to start a new potential token
+                    if ch == "[":
+                        state = ScanState.BRACKET1
+                        token_start = i
+                    i += 1
+
+            elif state == ScanState.BRACKET2:
+                # Expect 'PII:'
+                if i + 3 < self.length and self.content[i : i + 4] == "PII:":
+                    state = ScanState.COLON1
+                    i += 4  # Skip 'PII:'
+                else:
+                    # Not PII:, reset to TEXT and reprocess character
+                    state = ScanState.TEXT
+                    # Check if this character starts a new potential token
+                    if ch == "[":
+                        state = ScanState.BRACKET1
+                        token_start = i
+                    i += 1
+
+            elif state == ScanState.COLON1:
+                # Start reading TYPE
+                type_start = i
+                state = ScanState.TYPE
+                # Don't increment, let TYPE handler process first char
+
+            elif state == ScanState.TYPE:
+                # Read TYPE until ':'
+                if ch == ":":
+                    type_end = i
+                    state = ScanState.COLON2
+                    i += 1
+                elif ch.isupper() or ch == "_" or ch.isdigit():
+                    # Valid TYPE character (uppercase, underscore, or digit)
+                    i += 1
+                else:
+                    # Invalid TYPE character, abort token and reprocess character
+                    state = ScanState.TEXT
+                    # Check if this character starts a new potential token
+                    if ch == "[":
+                        state = ScanState.BRACKET1
+                        token_start = i
+                    i += 1
+
+            elif state == ScanState.COLON2:
+                # Start reading REF
+                ref_start = i
+                state = ScanState.REF
+                # Don't increment, let REF handler process first char
+
+            elif state == ScanState.REF:
+                # Read REF until ']'
+                if ch == "]":
+                    ref_end = i
+                    state = ScanState.CLOSE1
+                    i += 1
+                elif ch.isalnum() or ch in "-_":
+                    # Valid REF character
+                    i += 1
+                else:
+                    # Invalid REF character, abort token and reprocess character
+                    state = ScanState.TEXT
+                    # Check if this character starts a new potential token
+                    if ch == "[":
+                        state = ScanState.BRACKET1
+                        token_start = i
+                    i += 1
+
+            elif state == ScanState.CLOSE1:
+                # Expect second ']'
+                if ch == "]":
+                    # Token complete!
+                    type_str = self.content[type_start:type_end]
+                    ref_str = self.content[ref_start:ref_end]
+
+                    # Validate TYPE
+                    try:
+                        pii_type = PIIType(type_str)
+                        tokens.append(TextToken(ref=ref_str, pii_type=pii_type))
+                    except ValueError:
+                        # Invalid PII type, skip token
+                        pass
+
+                    state = ScanState.TEXT
+                    i += 1
+                else:
+                    # Missing second ']', abort token and reprocess character
+                    state = ScanState.TEXT
+                    # Check if this character starts a new potential token
+                    if ch == "[":
+                        state = ScanState.BRACKET1
+                        token_start = i
+                    i += 1
+
+        return tokens
 
 
 def parse_text_token(token_str: str) -> TextToken:
@@ -44,24 +199,19 @@ def parse_text_token(token_str: str) -> TextToken:
 
 def extract_text_tokens(content: str) -> list[TextToken]:
     """
-    Extract all text tokens from content.
+    Extract all text tokens from content using scanner.
 
     Args:
         content: String potentially containing text tokens
 
     Returns:
         List of TextToken instances
+
+    This uses TokenScanner for O(n) linear-time parsing with proper state machine,
+    avoiding regex backtracking and handling malformed tokens gracefully.
     """
-    tokens = []
-    for match in TEXT_TOKEN_PATTERN.finditer(content):
-        type_str, ref = match.groups()
-        try:
-            pii_type = PIIType(type_str)
-            tokens.append(TextToken(ref=ref, pii_type=pii_type))
-        except ValueError:
-            # Skip invalid types
-            continue
-    return tokens
+    scanner = TokenScanner(content)
+    return scanner.scan_tokens()
 
 
 def replace_text_tokens(content: str, replacements: dict[str, str]) -> str:

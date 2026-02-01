@@ -3,7 +3,12 @@
 import secrets
 from datetime import timedelta
 
-from mcp_pvp.errors import SessionExpiredError, SessionNotFoundError, TokenNotFoundError
+from mcp_pvp.errors import (
+    SessionExpiredError,
+    SessionNotFoundError,
+    TokenNotFoundError,
+    TokenSessionMismatchError,
+)
 from mcp_pvp.models import StoredPII, VaultSession
 from mcp_pvp.utils import utc_now
 
@@ -102,6 +107,7 @@ class SessionStore:
             ref=ref,
             pii_type=pii_type,
             value=value,
+            vault_session=session_id,  # Capture session ownership
         )
 
         session.tokens[ref] = stored
@@ -121,6 +127,7 @@ class SessionStore:
         Raises:
             SessionNotFoundError: If session not found or expired
             TokenNotFoundError: If token not found in session
+            TokenSessionMismatchError: If token belongs to a different session
         """
         session = self.get_session(session_id)
 
@@ -129,6 +136,16 @@ class SessionStore:
             raise TokenNotFoundError(
                 details={
                     "session_id": session_id,
+                    "ref": ref,
+                }
+            )
+
+        # SECURITY: Validate token belongs to requesting session
+        if stored.vault_session != session_id:
+            raise TokenSessionMismatchError(
+                details={
+                    "requesting_session": session_id,
+                    "token_session": stored.vault_session,
                     "ref": ref,
                 }
             )

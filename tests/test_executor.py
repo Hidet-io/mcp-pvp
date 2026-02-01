@@ -111,14 +111,16 @@ def test_executor_failure_propagates():
     tok_resp = vault.tokenize(tok_req)
     token = tok_resp.tokens[0]
 
-    # Deliver should propagate exception
+    # Deliver should return error response with scrubbed message
     deliver_req = DeliverRequest(
         vault_session=tok_resp.vault_session,
         tool_call=ToolCall(name="failing_tool", args={"email": token.model_dump(by_alias=True)}),
     )
 
-    with pytest.raises(ValueError, match="Tool execution failed"):
-        vault.deliver(deliver_req)
+    deliver_resp = vault.deliver(deliver_req)
+    assert deliver_resp.delivered is False
+    assert deliver_resp.error is not None
+    assert "Tool execution failed" in deliver_resp.error
 
 
 def test_executor_receives_pii_injected_args():

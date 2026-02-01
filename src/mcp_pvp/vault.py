@@ -2,6 +2,7 @@
 
 import json
 import secrets
+import traceback
 from typing import Any
 
 import structlog
@@ -47,6 +48,80 @@ from mcp_pvp.tokens import (
 )
 
 logger = structlog.get_logger(__name__)
+
+
+def serialize_for_pii_detection(obj: Any, max_depth: int = 10, _depth: int = 0) -> str:
+    """
+    Recursively serialize an object to a string for PII detection.
+    
+    Handles:
+    - Exceptions: extracts message and traceback
+    - Nested structures: recursively traverses dicts, lists, tuples, sets
+    - Custom types: converts via __dict__ or repr
+    - Primitive types: str, int, float, bool, None
+    
+    Args:
+        obj: Object to serialize
+        max_depth: Maximum recursion depth to prevent infinite loops
+        _depth: Current recursion depth (internal)
+    
+    Returns:
+        String representation suitable for PII detection
+    """
+    if _depth >= max_depth:
+        return '"<max_depth_exceeded>"'
+    
+    # Handle None
+    if obj is None:
+        return "null"
+    
+    # Handle primitive types
+    if isinstance(obj, bool):
+        return "true" if obj else "false"
+    if isinstance(obj, int | float):
+        return str(obj)
+    if isinstance(obj, str):
+        return json.dumps(obj)  # Properly escape strings
+    
+    # Handle exceptions
+    if isinstance(obj, Exception):
+        parts = [
+            f'"exception_type": {json.dumps(type(obj).__name__)}',
+            f'"message": {json.dumps(str(obj))}',
+        ]
+        # Extract traceback if available
+        if hasattr(obj, "__traceback__") and obj.__traceback__ is not None:
+            tb_lines = traceback.format_exception(type(obj), obj, obj.__traceback__)
+            tb_str = "".join(tb_lines)
+            parts.append(f'"traceback": {json.dumps(tb_str)}')
+        return "{" + ", ".join(parts) + "}"
+    
+    # Handle dict
+    if isinstance(obj, dict):
+        items = []
+        for key, value in obj.items():
+            key_str = json.dumps(str(key))
+            value_str = serialize_for_pii_detection(value, max_depth, _depth + 1)
+            items.append(f"{key_str}: {value_str}")
+        return "{" + ", ".join(items) + "}"
+    
+    # Handle list, tuple, set
+    if isinstance(obj, (list, tuple, set)):
+        items = [
+            serialize_for_pii_detection(item, max_depth, _depth + 1)
+            for item in obj
+        ]
+        return "[" + ", ".join(items) + "]"
+    
+    # Handle custom objects with __dict__
+    if hasattr(obj, "__dict__"):
+        obj_dict = {}
+        obj_dict["__type__"] = type(obj).__name__
+        obj_dict.update(obj.__dict__)
+        return serialize_for_pii_detection(obj_dict, max_depth, _depth + 1)
+    
+    # Fallback: use repr
+    return json.dumps(repr(obj))
 
 
 class Vault:
@@ -156,10 +231,20 @@ class Vault:
             token_format=request.token_format.value,
             workflow_run_id=request.run.workflow_run_id if request.run else None,
             step_id=request.run.step_id if request.run else None,
+            vault_session=request.vault_session,
         )
 
-        # Create vault session
-        session = self.store.create_session(ttl_seconds=request.session_ttl_seconds)
+        # Create or reuse vault session
+        if request.vault_session:
+            # Reuse existing session (e.g., for result tokenization)
+            session = self.store.get_session(request.vault_session)
+            logger.info(
+                "vault_tokenize_reusing_session",
+                vault_session=request.vault_session,
+            )
+        else:
+            # Create new session
+            session = self.store.create_session(ttl_seconds=request.session_ttl_seconds)
 
         # Detect PII
         detections = self.detector.detect(request.content, types=request.types)
@@ -219,6 +304,7 @@ class Vault:
             detections=stats.detections,
             tokens_created=stats.tokens_created,
             types=stats.types,
+            parent_audit_id=request.parent_audit_id,
         )
         self.audit_logger.log_event(event)
 
@@ -508,6 +594,9 @@ class Vault:
 
         injected_args = replace_text_tokens_recursive(injected_args)
 
+        # Generate audit_id before execution for use in success or failure
+        audit_id = f"aud_{secrets.token_urlsafe(12)}"
+
         # SECURITY: Raw PII exists in injected_args - handle with care
         # Execute tool call via executor
         try:
@@ -516,29 +605,60 @@ class Vault:
                 injected_args=injected_args,
             )
         except Exception as e:
-            # Log execution failure but don't expose injected_args
+            # SECURITY: Scrub PII from exception message before logging
+            error_msg = str(e)
+            
+            # Tokenize the error message to remove PII
+            tokenize_resp = self.tokenize(TokenizeRequest(
+                content=error_msg,
+                vault_session=request.vault_session,
+                run=request.run,
+                token_format=TokenFormat.TEXT,
+            ))
+            scrubbed_error = tokenize_resp.redacted
+            
+            # Log execution failure with scrubbed error message
             logger.error(
                 "tool_execution_failed",
                 tool_name=request.tool_call.name,
-                error=str(e),
+                error=scrubbed_error,
             )
-            raise
+            
+            # SECURITY: Return scrubbed error instead of raising
+            # This prevents raw PII from appearing in stack traces
+            return DeliverResponse(
+                delivered=False,
+                tool_result=None,
+                result_tokens=[],
+                audit_id=audit_id,
+                error=scrubbed_error,
+            )
 
         # SECURITY: Tokenize tool result to prevent PII leakage
         # We need to detect PII in the result and replace with tokens
         result_tokens: list[JSONToken | TextToken] = []
-        if tool_result is not None and isinstance(tool_result, dict | list | str):
-            # Serialize result to string for PII detection
-            result_str = (
-                json.dumps(tool_result) if not isinstance(tool_result, str) else tool_result
+        if tool_result is not None:
+            # Recursively serialize result to string for PII detection
+            # This handles exceptions, nested objects, and custom types
+            result_str = serialize_for_pii_detection(tool_result)
+
+            # Audit the deliver event BEFORE result tokenization so we can link them
+            deliver_event = create_deliver_event(
+                vault_session=request.vault_session,
+                run=request.run,
+                tool_name=request.tool_call.name,
+                disclosed=disclosed_types,
             )
+            self.audit_logger.log_event(deliver_event)
 
             # Tokenize to detect PII using TEXT format for simple replacement
+            # Pass deliver event's audit_id as parent to create audit trail
             result_tokenization = self.tokenize(
                 TokenizeRequest(
                     content=result_str,
                     vault_session=request.vault_session,
                     token_format=TokenFormat.TEXT,  # Use TEXT for [[PII:TYPE:REF]] format
+                    parent_audit_id=deliver_event.audit_id,  # Link to parent deliver event
                 )
             )
 
@@ -546,17 +666,15 @@ class Vault:
             # Use the redacted string representation with PII tokens
             tokenized_result: Any = result_tokenization.redacted
         else:
-            # Non-serializable or None result - return as is
+            # None result - audit but no tokenization needed
+            deliver_event = create_deliver_event(
+                vault_session=request.vault_session,
+                run=request.run,
+                tool_name=request.tool_call.name,
+                disclosed=disclosed_types,
+            )
+            self.audit_logger.log_event(deliver_event)
             tokenized_result = tool_result
-
-        # Audit
-        event = create_deliver_event(
-            vault_session=request.vault_session,
-            run=request.run,
-            tool_name=request.tool_call.name,
-            disclosed=disclosed_types,
-        )
-        self.audit_logger.log_event(event)
 
         logger.info(
             "vault_deliver_complete",
@@ -570,5 +688,5 @@ class Vault:
             delivered=True,
             tool_result=tokenized_result,
             result_tokens=result_tokens,
-            audit_id=event.audit_id,
+            audit_id=deliver_event.audit_id,
         )

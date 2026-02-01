@@ -41,6 +41,8 @@ theme:
 nav:
   - Home: index.md
   - Getting Started: getting-started.md
+  - Features:
+      - Vault Hardening: VAULT_HARDENING.md
   - Architecture & Security:
       - Capability Security: CAPABILITY_SECURITY.md
       - Observability: OBSERVABILITY.md
