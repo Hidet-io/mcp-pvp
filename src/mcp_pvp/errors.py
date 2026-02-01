@@ -15,6 +15,7 @@ class ErrorCode(str, Enum):
     ERR_SESSION_EXPIRED = "ERR_SESSION_EXPIRED"
     ERR_TOKEN_NOT_FOUND = "ERR_TOKEN_NOT_FOUND"
     ERR_TOKEN_INVALID = "ERR_TOKEN_INVALID"
+    ERR_TOKEN_SESSION_MISMATCH = "ERR_TOKEN_SESSION_MISMATCH"
     ERR_DETECTION_FAILED = "ERR_DETECTION_FAILED"
     ERR_DISCLOSURE_LIMIT_EXCEEDED = "ERR_DISCLOSURE_LIMIT_EXCEEDED"
     ERR_INVALID_REQUEST = "ERR_INVALID_REQUEST"
@@ -116,6 +117,17 @@ class TokenNotFoundError(PVPError):
         details: dict[str, Any] | None = None,
     ):
         super().__init__(message, ErrorCode.ERR_TOKEN_NOT_FOUND, details)
+
+
+class TokenSessionMismatchError(PVPError):
+    """Raised when attempting to redeem a token from a different session."""
+
+    def __init__(
+        self,
+        message: str = "Token does not belong to the requesting session",
+        details: dict[str, Any] | None = None,
+    ):
+        super().__init__(message, ErrorCode.ERR_TOKEN_SESSION_MISMATCH, details)
 
 
 class TokenInvalidError(PVPError):

@@ -13,6 +13,7 @@ Use this site to explore the project architecture, operational guidance, and the
 ## Jump to...
 
 - [Getting Started](getting-started.md) for installation tips, running the HTTP server, and a sample flow.
+- [Vault Hardening Features](VAULT_HARDENING.md) for comprehensive documentation on session integrity, result tokenization, scanner performance, recursive scrubbing, and audit coherence.
 - [Observability](OBSERVABILITY.md), [Capability Security](CAPABILITY_SECURITY.md), and [Threat Model](THREAT_MODEL.md) to understand how the vault protects data.
 - [API Reference](api.md) powered by `mkdocstrings` so you can read accurate docstrings and signatures directly from the source.
 
