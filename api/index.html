@@ -1163,13 +1163,7 @@
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/mcp_pvp/vault.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 46</span>
-<span class="normal"> 47</span>
-<span class="normal"> 48</span>
-<span class="normal"> 49</span>
-<span class="normal"> 50</span>
-<span class="normal"> 51</span>
-<span class="normal"> 52</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 52</span>
 <span class="normal"> 53</span>
 <span class="normal"> 54</span>
 <span class="normal"> 55</span>
@@ -1604,7 +1598,94 @@
 <span class="normal">484</span>
 <span class="normal">485</span>
 <span class="normal">486</span>
-<span class="normal">487</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Vault</span><span class="p">:</span>
+<span class="normal">487</span>
+<span class="normal">488</span>
+<span class="normal">489</span>
+<span class="normal">490</span>
+<span class="normal">491</span>
+<span class="normal">492</span>
+<span class="normal">493</span>
+<span class="normal">494</span>
+<span class="normal">495</span>
+<span class="normal">496</span>
+<span class="normal">497</span>
+<span class="normal">498</span>
+<span class="normal">499</span>
+<span class="normal">500</span>
+<span class="normal">501</span>
+<span class="normal">502</span>
+<span class="normal">503</span>
+<span class="normal">504</span>
+<span class="normal">505</span>
+<span class="normal">506</span>
+<span class="normal">507</span>
+<span class="normal">508</span>
+<span class="normal">509</span>
+<span class="normal">510</span>
+<span class="normal">511</span>
+<span class="normal">512</span>
+<span class="normal">513</span>
+<span class="normal">514</span>
+<span class="normal">515</span>
+<span class="normal">516</span>
+<span class="normal">517</span>
+<span class="normal">518</span>
+<span class="normal">519</span>
+<span class="normal">520</span>
+<span class="normal">521</span>
+<span class="normal">522</span>
+<span class="normal">523</span>
+<span class="normal">524</span>
+<span class="normal">525</span>
+<span class="normal">526</span>
+<span class="normal">527</span>
+<span class="normal">528</span>
+<span class="normal">529</span>
+<span class="normal">530</span>
+<span class="normal">531</span>
+<span class="normal">532</span>
+<span class="normal">533</span>
+<span class="normal">534</span>
+<span class="normal">535</span>
+<span class="normal">536</span>
+<span class="normal">537</span>
+<span class="normal">538</span>
+<span class="normal">539</span>
+<span class="normal">540</span>
+<span class="normal">541</span>
+<span class="normal">542</span>
+<span class="normal">543</span>
+<span class="normal">544</span>
+<span class="normal">545</span>
+<span class="normal">546</span>
+<span class="normal">547</span>
+<span class="normal">548</span>
+<span class="normal">549</span>
+<span class="normal">550</span>
+<span class="normal">551</span>
+<span class="normal">552</span>
+<span class="normal">553</span>
+<span class="normal">554</span>
+<span class="normal">555</span>
+<span class="normal">556</span>
+<span class="normal">557</span>
+<span class="normal">558</span>
+<span class="normal">559</span>
+<span class="normal">560</span>
+<span class="normal">561</span>
+<span class="normal">562</span>
+<span class="normal">563</span>
+<span class="normal">564</span>
+<span class="normal">565</span>
+<span class="normal">566</span>
+<span class="normal">567</span>
+<span class="normal">568</span>
+<span class="normal">569</span>
+<span class="normal">570</span>
+<span class="normal">571</span>
+<span class="normal">572</span>
+<span class="normal">573</span>
+<span class="normal">574</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Vault</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Main PVP Vault service.&quot;&quot;&quot;</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
@@ -1927,6 +2008,7 @@
         <span class="n">replacements</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="n">disclosed_types</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="n">PIIType</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
 
+        <span class="c1"># Process JSON format tokens</span>
         <span class="k">for</span> <span class="n">token</span><span class="p">,</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">json_token_paths</span><span class="p">:</span>
             <span class="c1"># Extract just the top-level key from path (e.g., &quot;to&quot; from &quot;to.nested&quot;)</span>
             <span class="n">arg_path</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">path</span> <span class="k">else</span> <span class="kc">None</span>
@@ -1979,8 +2061,88 @@
             <span class="n">replacements</span><span class="p">[</span><span class="n">token</span><span class="o">.</span><span class="n">pii_ref</span><span class="p">]</span> <span class="o">=</span> <span class="n">stored</span><span class="o">.</span><span class="n">value</span>
             <span class="n">disclosed_types</span><span class="p">[</span><span class="n">stored</span><span class="o">.</span><span class="n">pii_type</span><span class="p">]</span> <span class="o">=</span> <span class="n">disclosed_types</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">stored</span><span class="o">.</span><span class="n">pii_type</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
 
-        <span class="c1"># Inject values into args</span>
+        <span class="c1"># Process TEXT format tokens embedded in string arguments</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">extract_text_tokens_recursive</span><span class="p">(</span>
+            <span class="n">obj</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">current_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">TextToken</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]:</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;Recursively extract TEXT tokens from strings in data structure.&quot;&quot;&quot;</span>
+            <span class="n">tokens_with_paths</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">TextToken</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
+
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                <span class="n">text_tokens</span> <span class="o">=</span> <span class="n">extract_text_tokens</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">text_token</span> <span class="ow">in</span> <span class="n">text_tokens</span><span class="p">:</span>
+                    <span class="n">tokens_with_paths</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">text_token</span><span class="p">,</span> <span class="n">current_path</span><span class="p">))</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">obj</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="n">new_path</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">current_path</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="n">current_path</span> <span class="k">else</span> <span class="n">key</span>
+                    <span class="n">tokens_with_paths</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">extract_text_tokens_recursive</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">new_path</span><span class="p">))</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">item</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
+                    <span class="n">new_path</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">current_path</span><span class="si">}</span><span class="s2">[</span><span class="si">{</span><span class="n">idx</span><span class="si">}</span><span class="s2">]&quot;</span>
+                    <span class="n">tokens_with_paths</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">extract_text_tokens_recursive</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">new_path</span><span class="p">))</span>
+
+            <span class="k">return</span> <span class="n">tokens_with_paths</span>
+
+        <span class="n">text_token_paths</span> <span class="o">=</span> <span class="n">extract_text_tokens_recursive</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">tool_call</span><span class="o">.</span><span class="n">args</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">text_token</span><span class="p">,</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">text_token_paths</span><span class="p">:</span>
+            <span class="c1"># Extract just the top-level key from path (strip array indices and nested paths)</span>
+            <span class="c1"># e.g., &quot;messages[0]&quot; -&gt; &quot;messages&quot;, &quot;config.nested.deep&quot; -&gt; &quot;config&quot;</span>
+            <span class="n">arg_path</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;[&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">path</span> <span class="k">else</span> <span class="kc">None</span>
+
+            <span class="n">sink</span> <span class="o">=</span> <span class="n">Sink</span><span class="p">(</span>
+                <span class="n">kind</span><span class="o">=</span><span class="n">SinkKind</span><span class="o">.</span><span class="n">TOOL</span><span class="p">,</span>
+                <span class="n">name</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">tool_call</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                <span class="n">arg_path</span><span class="o">=</span><span class="n">arg_path</span><span class="p">,</span>
+            <span class="p">)</span>
+
+            <span class="c1"># Get stored PII</span>
+            <span class="n">stored</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">store</span><span class="o">.</span><span class="n">get_pii</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">vault_session</span><span class="p">,</span> <span class="n">text_token</span><span class="o">.</span><span class="n">ref</span><span class="p">)</span>
+
+            <span class="c1"># Check policy</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">policy_evaluator</span><span class="o">.</span><span class="n">check_disclosure</span><span class="p">(</span>
+                    <span class="n">session</span><span class="o">=</span><span class="n">session</span><span class="p">,</span>
+                    <span class="n">pii_type</span><span class="o">=</span><span class="n">stored</span><span class="o">.</span><span class="n">pii_type</span><span class="p">,</span>
+                    <span class="n">sink</span><span class="o">=</span><span class="n">sink</span><span class="p">,</span>
+                    <span class="n">run</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">run</span><span class="p">,</span>
+                    <span class="n">value_size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">stored</span><span class="o">.</span><span class="n">value</span><span class="p">),</span>
+                <span class="p">)</span>
+            <span class="k">except</span> <span class="n">PolicyDeniedError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="c1"># Audit denial</span>
+                <span class="n">event</span> <span class="o">=</span> <span class="n">create_policy_denied_event</span><span class="p">(</span>
+                    <span class="n">vault_session</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">vault_session</span><span class="p">,</span>
+                    <span class="n">run</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">run</span><span class="p">,</span>
+                    <span class="n">pii_type</span><span class="o">=</span><span class="n">stored</span><span class="o">.</span><span class="n">pii_type</span><span class="p">,</span>
+                    <span class="n">sink_kind</span><span class="o">=</span><span class="n">sink</span><span class="o">.</span><span class="n">kind</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+                    <span class="n">sink_name</span><span class="o">=</span><span class="n">sink</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                    <span class="n">reason</span><span class="o">=</span><span class="n">e</span><span class="o">.</span><span class="n">message</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">audit_logger</span><span class="o">.</span><span class="n">log_event</span><span class="p">(</span><span class="n">event</span><span class="p">)</span>
+                <span class="k">raise</span>
+
+            <span class="c1"># Add to replacements and record disclosure (only for unique refs)</span>
+            <span class="k">if</span> <span class="n">text_token</span><span class="o">.</span><span class="n">ref</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">replacements</span><span class="p">:</span>
+                <span class="n">replacements</span><span class="p">[</span><span class="n">text_token</span><span class="o">.</span><span class="n">ref</span><span class="p">]</span> <span class="o">=</span> <span class="n">stored</span><span class="o">.</span><span class="n">value</span>
+                <span class="n">disclosed_types</span><span class="p">[</span><span class="n">stored</span><span class="o">.</span><span class="n">pii_type</span><span class="p">]</span> <span class="o">=</span> <span class="n">disclosed_types</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">stored</span><span class="o">.</span><span class="n">pii_type</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+                <span class="c1"># Record disclosure only once per unique token reference</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">policy_evaluator</span><span class="o">.</span><span class="n">record_disclosure</span><span class="p">(</span><span class="n">session</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">stored</span><span class="o">.</span><span class="n">value</span><span class="p">))</span>
+
+        <span class="c1"># Inject values into args (handle both JSON and TEXT tokens)</span>
         <span class="n">injected_args</span> <span class="o">=</span> <span class="n">replace_json_tokens</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">tool_call</span><span class="o">.</span><span class="n">args</span><span class="p">,</span> <span class="n">replacements</span><span class="p">)</span>
+
+        <span class="c1"># Also replace TEXT format tokens in strings recursively</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">replace_text_tokens_recursive</span><span class="p">(</span><span class="n">obj</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;Recursively replace TEXT tokens in strings.&quot;&quot;&quot;</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">replace_text_tokens</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">replacements</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                <span class="k">return</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">replace_text_tokens_recursive</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">obj</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                <span class="k">return</span> <span class="p">[</span><span class="n">replace_text_tokens_recursive</span><span class="p">(</span><span class="n">item</span><span class="p">)</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">obj</span><span class="p">]</span>
+            <span class="k">return</span> <span class="n">obj</span>
+
+        <span class="n">injected_args</span> <span class="o">=</span> <span class="n">replace_text_tokens_recursive</span><span class="p">(</span><span class="n">injected_args</span><span class="p">)</span>
 
         <span class="c1"># SECURITY: Raw PII exists in injected_args - handle with care</span>
         <span class="c1"># Execute tool call via executor</span>
@@ -2174,13 +2336,7 @@
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/mcp_pvp/vault.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">49</span>
-<span class="normal">50</span>
-<span class="normal">51</span>
-<span class="normal">52</span>
-<span class="normal">53</span>
-<span class="normal">54</span>
-<span class="normal">55</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">55</span>
 <span class="normal">56</span>
 <span class="normal">57</span>
 <span class="normal">58</span>
@@ -2215,7 +2371,13 @@
 <span class="normal">87</span>
 <span class="normal">88</span>
 <span class="normal">89</span>
-<span class="normal">90</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+<span class="normal">90</span>
+<span class="normal">91</span>
+<span class="normal">92</span>
+<span class="normal">93</span>
+<span class="normal">94</span>
+<span class="normal">95</span>
+<span class="normal">96</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">policy</span><span class="p">:</span> <span class="n">Policy</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">detector</span><span class="p">:</span> <span class="n">PIIDetector</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -2366,13 +2528,7 @@
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/mcp_pvp/vault.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">339</span>
-<span class="normal">340</span>
-<span class="normal">341</span>
-<span class="normal">342</span>
-<span class="normal">343</span>
-<span class="normal">344</span>
-<span class="normal">345</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">345</span>
 <span class="normal">346</span>
 <span class="normal">347</span>
 <span class="normal">348</span>
@@ -2514,7 +2670,94 @@
 <span class="normal">484</span>
 <span class="normal">485</span>
 <span class="normal">486</span>
-<span class="normal">487</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">deliver</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">:</span> <span class="n">DeliverRequest</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DeliverResponse</span><span class="p">:</span>
+<span class="normal">487</span>
+<span class="normal">488</span>
+<span class="normal">489</span>
+<span class="normal">490</span>
+<span class="normal">491</span>
+<span class="normal">492</span>
+<span class="normal">493</span>
+<span class="normal">494</span>
+<span class="normal">495</span>
+<span class="normal">496</span>
+<span class="normal">497</span>
+<span class="normal">498</span>
+<span class="normal">499</span>
+<span class="normal">500</span>
+<span class="normal">501</span>
+<span class="normal">502</span>
+<span class="normal">503</span>
+<span class="normal">504</span>
+<span class="normal">505</span>
+<span class="normal">506</span>
+<span class="normal">507</span>
+<span class="normal">508</span>
+<span class="normal">509</span>
+<span class="normal">510</span>
+<span class="normal">511</span>
+<span class="normal">512</span>
+<span class="normal">513</span>
+<span class="normal">514</span>
+<span class="normal">515</span>
+<span class="normal">516</span>
+<span class="normal">517</span>
+<span class="normal">518</span>
+<span class="normal">519</span>
+<span class="normal">520</span>
+<span class="normal">521</span>
+<span class="normal">522</span>
+<span class="normal">523</span>
+<span class="normal">524</span>
+<span class="normal">525</span>
+<span class="normal">526</span>
+<span class="normal">527</span>
+<span class="normal">528</span>
+<span class="normal">529</span>
+<span class="normal">530</span>
+<span class="normal">531</span>
+<span class="normal">532</span>
+<span class="normal">533</span>
+<span class="normal">534</span>
+<span class="normal">535</span>
+<span class="normal">536</span>
+<span class="normal">537</span>
+<span class="normal">538</span>
+<span class="normal">539</span>
+<span class="normal">540</span>
+<span class="normal">541</span>
+<span class="normal">542</span>
+<span class="normal">543</span>
+<span class="normal">544</span>
+<span class="normal">545</span>
+<span class="normal">546</span>
+<span class="normal">547</span>
+<span class="normal">548</span>
+<span class="normal">549</span>
+<span class="normal">550</span>
+<span class="normal">551</span>
+<span class="normal">552</span>
+<span class="normal">553</span>
+<span class="normal">554</span>
+<span class="normal">555</span>
+<span class="normal">556</span>
+<span class="normal">557</span>
+<span class="normal">558</span>
+<span class="normal">559</span>
+<span class="normal">560</span>
+<span class="normal">561</span>
+<span class="normal">562</span>
+<span class="normal">563</span>
+<span class="normal">564</span>
+<span class="normal">565</span>
+<span class="normal">566</span>
+<span class="normal">567</span>
+<span class="normal">568</span>
+<span class="normal">569</span>
+<span class="normal">570</span>
+<span class="normal">571</span>
+<span class="normal">572</span>
+<span class="normal">573</span>
+<span class="normal">574</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">deliver</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">:</span> <span class="n">DeliverRequest</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DeliverResponse</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Deliver: inject PII into tool call and execute (stub).</span>
 
@@ -2544,6 +2787,7 @@
     <span class="n">replacements</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="n">disclosed_types</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="n">PIIType</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
 
+    <span class="c1"># Process JSON format tokens</span>
     <span class="k">for</span> <span class="n">token</span><span class="p">,</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">json_token_paths</span><span class="p">:</span>
         <span class="c1"># Extract just the top-level key from path (e.g., &quot;to&quot; from &quot;to.nested&quot;)</span>
         <span class="n">arg_path</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">path</span> <span class="k">else</span> <span class="kc">None</span>
@@ -2596,8 +2840,88 @@
         <span class="n">replacements</span><span class="p">[</span><span class="n">token</span><span class="o">.</span><span class="n">pii_ref</span><span class="p">]</span> <span class="o">=</span> <span class="n">stored</span><span class="o">.</span><span class="n">value</span>
         <span class="n">disclosed_types</span><span class="p">[</span><span class="n">stored</span><span class="o">.</span><span class="n">pii_type</span><span class="p">]</span> <span class="o">=</span> <span class="n">disclosed_types</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">stored</span><span class="o">.</span><span class="n">pii_type</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
 
-    <span class="c1"># Inject values into args</span>
+    <span class="c1"># Process TEXT format tokens embedded in string arguments</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">extract_text_tokens_recursive</span><span class="p">(</span>
+        <span class="n">obj</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">current_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">TextToken</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Recursively extract TEXT tokens from strings in data structure.&quot;&quot;&quot;</span>
+        <span class="n">tokens_with_paths</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">TextToken</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">text_tokens</span> <span class="o">=</span> <span class="n">extract_text_tokens</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">text_token</span> <span class="ow">in</span> <span class="n">text_tokens</span><span class="p">:</span>
+                <span class="n">tokens_with_paths</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">text_token</span><span class="p">,</span> <span class="n">current_path</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">obj</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">new_path</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">current_path</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="n">current_path</span> <span class="k">else</span> <span class="n">key</span>
+                <span class="n">tokens_with_paths</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">extract_text_tokens_recursive</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">new_path</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">item</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
+                <span class="n">new_path</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">current_path</span><span class="si">}</span><span class="s2">[</span><span class="si">{</span><span class="n">idx</span><span class="si">}</span><span class="s2">]&quot;</span>
+                <span class="n">tokens_with_paths</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">extract_text_tokens_recursive</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">new_path</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">tokens_with_paths</span>
+
+    <span class="n">text_token_paths</span> <span class="o">=</span> <span class="n">extract_text_tokens_recursive</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">tool_call</span><span class="o">.</span><span class="n">args</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">text_token</span><span class="p">,</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">text_token_paths</span><span class="p">:</span>
+        <span class="c1"># Extract just the top-level key from path (strip array indices and nested paths)</span>
+        <span class="c1"># e.g., &quot;messages[0]&quot; -&gt; &quot;messages&quot;, &quot;config.nested.deep&quot; -&gt; &quot;config&quot;</span>
+        <span class="n">arg_path</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;[&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">path</span> <span class="k">else</span> <span class="kc">None</span>
+
+        <span class="n">sink</span> <span class="o">=</span> <span class="n">Sink</span><span class="p">(</span>
+            <span class="n">kind</span><span class="o">=</span><span class="n">SinkKind</span><span class="o">.</span><span class="n">TOOL</span><span class="p">,</span>
+            <span class="n">name</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">tool_call</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+            <span class="n">arg_path</span><span class="o">=</span><span class="n">arg_path</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Get stored PII</span>
+        <span class="n">stored</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">store</span><span class="o">.</span><span class="n">get_pii</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">vault_session</span><span class="p">,</span> <span class="n">text_token</span><span class="o">.</span><span class="n">ref</span><span class="p">)</span>
+
+        <span class="c1"># Check policy</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">policy_evaluator</span><span class="o">.</span><span class="n">check_disclosure</span><span class="p">(</span>
+                <span class="n">session</span><span class="o">=</span><span class="n">session</span><span class="p">,</span>
+                <span class="n">pii_type</span><span class="o">=</span><span class="n">stored</span><span class="o">.</span><span class="n">pii_type</span><span class="p">,</span>
+                <span class="n">sink</span><span class="o">=</span><span class="n">sink</span><span class="p">,</span>
+                <span class="n">run</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">run</span><span class="p">,</span>
+                <span class="n">value_size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">stored</span><span class="o">.</span><span class="n">value</span><span class="p">),</span>
+            <span class="p">)</span>
+        <span class="k">except</span> <span class="n">PolicyDeniedError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="c1"># Audit denial</span>
+            <span class="n">event</span> <span class="o">=</span> <span class="n">create_policy_denied_event</span><span class="p">(</span>
+                <span class="n">vault_session</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">vault_session</span><span class="p">,</span>
+                <span class="n">run</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">run</span><span class="p">,</span>
+                <span class="n">pii_type</span><span class="o">=</span><span class="n">stored</span><span class="o">.</span><span class="n">pii_type</span><span class="p">,</span>
+                <span class="n">sink_kind</span><span class="o">=</span><span class="n">sink</span><span class="o">.</span><span class="n">kind</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+                <span class="n">sink_name</span><span class="o">=</span><span class="n">sink</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                <span class="n">reason</span><span class="o">=</span><span class="n">e</span><span class="o">.</span><span class="n">message</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">audit_logger</span><span class="o">.</span><span class="n">log_event</span><span class="p">(</span><span class="n">event</span><span class="p">)</span>
+            <span class="k">raise</span>
+
+        <span class="c1"># Add to replacements and record disclosure (only for unique refs)</span>
+        <span class="k">if</span> <span class="n">text_token</span><span class="o">.</span><span class="n">ref</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">replacements</span><span class="p">:</span>
+            <span class="n">replacements</span><span class="p">[</span><span class="n">text_token</span><span class="o">.</span><span class="n">ref</span><span class="p">]</span> <span class="o">=</span> <span class="n">stored</span><span class="o">.</span><span class="n">value</span>
+            <span class="n">disclosed_types</span><span class="p">[</span><span class="n">stored</span><span class="o">.</span><span class="n">pii_type</span><span class="p">]</span> <span class="o">=</span> <span class="n">disclosed_types</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">stored</span><span class="o">.</span><span class="n">pii_type</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="c1"># Record disclosure only once per unique token reference</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">policy_evaluator</span><span class="o">.</span><span class="n">record_disclosure</span><span class="p">(</span><span class="n">session</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">stored</span><span class="o">.</span><span class="n">value</span><span class="p">))</span>
+
+    <span class="c1"># Inject values into args (handle both JSON and TEXT tokens)</span>
     <span class="n">injected_args</span> <span class="o">=</span> <span class="n">replace_json_tokens</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">tool_call</span><span class="o">.</span><span class="n">args</span><span class="p">,</span> <span class="n">replacements</span><span class="p">)</span>
+
+    <span class="c1"># Also replace TEXT format tokens in strings recursively</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">replace_text_tokens_recursive</span><span class="p">(</span><span class="n">obj</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Recursively replace TEXT tokens in strings.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">replace_text_tokens</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">replacements</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="k">return</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">replace_text_tokens_recursive</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">obj</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="k">return</span> <span class="p">[</span><span class="n">replace_text_tokens_recursive</span><span class="p">(</span><span class="n">item</span><span class="p">)</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">obj</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">obj</span>
+
+    <span class="n">injected_args</span> <span class="o">=</span> <span class="n">replace_text_tokens_recursive</span><span class="p">(</span><span class="n">injected_args</span><span class="p">)</span>
 
     <span class="c1"># SECURITY: Raw PII exists in injected_args - handle with care</span>
     <span class="c1"># Execute tool call via executor</span>
@@ -2839,13 +3163,7 @@ and arg_path, preventing capability reuse attacks.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/mcp_pvp/vault.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 92</span>
-<span class="normal"> 93</span>
-<span class="normal"> 94</span>
-<span class="normal"> 95</span>
-<span class="normal"> 96</span>
-<span class="normal"> 97</span>
-<span class="normal"> 98</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 98</span>
 <span class="normal"> 99</span>
 <span class="normal">100</span>
 <span class="normal">101</span>
@@ -2882,7 +3200,13 @@ and arg_path, preventing capability reuse attacks.</p>
 <span class="normal">132</span>
 <span class="normal">133</span>
 <span class="normal">134</span>
-<span class="normal">135</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">issue_capability</span><span class="p">(</span>
+<span class="normal">135</span>
+<span class="normal">136</span>
+<span class="normal">137</span>
+<span class="normal">138</span>
+<span class="normal">139</span>
+<span class="normal">140</span>
+<span class="normal">141</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">issue_capability</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">vault_session</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">pii_ref</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -3035,13 +3359,7 @@ and arg_path, preventing capability reuse attacks.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/mcp_pvp/vault.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">234</span>
-<span class="normal">235</span>
-<span class="normal">236</span>
-<span class="normal">237</span>
-<span class="normal">238</span>
-<span class="normal">239</span>
-<span class="normal">240</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">240</span>
 <span class="normal">241</span>
 <span class="normal">242</span>
 <span class="normal">243</span>
@@ -3138,7 +3456,13 @@ and arg_path, preventing capability reuse attacks.</p>
 <span class="normal">334</span>
 <span class="normal">335</span>
 <span class="normal">336</span>
-<span class="normal">337</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">resolve</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">:</span> <span class="n">ResolveRequest</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ResolveResponse</span><span class="p">:</span>
+<span class="normal">337</span>
+<span class="normal">338</span>
+<span class="normal">339</span>
+<span class="normal">340</span>
+<span class="normal">341</span>
+<span class="normal">342</span>
+<span class="normal">343</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">resolve</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">:</span> <span class="n">ResolveRequest</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ResolveResponse</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Resolve tokens to raw values (with policy enforcement).</span>
 
@@ -3318,13 +3642,7 @@ and arg_path, preventing capability reuse attacks.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/mcp_pvp/vault.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">137</span>
-<span class="normal">138</span>
-<span class="normal">139</span>
-<span class="normal">140</span>
-<span class="normal">141</span>
-<span class="normal">142</span>
-<span class="normal">143</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">143</span>
 <span class="normal">144</span>
 <span class="normal">145</span>
 <span class="normal">146</span>
@@ -3413,7 +3731,13 @@ and arg_path, preventing capability reuse attacks.</p>
 <span class="normal">229</span>
 <span class="normal">230</span>
 <span class="normal">231</span>
-<span class="normal">232</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">tokenize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">:</span> <span class="n">TokenizeRequest</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TokenizeResponse</span><span class="p">:</span>
+<span class="normal">232</span>
+<span class="normal">233</span>
+<span class="normal">234</span>
+<span class="normal">235</span>
+<span class="normal">236</span>
+<span class="normal">237</span>
+<span class="normal">238</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">tokenize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">:</span> <span class="n">TokenizeRequest</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TokenizeResponse</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Tokenize content containing PII.</span>
 
