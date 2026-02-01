@@ -1,8 +1,6 @@
 """Tests for scanner-based TEXT token parser (Task 3: Vault Hardening)."""
 
-import pytest
-
-from mcp_pvp.models import PIIType, TextToken
+from mcp_pvp.models import PIIType
 from mcp_pvp.tokens import TokenScanner, extract_text_tokens
 
 

@@ -1,7 +1,5 @@
 """Tests for audit coherence (Task 5: Vault Hardening)."""
 
-import pytest
-
 from mcp_pvp.audit import AuditEventType, InMemoryAuditLogger
 from mcp_pvp.executor import ToolExecutor
 from mcp_pvp.models import (
@@ -88,7 +86,7 @@ class TestAuditCoherence:
         session_id = tokenize_response.vault_session
 
         # Deliver (will tokenize result with PII)
-        deliver_response = vault.deliver(
+        vault.deliver(
             DeliverRequest(
                 vault_session=session_id,
                 tool_call=ToolCall(
@@ -108,7 +106,7 @@ class TestAuditCoherence:
 
         # Find result tokenization event (should have parent_audit_id = deliver event)
         tokenize_events = [e for e in events if e.event_type == AuditEventType.TOKENIZE]
-        
+
         # Should have 2 tokenize events: initial + result
         assert len(tokenize_events) == 2
 
@@ -161,14 +159,14 @@ class TestAuditCoherence:
 
         # Build parent-child map
         events_by_id = {e.audit_id: e for e in all_events}
-        
+
         # Find deliver event
         deliver_event = events_by_id[deliver_response.audit_id]
         assert deliver_event.event_type == AuditEventType.DELIVER
 
         # Find its child tokenization events
         child_events = [e for e in all_events if e.parent_audit_id == deliver_event.audit_id]
-        
+
         assert len(child_events) >= 1
         assert all(e.event_type == AuditEventType.TOKENIZE for e in child_events)
 
@@ -374,7 +372,7 @@ class TestAuditCoherence:
         events_with_parent = [e for e in events if e.parent_audit_id is not None]
 
         assert len(events_with_parent) > 0
-        
+
         # Verify parent_audit_id is a valid audit ID format
         for event in events_with_parent:
             assert event.parent_audit_id.startswith("aud_")

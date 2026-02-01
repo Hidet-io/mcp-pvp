@@ -7,8 +7,6 @@ from mcp_pvp.models import (
     PIIType,
     Policy,
     RunContext,
-    Sink,
-    SinkKind,
     TokenFormat,
     TokenizeRequest,
     ToolCall,
@@ -57,11 +55,7 @@ class TestSerializeForPIIDetection:
         """Test serialization of deeply nested structures."""
         obj = {
             "level1": {
-                "level2": {
-                    "level3": {
-                        "level4": {"email": "deep@example.com", "data": [1, 2, 3]}
-                    }
-                }
+                "level2": {"level3": {"level4": {"email": "deep@example.com", "data": [1, 2, 3]}}}
             }
         }
         result = serialize_for_pii_detection(obj)
@@ -163,9 +157,7 @@ class TestRecursiveOutputScrubbing:
         # Verify PII in exception message was detected
         assert len(exc_tokenize.tokens) > 0
         # Check that email was tokenized
-        email_token = next(
-            (t for t in exc_tokenize.tokens if t.pii_type == PIIType.EMAIL), None
-        )
+        email_token = next((t for t in exc_tokenize.tokens if t.pii_type == PIIType.EMAIL), None)
         assert email_token is not None
         assert "bob@secret.com" not in exc_tokenize.redacted
 
@@ -196,9 +188,7 @@ class TestRecursiveOutputScrubbing:
 
         # Verify nested PII was detected
         assert len(tokenize_resp.tokens) > 0
-        email_token = next(
-            (t for t in tokenize_resp.tokens if t.pii_type == PIIType.EMAIL), None
-        )
+        email_token = next((t for t in tokenize_resp.tokens if t.pii_type == PIIType.EMAIL), None)
         assert email_token is not None
         assert "nested@example.com" not in tokenize_resp.redacted
 
@@ -220,9 +210,7 @@ class TestRecursiveOutputScrubbing:
 
         # Verify PII in custom object was detected
         assert len(tokenize_resp.tokens) > 0
-        email_token = next(
-            (t for t in tokenize_resp.tokens if t.pii_type == PIIType.EMAIL), None
-        )
+        email_token = next((t for t in tokenize_resp.tokens if t.pii_type == PIIType.EMAIL), None)
         assert email_token is not None
         assert "charlie@example.com" not in tokenize_resp.redacted
 
@@ -289,7 +277,7 @@ class TestRecursiveOutputScrubbing:
         # Replace the vault's executor
         vault.executor = NoneExecutor()
 
-        # Tokenize to create session  
+        # Tokenize to create session
         tokenize_req = TokenizeRequest(
             content="Test content with email@example.com",
             token_format=TokenFormat.TEXT,

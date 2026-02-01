@@ -12,7 +12,7 @@ from mcp_pvp.models import (
     TokenizeRequest,
     ToolCall,
 )
-from mcp_pvp.vault import Vault, serialize_for_pii_detection
+from mcp_pvp.vault import Vault
 
 
 class CustomResultObject:
@@ -31,7 +31,9 @@ class ComplexToolExecutor(ToolExecutor):
         self.result_type = result_type
         self.execution_count = 0
 
-    def execute(self, tool_name: str, injected_args: dict) -> dict | list | CustomResultObject | None:
+    def execute(
+        self, tool_name: str, injected_args: dict
+    ) -> dict | list | CustomResultObject | None:
         """Execute tool and return complex result based on type."""
         self.execution_count += 1
 
@@ -425,9 +427,7 @@ class TestComplexExceptionHandling:
         assert len(deliver_events) == 1
 
         # Should have child tokenization event for exception scrubbing
-        child_events = [
-            e for e in events if e.parent_audit_id == deliver_events[0].audit_id
-        ]
+        child_events = [e for e in events if e.parent_audit_id == deliver_events[0].audit_id]
         assert len(child_events) > 0
 
 
@@ -504,4 +504,3 @@ class TestPerformanceWithAllFeatures:
 
         # Session should be valid
         assert tokenize_resp.vault_session.startswith("vs_")
-

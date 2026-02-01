@@ -46,7 +46,6 @@ class TokenScanner:
         """
         tokens: list[TextToken] = []
         state = ScanState.TEXT
-        token_start = 0
         type_start = 0
         type_end = 0
         ref_start = 0
@@ -58,7 +57,6 @@ class TokenScanner:
             if state == ScanState.TEXT:
                 if ch == "[":
                     state = ScanState.BRACKET1
-                    token_start = i
                 i += 1
 
             elif state == ScanState.BRACKET1:
@@ -71,7 +69,6 @@ class TokenScanner:
                     # Check if this character is '[' to start a new potential token
                     if ch == "[":
                         state = ScanState.BRACKET1
-                        token_start = i
                     i += 1
 
             elif state == ScanState.BRACKET2:
@@ -85,7 +82,6 @@ class TokenScanner:
                     # Check if this character starts a new potential token
                     if ch == "[":
                         state = ScanState.BRACKET1
-                        token_start = i
                     i += 1
 
             elif state == ScanState.COLON1:
@@ -109,7 +105,6 @@ class TokenScanner:
                     # Check if this character starts a new potential token
                     if ch == "[":
                         state = ScanState.BRACKET1
-                        token_start = i
                     i += 1
 
             elif state == ScanState.COLON2:
@@ -133,7 +128,6 @@ class TokenScanner:
                     # Check if this character starts a new potential token
                     if ch == "[":
                         state = ScanState.BRACKET1
-                        token_start = i
                     i += 1
 
             elif state == ScanState.CLOSE1:
@@ -159,7 +153,6 @@ class TokenScanner:
                     # Check if this character starts a new potential token
                     if ch == "[":
                         state = ScanState.BRACKET1
-                        token_start = i
                     i += 1
 
         return tokens

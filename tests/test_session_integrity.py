@@ -143,6 +143,7 @@ class TestSessionIntegrityValidation:
         store = SessionStore()
 
         from datetime import timedelta
+
         from mcp_pvp.utils import utc_now
 
         # Create session with normal TTL

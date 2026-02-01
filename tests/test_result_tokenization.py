@@ -8,8 +8,6 @@ from mcp_pvp.models import (
     PIIType,
     Policy,
     PolicyAllow,
-    Sink,
-    SinkKind,
     SinkPolicy,
     TokenFormat,
     TokenizeRequest,
@@ -317,6 +315,7 @@ class TestResultTokenizationSameSession:
 
         # Create session with short TTL
         from datetime import timedelta
+
         from mcp_pvp.utils import utc_now
 
         response = vault.tokenize(

@@ -53,28 +53,28 @@ logger = structlog.get_logger(__name__)
 def serialize_for_pii_detection(obj: Any, max_depth: int = 10, _depth: int = 0) -> str:
     """
     Recursively serialize an object to a string for PII detection.
-    
+
     Handles:
     - Exceptions: extracts message and traceback
     - Nested structures: recursively traverses dicts, lists, tuples, sets
     - Custom types: converts via __dict__ or repr
     - Primitive types: str, int, float, bool, None
-    
+
     Args:
         obj: Object to serialize
         max_depth: Maximum recursion depth to prevent infinite loops
         _depth: Current recursion depth (internal)
-    
+
     Returns:
         String representation suitable for PII detection
     """
     if _depth >= max_depth:
         return '"<max_depth_exceeded>"'
-    
+
     # Handle None
     if obj is None:
         return "null"
-    
+
     # Handle primitive types
     if isinstance(obj, bool):
         return "true" if obj else "false"
@@ -82,7 +82,7 @@ def serialize_for_pii_detection(obj: Any, max_depth: int = 10, _depth: int = 0) 
         return str(obj)
     if isinstance(obj, str):
         return json.dumps(obj)  # Properly escape strings
-    
+
     # Handle exceptions
     if isinstance(obj, Exception):
         parts = [
@@ -95,7 +95,7 @@ def serialize_for_pii_detection(obj: Any, max_depth: int = 10, _depth: int = 0) 
             tb_str = "".join(tb_lines)
             parts.append(f'"traceback": {json.dumps(tb_str)}')
         return "{" + ", ".join(parts) + "}"
-    
+
     # Handle dict
     if isinstance(obj, dict):
         items = []
@@ -104,22 +104,19 @@ def serialize_for_pii_detection(obj: Any, max_depth: int = 10, _depth: int = 0) 
             value_str = serialize_for_pii_detection(value, max_depth, _depth + 1)
             items.append(f"{key_str}: {value_str}")
         return "{" + ", ".join(items) + "}"
-    
+
     # Handle list, tuple, set
-    if isinstance(obj, (list, tuple, set)):
-        items = [
-            serialize_for_pii_detection(item, max_depth, _depth + 1)
-            for item in obj
-        ]
+    if isinstance(obj, (list | tuple | set)):
+        items = [serialize_for_pii_detection(item, max_depth, _depth + 1) for item in obj]
         return "[" + ", ".join(items) + "]"
-    
+
     # Handle custom objects with __dict__
     if hasattr(obj, "__dict__"):
         obj_dict = {}
         obj_dict["__type__"] = type(obj).__name__
         obj_dict.update(obj.__dict__)
         return serialize_for_pii_detection(obj_dict, max_depth, _depth + 1)
-    
+
     # Fallback: use repr
     return json.dumps(repr(obj))
 
@@ -607,23 +604,25 @@ class Vault:
         except Exception as e:
             # SECURITY: Scrub PII from exception message before logging
             error_msg = str(e)
-            
+
             # Tokenize the error message to remove PII
-            tokenize_resp = self.tokenize(TokenizeRequest(
-                content=error_msg,
-                vault_session=request.vault_session,
-                run=request.run,
-                token_format=TokenFormat.TEXT,
-            ))
+            tokenize_resp = self.tokenize(
+                TokenizeRequest(
+                    content=error_msg,
+                    vault_session=request.vault_session,
+                    run=request.run,
+                    token_format=TokenFormat.TEXT,
+                )
+            )
             scrubbed_error = tokenize_resp.redacted
-            
+
             # Log execution failure with scrubbed error message
             logger.error(
                 "tool_execution_failed",
                 tool_name=request.tool_call.name,
                 error=scrubbed_error,
             )
-            
+
             # SECURITY: Return scrubbed error instead of raising
             # This prevents raw PII from appearing in stack traces
             return DeliverResponse(
