@@ -9,18 +9,19 @@ structured arguments and within freeform text.
 """
 
 from typing import Any
-from mcp_pvp import Vault, TokenizeRequest, DeliverRequest, ToolCall, Policy
+
+from mcp_pvp import DeliverRequest, Policy, TokenizeRequest, ToolCall, Vault
 from mcp_pvp.executor import ToolExecutor
-from mcp_pvp.models import SinkPolicy, PolicyAllow, PIIType
+from mcp_pvp.models import PIIType, PolicyAllow, SinkPolicy
 
 
 def send_email(to: str, subject: str, body: str) -> str:
     """Simulated email sending function."""
-    print(f"\n--- Email Being Sent ---")
+    print("\n--- Email Being Sent ---")
     print(f"To: {to}")
     print(f"Subject: {subject}")
     print(f"Body: {body}")
-    print(f"------------------------\n")
+    print("------------------------\n")
     return f"Email sent successfully to {to}"
 
 
@@ -75,7 +76,7 @@ llm_tool_call = ToolCall(
     }
 )
 
-print(f"\nLLM Tool Call (with tokens):")
+print("\nLLM Tool Call (with tokens):")
 print(f"  to: {llm_tool_call.args['to']}")
 print(f"  body: {llm_tool_call.args['body']}")
 

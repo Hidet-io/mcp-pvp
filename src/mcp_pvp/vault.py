@@ -426,10 +426,12 @@ class Vault:
             disclosed_types[stored.pii_type] = disclosed_types.get(stored.pii_type, 0) + 1
 
         # Process TEXT format tokens embedded in string arguments
-        def extract_text_tokens_recursive(obj: Any, current_path: str = "") -> list[tuple[TextToken, str]]:
+        def extract_text_tokens_recursive(
+                obj: Any, current_path: str = ""
+        ) -> list[tuple[TextToken, str]]:
             """Recursively extract TEXT tokens from strings in data structure."""
             tokens_with_paths: list[tuple[TextToken, str]] = []
-            
+
             if isinstance(obj, str):
                 text_tokens = extract_text_tokens(obj)
                 for text_token in text_tokens:
@@ -442,7 +444,7 @@ class Vault:
                 for idx, item in enumerate(obj):
                     new_path = f"{current_path}[{idx}]"
                     tokens_with_paths.extend(extract_text_tokens_recursive(item, new_path))
-            
+
             return tokens_with_paths
 
         text_token_paths = extract_text_tokens_recursive(request.tool_call.args)
@@ -450,10 +452,7 @@ class Vault:
         for text_token, path in text_token_paths:
             # Extract just the top-level key from path (strip array indices and nested paths)
             # e.g., "messages[0]" -> "messages", "config.nested.deep" -> "config"
-            if path:
-                arg_path = path.split(".")[0].split("[")[0]
-            else:
-                arg_path = None
+            arg_path = path.split(".")[0].split("[")[0] if path else None
 
             sink = Sink(
                 kind=SinkKind.TOOL,
@@ -496,7 +495,7 @@ class Vault:
 
         # Inject values into args (handle both JSON and TEXT tokens)
         injected_args = replace_json_tokens(request.tool_call.args, replacements)
-        
+
         # Also replace TEXT format tokens in strings recursively
         def replace_text_tokens_recursive(obj: Any) -> Any:
             """Recursively replace TEXT tokens in strings."""
@@ -507,7 +506,7 @@ class Vault:
             elif isinstance(obj, list):
                 return [replace_text_tokens_recursive(item) for item in obj]
             return obj
-        
+
         injected_args = replace_text_tokens_recursive(injected_args)
 
         # SECURITY: Raw PII exists in injected_args - handle with care

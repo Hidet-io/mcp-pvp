@@ -1,7 +1,8 @@
 """Integration tests for vault operations."""
 
-import pytest
 from typing import Any
+
+import pytest
 
 from mcp_pvp import (
     DeliverRequest,
