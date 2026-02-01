@@ -1,5 +1,8 @@
 """Integration tests for vault operations."""
 
+import pytest
+from typing import Any
+
 from mcp_pvp import (
     DeliverRequest,
     PIIType,
@@ -13,8 +16,21 @@ from mcp_pvp import (
     TokenFormat,
     TokenizeRequest,
     ToolCall,
+    ToolExecutor,
     Vault,
 )
+
+
+class CustomExecutor(ToolExecutor):
+    """Test executor that records the args it receives."""
+
+    def __init__(self):
+        self.last_args = None
+
+    def execute(self, tool_name: str, injected_args: dict[str, Any]) -> Any:
+        """Record args and return a simple response without PII."""
+        self.last_args = injected_args
+        return f"Tool {tool_name} executed successfully"
 
 
 def test_vault_tokenize_text_format() -> None:
@@ -139,3 +155,251 @@ def test_vault_multiple_detections() -> None:
     assert len(response.tokens) == 2
     assert PIIType.EMAIL in response.stats.types
     assert PIIType.PHONE in response.stats.types
+
+
+def test_vault_deliver_with_text_tokens_in_strings() -> None:
+    """Test vault deliver mode with TEXT format tokens embedded in string arguments."""
+    policy = Policy(
+        sinks={
+            "tool:send_email": SinkPolicy(
+                allow=[
+                    PolicyAllow(type=PIIType.EMAIL, arg_paths=["body"]),
+                    PolicyAllow(type=PIIType.PHONE, arg_paths=["body"]),
+                ]
+            )
+        }
+    )
+    executor = CustomExecutor()
+    vault = Vault(policy=policy, executor=executor)
+
+    # Tokenize
+    tokenize_req = TokenizeRequest(
+        content="Email alice@example.com or call 555-1234",
+        token_format=TokenFormat.JSON,
+    )
+    tokenize_resp = vault.tokenize(tokenize_req)
+
+    assert len(tokenize_resp.tokens) == 2
+    email_token = tokenize_resp.tokens[0]
+    phone_token = tokenize_resp.tokens[1]
+
+    # Create tool call with TEXT tokens embedded in body string
+    body_with_tokens = f"Please contact [[PII:EMAIL:{email_token.pii_ref}]] or call [[PII:PHONE:{phone_token.pii_ref}]]"
+
+    deliver_req = DeliverRequest(
+        vault_session=tokenize_resp.vault_session,
+        tool_call=ToolCall(
+            name="send_email",
+            args={
+                "to": "admin@example.com",
+                "body": body_with_tokens,
+                "subject": "Contact Info",
+            },
+        ),
+    )
+
+    deliver_resp = vault.deliver(deliver_req)
+
+    assert deliver_resp.delivered is True
+    # Verify executor received PII-injected args (TEXT tokens were replaced)
+    assert executor.last_args is not None
+    assert "alice@example.com" in executor.last_args["body"]
+    assert "555-1234" in executor.last_args["body"]
+    assert "[[PII:" not in executor.last_args["body"]  # No tokens should remain
+
+
+def test_vault_deliver_with_mixed_json_and_text_tokens() -> None:
+    """Test vault deliver mode with both JSON and TEXT format tokens."""
+    policy = Policy(
+        sinks={
+            "tool:send_email": SinkPolicy(
+                allow=[
+                    PolicyAllow(type=PIIType.EMAIL, arg_paths=["to", "body"]),
+                    PolicyAllow(type=PIIType.PHONE, arg_paths=["body"]),
+                ]
+            )
+        }
+    )
+    executor = CustomExecutor()
+    vault = Vault(policy=policy, executor=executor)
+
+    # Tokenize
+    tokenize_req = TokenizeRequest(
+        content="Email alice@example.com or call 555-1234",
+        token_format=TokenFormat.JSON,
+    )
+    tokenize_resp = vault.tokenize(tokenize_req)
+
+    email_token = tokenize_resp.tokens[0]
+    phone_token = tokenize_resp.tokens[1]
+
+    # Create tool call with:
+    # - JSON token in 'to' field (structured)
+    # - TEXT tokens in 'body' field (mixed content)
+    deliver_req = DeliverRequest(
+        vault_session=tokenize_resp.vault_session,
+        tool_call=ToolCall(
+            name="send_email",
+            args={
+                "to": email_token.model_dump(by_alias=True),  # JSON format
+                "body": f"Reply to [[PII:EMAIL:{email_token.pii_ref}]] or call [[PII:PHONE:{phone_token.pii_ref}]]",  # TEXT format
+                "subject": "Mixed Tokens",
+            },
+        ),
+    )
+
+    deliver_resp = vault.deliver(deliver_req)
+
+    assert deliver_resp.delivered is True
+    # Verify executor received both JSON and TEXT tokens replaced
+    assert executor.last_args is not None
+    assert executor.last_args["to"] == "alice@example.com"  # JSON token replaced
+    assert "alice@example.com" in executor.last_args["body"]  # TEXT token replaced
+    assert "555-1234" in executor.last_args["body"]  # TEXT token replaced
+    assert "[[PII:" not in executor.last_args["body"]  # No TEXT tokens remain
+    assert "$pii_ref" not in str(executor.last_args)  # No JSON tokens remain
+
+
+def test_vault_deliver_text_tokens_policy_denial() -> None:
+    """Test that TEXT tokens in strings are subject to policy enforcement."""
+    # Policy only allows EMAIL in 'to', not in 'body'
+    policy = Policy(
+        sinks={
+            "tool:send_email": SinkPolicy(
+                allow=[PolicyAllow(type=PIIType.EMAIL, arg_paths=["to"])]
+            )
+        }
+    )
+    vault = Vault(policy=policy)
+
+    # Tokenize
+    tokenize_req = TokenizeRequest(
+        content="alice@example.com",
+        token_format=TokenFormat.JSON,
+    )
+    tokenize_resp = vault.tokenize(tokenize_req)
+    email_token = tokenize_resp.tokens[0]
+
+    # Try to use TEXT token in 'body' (should be denied)
+    deliver_req = DeliverRequest(
+        vault_session=tokenize_resp.vault_session,
+        tool_call=ToolCall(
+            name="send_email",
+            args={
+                "to": "admin@example.com",
+                "body": f"Contact [[PII:EMAIL:{email_token.pii_ref}]]",
+                "subject": "Test",
+            },
+        ),
+    )
+
+    # Should raise PolicyDeniedError
+    from mcp_pvp.errors import PolicyDeniedError
+
+    with pytest.raises(PolicyDeniedError):
+        vault.deliver(deliver_req)
+
+
+def test_vault_deliver_text_tokens_nested_objects() -> None:
+    """Test TEXT tokens in nested object structures."""
+    policy = Policy(
+        sinks={
+            "tool:complex_tool": SinkPolicy(
+                allow=[
+                    PolicyAllow(type=PIIType.EMAIL, arg_paths=["config"]),
+                    PolicyAllow(type=PIIType.PHONE, arg_paths=["config"]),
+                ]
+            )
+        }
+    )
+    executor = CustomExecutor()
+    vault = Vault(policy=policy, executor=executor)
+
+    # Tokenize
+    tokenize_req = TokenizeRequest(
+        content="Email alice@example.com or call 555-1234",
+        token_format=TokenFormat.JSON,
+    )
+    tokenize_resp = vault.tokenize(tokenize_req)
+
+    email_token = tokenize_resp.tokens[0]
+    phone_token = tokenize_resp.tokens[1]
+
+    # Create tool call with TEXT tokens in nested structure
+    deliver_req = DeliverRequest(
+        vault_session=tokenize_resp.vault_session,
+        tool_call=ToolCall(
+            name="complex_tool",
+            args={
+                "config": {
+                    "contact_info": f"Email: [[PII:EMAIL:{email_token.pii_ref}]], Phone: [[PII:PHONE:{phone_token.pii_ref}]]",
+                    "nested": {
+                        "deep": f"Alternate: [[PII:EMAIL:{email_token.pii_ref}]]"
+                    },
+                }
+            },
+        ),
+    )
+
+    deliver_resp = vault.deliver(deliver_req)
+
+    assert deliver_resp.delivered is True
+    # Verify executor received all TEXT tokens replaced in nested structure
+    assert executor.last_args is not None
+    config_info = executor.last_args["config"]["contact_info"]
+    assert "alice@example.com" in config_info
+    assert "555-1234" in config_info
+    deep_info = executor.last_args["config"]["nested"]["deep"]
+    assert "alice@example.com" in deep_info
+    assert "[[PII:" not in str(executor.last_args)  # No tokens should remain
+
+
+def test_vault_deliver_text_tokens_in_lists() -> None:
+    """Test TEXT tokens in list structures."""
+    policy = Policy(
+        sinks={
+            "tool:batch_process": SinkPolicy(
+                allow=[PolicyAllow(type=PIIType.EMAIL, arg_paths=["messages"])]
+            )
+        }
+    )
+    executor = CustomExecutor()
+    vault = Vault(policy=policy, executor=executor)
+
+    # Tokenize multiple emails
+    tokenize_req = TokenizeRequest(
+        content="alice@example.com and bob@example.com",
+        token_format=TokenFormat.JSON,
+    )
+    tokenize_resp = vault.tokenize(tokenize_req)
+
+    assert len(tokenize_resp.tokens) == 2
+    token1 = tokenize_resp.tokens[0]
+    token2 = tokenize_resp.tokens[1]
+
+    # Create tool call with TEXT tokens in list
+    deliver_req = DeliverRequest(
+        vault_session=tokenize_resp.vault_session,
+        tool_call=ToolCall(
+            name="batch_process",
+            args={
+                "messages": [
+                    f"Message to [[PII:EMAIL:{token1.pii_ref}]]",
+                    f"Message to [[PII:EMAIL:{token2.pii_ref}]]",
+                    f"Both: [[PII:EMAIL:{token1.pii_ref}]] and [[PII:EMAIL:{token2.pii_ref}]]",
+                ]
+            },
+        ),
+    )
+
+    deliver_resp = vault.deliver(deliver_req)
+
+    assert deliver_resp.delivered is True
+    # Verify executor received all TEXT tokens replaced in list
+    assert executor.last_args is not None
+    messages = executor.last_args["messages"]
+    assert "alice@example.com" in messages[0]
+    assert "bob@example.com" in messages[1]
+    assert "alice@example.com" in messages[2]
+    assert "bob@example.com" in messages[2]
+    assert "[[PII:" not in str(messages)  # No tokens should remain

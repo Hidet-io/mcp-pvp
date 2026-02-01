@@ -162,3 +162,160 @@ def test_executor_receives_pii_injected_args():
     assert executor.last_args is not None
     assert executor.last_args["recipient1"] == "alice@example.com"
     assert executor.last_args["recipient2"] == "bob@example.com"
+
+
+def test_executor_receives_mixed_text_and_json_tokens():
+    """Test that executor receives both JSON and TEXT token replacements."""
+
+    class InspectingExecutor(ToolExecutor):
+        def __init__(self):
+            self.last_args = None
+
+        def execute(self, tool_name: str, injected_args: dict) -> dict:
+            self.last_args = injected_args
+            return {"done": True}
+
+    executor = InspectingExecutor()
+    policy = Policy(
+        sinks={
+            "tool:send_email": SinkPolicy(
+                allow=[
+                    PolicyAllow(type=PIIType.EMAIL, arg_paths=["to", "body"]),
+                    PolicyAllow(type=PIIType.PHONE, arg_paths=["body"]),
+                ]
+            )
+        }
+    )
+    vault = Vault(policy=policy, executor=executor)
+
+    # Tokenize
+    tok_req = TokenizeRequest(
+        content="Email alice@example.com or call 555-1234", token_format=TokenFormat.JSON
+    )
+    tok_resp = vault.tokenize(tok_req)
+
+    assert len(tok_resp.tokens) == 2
+    email_token = tok_resp.tokens[0]
+    phone_token = tok_resp.tokens[1]
+
+    # Create mixed content: JSON token in 'to', TEXT tokens in 'body'
+    deliver_req = DeliverRequest(
+        vault_session=tok_resp.vault_session,
+        tool_call=ToolCall(
+            name="send_email",
+            args={
+                "to": email_token.model_dump(by_alias=True),  # JSON format
+                "body": f"Reply to [[PII:EMAIL:{email_token.pii_ref}]] or [[PII:PHONE:{phone_token.pii_ref}]]",  # TEXT format
+                "subject": "Test",
+            },
+        ),
+    )
+
+    vault.deliver(deliver_req)
+
+    # Verify executor received raw PII values (no tokens)
+    assert executor.last_args is not None
+    assert executor.last_args["to"] == "alice@example.com"  # JSON token replaced
+    assert "alice@example.com" in executor.last_args["body"]  # TEXT token replaced
+    assert "555-1234" in executor.last_args["body"]  # TEXT token replaced
+    assert "[[PII:" not in executor.last_args["body"]  # No tokens should remain
+    assert "$pii_ref" not in str(executor.last_args)  # No JSON tokens should remain
+
+
+def test_executor_text_tokens_in_nested_structures():
+    """Test executor receives TEXT tokens replaced in deeply nested structures."""
+
+    class RecordingExecutor(ToolExecutor):
+        def __init__(self):
+            self.executions = []
+
+        def execute(self, tool_name: str, injected_args: dict) -> dict:
+            self.executions.append(injected_args)
+            return {"status": "ok"}
+
+    executor = RecordingExecutor()
+    policy = Policy(
+        sinks={"tool:complex": SinkPolicy(allow=[PolicyAllow(type=PIIType.EMAIL)])}
+    )
+    vault = Vault(policy=policy, executor=executor)
+
+    # Tokenize
+    tok_req = TokenizeRequest(content="alice@example.com")
+    tok_resp = vault.tokenize(tok_req)
+    token = tok_resp.tokens[0]
+
+    # Create deeply nested structure with TEXT tokens
+    deliver_req = DeliverRequest(
+        vault_session=tok_resp.vault_session,
+        tool_call=ToolCall(
+            name="complex",
+            args={
+                "data": {
+                    "level1": {
+                        "level2": {
+                            "messages": [
+                                f"Email: [[PII:EMAIL:{token.pii_ref}]]",
+                                {"text": f"Contact [[PII:EMAIL:{token.pii_ref}]]"},
+                            ]
+                        }
+                    }
+                }
+            },
+        ),
+    )
+
+    vault.deliver(deliver_req)
+
+    # Verify all TEXT tokens were replaced in nested structure
+    args = executor.executions[0]
+    assert "alice@example.com" in args["data"]["level1"]["level2"]["messages"][0]
+    assert "alice@example.com" in args["data"]["level1"]["level2"]["messages"][1]["text"]
+    assert "[[PII:" not in json.dumps(args)  # No tokens anywhere
+
+
+def test_executor_text_tokens_policy_enforcement():
+    """Test that TEXT tokens in strings are properly validated against policy."""
+
+    class CountingExecutor(ToolExecutor):
+        def __init__(self):
+            self.execution_count = 0
+
+        def execute(self, tool_name: str, injected_args: dict) -> dict:
+            self.execution_count += 1
+            return {}
+
+    executor = CountingExecutor()
+
+    # Policy only allows EMAIL in 'to' arg, not 'body'
+    policy = Policy(
+        sinks={
+            "tool:send_email": SinkPolicy(allow=[PolicyAllow(type=PIIType.EMAIL, arg_paths=["to"])])
+        }
+    )
+    vault = Vault(policy=policy, executor=executor)
+
+    # Tokenize
+    tok_req = TokenizeRequest(content="alice@example.com")
+    tok_resp = vault.tokenize(tok_req)
+    token = tok_resp.tokens[0]
+
+    # Try to use TEXT token in 'body' (should fail policy check)
+    deliver_req = DeliverRequest(
+        vault_session=tok_resp.vault_session,
+        tool_call=ToolCall(
+            name="send_email",
+            args={
+                "to": "admin@example.com",
+                "body": f"Contact [[PII:EMAIL:{token.pii_ref}]]",  # Not allowed per policy
+            },
+        ),
+    )
+
+    from mcp_pvp.errors import PolicyDeniedError
+
+    with pytest.raises(PolicyDeniedError):
+        vault.deliver(deliver_req)
+
+    # Executor should not have been called
+    assert executor.execution_count == 0
+

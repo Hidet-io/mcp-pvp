@@ -38,7 +38,13 @@ from mcp_pvp.models import (
 )
 from mcp_pvp.policy import PolicyEvaluator
 from mcp_pvp.store import SessionStore
-from mcp_pvp.tokens import extract_json_tokens, redact_content, replace_json_tokens
+from mcp_pvp.tokens import (
+    extract_json_tokens,
+    extract_text_tokens,
+    redact_content,
+    replace_json_tokens,
+    replace_text_tokens,
+)
 
 logger = structlog.get_logger(__name__)
 
@@ -366,6 +372,7 @@ class Vault:
         replacements: dict[str, str] = {}
         disclosed_types: dict[PIIType, int] = {}
 
+        # Process JSON format tokens
         for token, path in json_token_paths:
             # Extract just the top-level key from path (e.g., "to" from "to.nested")
             arg_path = path.split(".")[0] if path else None
@@ -418,8 +425,90 @@ class Vault:
             replacements[token.pii_ref] = stored.value
             disclosed_types[stored.pii_type] = disclosed_types.get(stored.pii_type, 0) + 1
 
-        # Inject values into args
+        # Process TEXT format tokens embedded in string arguments
+        def extract_text_tokens_recursive(obj: Any, current_path: str = "") -> list[tuple[TextToken, str]]:
+            """Recursively extract TEXT tokens from strings in data structure."""
+            tokens_with_paths: list[tuple[TextToken, str]] = []
+            
+            if isinstance(obj, str):
+                text_tokens = extract_text_tokens(obj)
+                for text_token in text_tokens:
+                    tokens_with_paths.append((text_token, current_path))
+            elif isinstance(obj, dict):
+                for key, value in obj.items():
+                    new_path = f"{current_path}.{key}" if current_path else key
+                    tokens_with_paths.extend(extract_text_tokens_recursive(value, new_path))
+            elif isinstance(obj, list):
+                for idx, item in enumerate(obj):
+                    new_path = f"{current_path}[{idx}]"
+                    tokens_with_paths.extend(extract_text_tokens_recursive(item, new_path))
+            
+            return tokens_with_paths
+
+        text_token_paths = extract_text_tokens_recursive(request.tool_call.args)
+
+        for text_token, path in text_token_paths:
+            # Extract just the top-level key from path (strip array indices and nested paths)
+            # e.g., "messages[0]" -> "messages", "config.nested.deep" -> "config"
+            if path:
+                arg_path = path.split(".")[0].split("[")[0]
+            else:
+                arg_path = None
+
+            sink = Sink(
+                kind=SinkKind.TOOL,
+                name=request.tool_call.name,
+                arg_path=arg_path,
+            )
+
+            # Get stored PII
+            stored = self.store.get_pii(request.vault_session, text_token.ref)
+
+            # Check policy
+            try:
+                self.policy_evaluator.check_disclosure(
+                    session=session,
+                    pii_type=stored.pii_type,
+                    sink=sink,
+                    run=request.run,
+                    value_size=len(stored.value),
+                )
+            except PolicyDeniedError as e:
+                # Audit denial
+                event = create_policy_denied_event(
+                    vault_session=request.vault_session,
+                    run=request.run,
+                    pii_type=stored.pii_type,
+                    sink_kind=sink.kind.value,
+                    sink_name=sink.name,
+                    reason=e.message,
+                )
+                self.audit_logger.log_event(event)
+                raise
+
+            # Record disclosure
+            self.policy_evaluator.record_disclosure(session, len(stored.value))
+
+            # Add to replacements (avoid double-counting if same ref)
+            if text_token.ref not in replacements:
+                replacements[text_token.ref] = stored.value
+                disclosed_types[stored.pii_type] = disclosed_types.get(stored.pii_type, 0) + 1
+
+        # Inject values into args (handle both JSON and TEXT tokens)
         injected_args = replace_json_tokens(request.tool_call.args, replacements)
+        
+        # Also replace TEXT format tokens in strings recursively
+        def replace_text_tokens_recursive(obj: Any) -> Any:
+            """Recursively replace TEXT tokens in strings."""
+            if isinstance(obj, str):
+                return replace_text_tokens(obj, replacements)
+            elif isinstance(obj, dict):
+                return {k: replace_text_tokens_recursive(v) for k, v in obj.items()}
+            elif isinstance(obj, list):
+                return [replace_text_tokens_recursive(item) for item in obj]
+            return obj
+        
+        injected_args = replace_text_tokens_recursive(injected_args)
 
         # SECURITY: Raw PII exists in injected_args - handle with care
         # Execute tool call via executor
