@@ -266,9 +266,7 @@ def test_vault_deliver_text_tokens_policy_denial() -> None:
     # Policy only allows EMAIL in 'to', not in 'body'
     policy = Policy(
         sinks={
-            "tool:send_email": SinkPolicy(
-                allow=[PolicyAllow(type=PIIType.EMAIL, arg_paths=["to"])]
-            )
+            "tool:send_email": SinkPolicy(allow=[PolicyAllow(type=PIIType.EMAIL, arg_paths=["to"])])
         }
     )
     vault = Vault(policy=policy)
@@ -334,9 +332,7 @@ def test_vault_deliver_text_tokens_nested_objects() -> None:
             args={
                 "config": {
                     "contact_info": f"Email: [[PII:EMAIL:{email_token.pii_ref}]], Phone: [[PII:PHONE:{phone_token.pii_ref}]]",
-                    "nested": {
-                        "deep": f"Alternate: [[PII:EMAIL:{email_token.pii_ref}]]"
-                    },
+                    "nested": {"deep": f"Alternate: [[PII:EMAIL:{email_token.pii_ref}]]"},
                 }
             },
         ),

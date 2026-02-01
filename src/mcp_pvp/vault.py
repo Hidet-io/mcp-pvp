@@ -427,7 +427,7 @@ class Vault:
 
         # Process TEXT format tokens embedded in string arguments
         def extract_text_tokens_recursive(
-                obj: Any, current_path: str = ""
+            obj: Any, current_path: str = ""
         ) -> list[tuple[TextToken, str]]:
             """Recursively extract TEXT tokens from strings in data structure."""
             tokens_with_paths: list[tuple[TextToken, str]] = []

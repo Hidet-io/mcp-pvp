@@ -49,9 +49,7 @@ policy = Policy(
 vault = Vault(policy=policy, executor=RealExecutor())
 
 # Tokenize sensitive content containing both email and phone
-request = TokenizeRequest(
-    content="Email me at alice@example.com or call me at 555-123-4567"
-)
+request = TokenizeRequest(content="Email me at alice@example.com or call me at 555-123-4567")
 tokenized = vault.tokenize(request)
 
 print(f"Original content: {request.content}")
@@ -72,8 +70,8 @@ llm_tool_call = ToolCall(
     args={
         "to": {"$pii_ref": email_token.pii_ref, "type": email_token.type},
         "body": f"Hello! Please reply to [[PII:EMAIL:{email_token.pii_ref}]] or call [[PII:PHONE:{phone_token.pii_ref}]].",
-        "subject": "Contact Request"
-    }
+        "subject": "Contact Request",
+    },
 )
 
 print("\nLLM Tool Call (with tokens):")

@@ -234,9 +234,7 @@ def test_executor_text_tokens_in_nested_structures():
             return {"status": "ok"}
 
     executor = RecordingExecutor()
-    policy = Policy(
-        sinks={"tool:complex": SinkPolicy(allow=[PolicyAllow(type=PIIType.EMAIL)])}
-    )
+    policy = Policy(sinks={"tool:complex": SinkPolicy(allow=[PolicyAllow(type=PIIType.EMAIL)])})
     vault = Vault(policy=policy, executor=executor)
 
     # Tokenize
@@ -318,4 +316,3 @@ def test_executor_text_tokens_policy_enforcement():
 
     # Executor should not have been called
     assert executor.execution_count == 0
-
