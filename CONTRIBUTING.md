@@ -242,13 +242,6 @@ pytest -k test_caps  # run specific tests
 pytest --cov  # with coverage
 ```
 
-### Running HTTP Server (dev)
-```bash
-mcp-pvp-http
-# or
-python -m mcp_pvp.bindings.http.app
-```
-
 ## License
 
 By contributing, you agree that your contributions will be licensed under the Apache-2.0 License.

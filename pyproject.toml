@@ -19,6 +19,7 @@ classifiers = [
 ]
 
 dependencies = [
+    "ipython>=9.9.0",
     "mcp[cli]>=1.25.0",
     "pydantic>=2.0",
     "pydantic-settings>=2.0",
@@ -64,7 +65,6 @@ all = [
 ]
 
 [project.scripts]
-mcp-pvp-http = "mcp_pvp.bindings.http.app:main"
 mcp-pvp-mcp = "mcp_pvp.bindings.mcp.server:main"
 
 [project.urls]

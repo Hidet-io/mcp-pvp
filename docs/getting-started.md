@@ -18,19 +18,17 @@ If you prefer `pip`, install the published package with the extras you need:
 ```bash
 pip install mcp-pvp              # tokenization core
 pip install mcp-pvp[presidio]    # high-accuracy detectors
-pip install mcp-pvp[http]        # HTTP API server
 pip install mcp-pvp[docs]        # MkDocs preview tools
 ```
 
 ## Run the services
 
-* `make run-http` spins up the FastAPI + Uvicorn HTTP binding (`mcp_pvp.bindings.http.app`).
 * `make run-mcp` launches the MCP stub server that exposes `pvp.tokenize`, `pvp.resolve`, `pvp.deliver` as MCP tools.
 * `examples/safe_email_sender/` demonstrates a delivery-style workflow that uses the vault before reaching out to real email tooling.
 
 ## Deliver mode mindset
 
-1. Tokenize sensitive strings with `Vault.tokenize()` or the HTTP `/tokenize` route.
+1. Tokenize sensitive strings with `Vault.tokenize()`.
 2. Let the agent plan with tokens instead of raw values.
 3. Run `Vault.deliver()` (or `pvp.deliver`) to inject the real values locally and execute the tool.
 4. `DeliverResponse` now carries both the sanitized tool result and `result_tokens` describing every detected PII span so you can audit leaks.

@@ -57,8 +57,6 @@ pip install mcp-pvp
 # With Presidio detector (recommended)
 pip install mcp-pvp[presidio]
 
-# With HTTP binding
-pip install mcp-pvp[http]
 
 # All extras
 pip install mcp-pvp[all]
@@ -74,7 +72,6 @@ make test          # Run tests
 make lint          # Run linter
 make format        # Format code
 make check         # Run all checks (lint, format, typecheck, test)
-make run-http      # Start HTTP API server
 make version       # Show current version
 make bump-minor    # Bump version (e.g., 0.4.0 -> 0.5.0)
 ```
@@ -343,7 +340,7 @@ This is the biggest reduction in leak surface.
 * ✅ Policy enforcement (sink allow-lists + limits) with capability checks
 * ✅ Capabilities (HMAC-signed) paired with audit events (no raw values leaked)
 * ✅ Deliver mode that also tokenizes tool results and returns `result_tokens`
-* ✅ MCP tool binding plus HTTP server (`pvp.tokenize`, `pvp.resolve`, `pvp.deliver`)
+* ✅ MCP tool binding (`pvp.tokenize`, `pvp.resolve`, `pvp.deliver`)
 * ✅ Observability stack (structlog, Prometheus, optional Sentry) and production docs
 
 ---
