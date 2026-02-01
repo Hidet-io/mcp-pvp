@@ -591,9 +591,6 @@ class Vault:
 
         injected_args = replace_text_tokens_recursive(injected_args)
 
-        # Generate audit_id before execution for use in success or failure
-        audit_id = f"aud_{secrets.token_urlsafe(12)}"
-
         # SECURITY: Raw PII exists in injected_args - handle with care
         # Execute tool call via executor
         try:
@@ -616,11 +613,21 @@ class Vault:
             )
             scrubbed_error = tokenize_resp.redacted
 
+            # Audit the failed deliver attempt for complete audit trail
+            deliver_event = create_deliver_event(
+                vault_session=request.vault_session,
+                run=request.run,
+                tool_name=request.tool_call.name,
+                disclosed=disclosed_types,
+            )
+            self.audit_logger.log_event(deliver_event)
+
             # Log execution failure with scrubbed error message
             logger.error(
                 "tool_execution_failed",
                 tool_name=request.tool_call.name,
                 error=scrubbed_error,
+                audit_id=deliver_event.audit_id,
             )
 
             # SECURITY: Return scrubbed error instead of raising
@@ -629,7 +636,7 @@ class Vault:
                 delivered=False,
                 tool_result=None,
                 result_tokens=[],
-                audit_id=audit_id,
+                audit_id=deliver_event.audit_id,
                 error=scrubbed_error,
             )
 

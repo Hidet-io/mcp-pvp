@@ -24,17 +24,16 @@ Session integrity validation prevents cross-session token theft by binding each 
 
 ### Implementation
 
-Each `PIIRecord` now includes a `vault_session` field that tracks ownership:
+Each `StoredPII` now includes a `vault_session` field that tracks ownership:
 
 ```python
-class PIIRecord(BaseModel):
-    """A record of PII stored in the vault."""
+class StoredPII(BaseModel):
+    """PII value stored in vault."""
     ref: str  # Token reference (e.g., "tkn_abc123")
     pii_type: PIIType  # Type of PII (EMAIL, PHONE, etc.)
     value: str  # The actual sensitive value
     vault_session: str  # Session ID that owns this token
     created_at: datetime
-    expires_at: datetime
 ```
 
 ### Usage Example
@@ -58,8 +57,8 @@ token2 = resp2.tokens[0]
 
 # Try to access token1 using session2 (BLOCKED)
 try:
-    vault.store.get_pii(token1.ref, session2)
-except SessionMismatchError:
+    vault.store.get_pii(session2, token1.ref)
+except TokenSessionMismatchError:
     print("✅ Cross-session access prevented!")
 ```
 
@@ -71,17 +70,18 @@ except SessionMismatchError:
 
 ### Error Handling
 
-When session mismatch is detected, a `SessionMismatchError` is raised:
+When session mismatch is detected, a `TokenSessionMismatchError` is raised:
 
 ```python
-class SessionMismatchError(VaultError):
-    """Raised when attempting to access PII with wrong session."""
+class TokenSessionMismatchError(PVPError):
+    """Raised when attempting to redeem a token from a different session."""
     
-    def __init__(self, ref: str, expected_session: str, provided_session: str):
-        super().__init__(
-            f"Token {ref} belongs to session {expected_session}, "
-            f"but session {provided_session} was provided"
-        )
+    def __init__(
+        self,
+        message: str = "Token does not belong to the requesting session",
+        details: dict[str, Any] | None = None,
+    ):
+        super().__init__(message, ErrorCode.ERR_TOKEN_SESSION_MISMATCH, details)
 ```
 
 ---
@@ -105,11 +105,11 @@ if self.detector:
     # Tokenize using SAME session
     result_tokenize_req = TokenizeRequest(
         content=result_content,
-        token_format=deliver_req.token_format,
         vault_session=deliver_req.vault_session,  # Reuse session
         run=deliver_req.run,
+        parent_audit_id=audit_id,  # Link to parent audit
     )
-    result_resp = self.tokenize(result_tokenize_req, parent_audit_id=audit_id)
+    result_resp = self.tokenize(result_tokenize_req)
 ```
 
 ### Usage Example
@@ -134,7 +134,7 @@ deliver_resp = vault.deliver(DeliverRequest(
 
 # Result tokens belong to SAME session
 for token in deliver_resp.result_tokens:
-    pii = vault.store.get_pii(token.ref, session_id)
+    pii = vault.store.get_pii(session_id, token.ref)
     assert pii.vault_session == session_id  # ✅ Same session!
 ```
 
@@ -551,7 +551,7 @@ deliver_resp = vault.deliver(DeliverRequest(
 
 # Result tokenization: Same session, recursive scrubbing
 assert all(
-    vault.store.get_pii(t.ref, session_id).vault_session == session_id
+    vault.store.get_pii(session_id, t.ref).vault_session == session_id
     for t in deliver_resp.result_tokens
 )
 
@@ -647,7 +647,7 @@ If you want to leverage new features explicitly:
 
 ```python
 # 1. Access vault_session on PII records
-pii = vault.store.get_pii(token_ref, session_id)
+pii = vault.store.get_pii(session_id, token_ref)
 assert pii.vault_session == session_id
 
 # 2. Serialize custom objects before detection

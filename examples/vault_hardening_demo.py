@@ -121,7 +121,7 @@ def main():
     )
     try:
         # Try to access session1 token using session2 (should fail)
-        vault.store.get_pii(token_ref, session2)
+        vault.store.get_pii(session2, token_ref)
         print("\n✗ SECURITY BREACH: Cross-session access allowed!")
     except Exception as e:
         print(f"\n✓ Session integrity enforced: {type(e).__name__}")
@@ -152,7 +152,7 @@ def main():
             else (token.pii_ref if hasattr(token, "pii_ref") else str(token))
         )
         try:
-            pii = vault.store.get_pii(token_ref, session1)
+            pii = vault.store.get_pii(session1, token_ref)
             print(
                 f"  {i + 1}. {token_ref} -> {pii.pii_type} (session: {pii.vault_session == session1})"
             )
