@@ -485,13 +485,12 @@ class Vault:
                 self.audit_logger.log_event(event)
                 raise
 
-            # Record disclosure
-            self.policy_evaluator.record_disclosure(session, len(stored.value))
-
-            # Add to replacements (avoid double-counting if same ref)
+            # Add to replacements and record disclosure (only for unique refs)
             if text_token.ref not in replacements:
                 replacements[text_token.ref] = stored.value
                 disclosed_types[stored.pii_type] = disclosed_types.get(stored.pii_type, 0) + 1
+                # Record disclosure only once per unique token reference
+                self.policy_evaluator.record_disclosure(session, len(stored.value))
 
         # Inject values into args (handle both JSON and TEXT tokens)
         injected_args = replace_json_tokens(request.tool_call.args, replacements)

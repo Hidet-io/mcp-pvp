@@ -400,3 +400,47 @@ def test_vault_deliver_text_tokens_in_lists() -> None:
     assert "alice@example.com" in messages[2]
     assert "bob@example.com" in messages[2]
     assert "[[PII:" not in str(messages)  # No tokens should remain
+
+
+def test_vault_deliver_duplicate_text_token_disclosure_counting() -> None:
+    """Test that duplicate TEXT token refs only count as one disclosure."""
+    policy = Policy(
+        sinks={
+            "tool:send_email": SinkPolicy(
+                allow=[PolicyAllow(type=PIIType.EMAIL, arg_paths=["body"])]
+            )
+        }
+    )
+    executor = CustomExecutor()
+    vault = Vault(policy=policy, executor=executor)
+
+    # Tokenize
+    tokenize_req = TokenizeRequest(content="alice@example.com", token_format=TokenFormat.JSON)
+    tokenize_resp = vault.tokenize(tokenize_req)
+    email_token = tokenize_resp.tokens[0]
+
+    # Create tool call where same TEXT token appears 3 times
+    deliver_req = DeliverRequest(
+        vault_session=tokenize_resp.vault_session,
+        tool_call=ToolCall(
+            name="send_email",
+            args={
+                "to": "admin@example.com",
+                "body": f"Contact [[PII:EMAIL:{email_token.pii_ref}]], again [[PII:EMAIL:{email_token.pii_ref}]], and once more [[PII:EMAIL:{email_token.pii_ref}]]",
+                "subject": "Test",
+            },
+        ),
+    )
+
+    deliver_resp = vault.deliver(deliver_req)
+
+    assert deliver_resp.delivered is True
+
+    # Verify the token was replaced in all 3 locations
+    assert executor.last_args["body"].count("alice@example.com") == 3
+    assert "[[PII:" not in executor.last_args["body"]
+
+    # Verify disclosure was only counted once (check session state)
+    session = vault.store.get_session(tokenize_resp.vault_session)
+    assert session.disclosed_count == 1  # Should be 1, not 3
+    assert session.disclosed_bytes == len("alice@example.com")  # Should be length once, not 3x
