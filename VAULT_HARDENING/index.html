@@ -1,0 +1,2054 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Tokenize sensitive data before the LLM sees it.">
+      
+      
+      
+        <link rel="canonical" href="https://spidux-ai.github.io/mcp-pvp/VAULT_HARDENING/">
+      
+      
+        <link rel="prev" href="../getting-started/">
+      
+      
+        <link rel="next" href="../CAPABILITY_SECURITY/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
+    
+    
+      
+        <title>Vault Hardening - mcp-pvp Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="blue-grey" data-md-color-accent="cyan">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#vault-hardening-features" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="mcp-pvp Documentation" class="md-header__button md-logo" aria-label="mcp-pvp Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            mcp-pvp Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Vault Hardening
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="blue-grey" data-md-color-accent="cyan"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="blue-grey" data-md-color-accent="cyan"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/Spidux-ai/mcp-pvp" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Spidux-ai/mcp-pvp
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../getting-started/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Getting Started
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="./" class="md-tabs__link">
+          
+  
+  
+  Features
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../CAPABILITY_SECURITY/" class="md-tabs__link">
+          
+  
+  
+  Architecture & Security
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../api/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  API Reference
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="mcp-pvp Documentation" class="md-nav__button md-logo" aria-label="mcp-pvp Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    mcp-pvp Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/Spidux-ai/mcp-pvp" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Spidux-ai/mcp-pvp
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Features
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Features
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Vault Hardening
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Vault Hardening
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-session-integrity-validation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Session Integrity Validation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. Session Integrity Validation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#overview_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#implementation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Implementation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#usage-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Usage Example
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#security-benefits" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Security Benefits
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#error-handling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Error Handling
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-result-tokenization-in-same-session" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Result Tokenization in Same Session
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Result Tokenization in Same Session">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#overview_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#implementation_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Implementation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#usage-example_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Usage Example
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#benefits" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Benefits
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#session-reuse-logging" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Session Reuse Logging
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-scanner-based-text-token-parser" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Scanner-Based TEXT Token Parser
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Scanner-Based TEXT Token Parser">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#overview_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#state-machine" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        State Machine
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#implementation_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Implementation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#usage-example_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Usage Example
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#performance-characteristics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Performance Characteristics
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#error-handling_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Error Handling
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-recursive-output-scrubbing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Recursive Output Scrubbing
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Recursive Output Scrubbing">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#overview_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#implementation_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Implementation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#usage-example_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Usage Example
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#exception-handling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Exception Handling
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#depth-protection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Depth Protection
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#supported-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Supported Types
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-audit-coherence" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Audit Coherence
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Audit Coherence">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#overview_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#implementation_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Implementation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#usage-example_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Usage Example
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#audit-trail-visualization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Audit Trail Visualization
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#query-patterns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Query Patterns
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Query Patterns">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#get-all-events-for-a-run" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Get all events for a run
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get-child-events-for-a-specific-parent" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Get child events for a specific parent
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#build-complete-event-tree" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Build complete event tree
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#audit-event-details" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Audit Event Details
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#integration-best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Integration &amp; Best Practices
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Integration &amp; Best Practices">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#using-all-features-together" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Using All Features Together
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#performance-considerations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Performance Considerations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#security-best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Security Best Practices
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#monitoring-observability" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Monitoring &amp; Observability
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#testing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Testing
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#migration-guide" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Migration Guide
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Migration Guide">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#whats-new" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What's New
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#optional-enhancements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Optional Enhancements
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Summary
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture & Security
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Architecture & Security
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../CAPABILITY_SECURITY/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Capability Security
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../OBSERVABILITY/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Observability
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../THREAT_MODEL/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../SPEC/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protocol Specification
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../v0.2.0-RELEASE-SUMMARY/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Release Snapshot
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="vault-hardening-features">Vault Hardening Features<a class="headerlink" href="#vault-hardening-features" title="Permanent link">&para;</a></h1>
+<p>This document describes the comprehensive vault hardening features implemented in mcp-pvp to enhance security, performance, and auditability of PII handling in MCP workflows.</p>
+<h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
+<p>The vault hardening initiative implements five critical features that work together to provide:</p>
+<ol>
+<li><strong>Session Integrity Validation</strong> - Prevents token theft across sessions</li>
+<li><strong>Result Tokenization in Same Session</strong> - Maintains session consistency</li>
+<li><strong>Scanner-Based TEXT Token Parser</strong> - High-performance O(n) token parsing</li>
+<li><strong>Recursive Output Scrubbing</strong> - Comprehensive PII detection in complex outputs</li>
+<li><strong>Audit Coherence</strong> - Complete parent-child event tracking</li>
+</ol>
+<p>All features are production-ready with comprehensive test coverage (148 tests, 87% code coverage).</p>
+<hr />
+<h2 id="1-session-integrity-validation">1. Session Integrity Validation<a class="headerlink" href="#1-session-integrity-validation" title="Permanent link">&para;</a></h2>
+<h3 id="overview_1">Overview<a class="headerlink" href="#overview_1" title="Permanent link">&para;</a></h3>
+<p>Session integrity validation prevents cross-session token theft by binding each PII record to its vault session. This ensures that tokens can only be accessed within their originating session, preventing attackers from using stolen token references in different sessions.</p>
+<h3 id="implementation">Implementation<a class="headerlink" href="#implementation" title="Permanent link">&para;</a></h3>
+<p>Each <code>StoredPII</code> now includes a <code>vault_session</code> field that tracks ownership:</p>
+<div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">StoredPII</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;PII value stored in vault.&quot;&quot;&quot;</span>
+    <span class="n">ref</span><span class="p">:</span> <span class="nb">str</span>  <span class="c1"># Token reference (e.g., &quot;tkn_abc123&quot;)</span>
+    <span class="n">pii_type</span><span class="p">:</span> <span class="n">PIIType</span>  <span class="c1"># Type of PII (EMAIL, PHONE, etc.)</span>
+    <span class="n">value</span><span class="p">:</span> <span class="nb">str</span>  <span class="c1"># The actual sensitive value</span>
+    <span class="n">vault_session</span><span class="p">:</span> <span class="nb">str</span>  <span class="c1"># Session ID that owns this token</span>
+    <span class="n">created_at</span><span class="p">:</span> <span class="n">datetime</span>
+</code></pre></div>
+<h3 id="usage-example">Usage Example<a class="headerlink" href="#usage-example" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">mcp_pvp</span><span class="w"> </span><span class="kn">import</span> <span class="n">Vault</span><span class="p">,</span> <span class="n">TokenizeRequest</span><span class="p">,</span> <span class="n">Policy</span>
+
+<span class="n">vault</span> <span class="o">=</span> <span class="n">Vault</span><span class="p">(</span><span class="n">policy</span><span class="o">=</span><span class="n">Policy</span><span class="p">())</span>
+
+<span class="c1"># Create first session</span>
+<span class="n">req1</span> <span class="o">=</span> <span class="n">TokenizeRequest</span><span class="p">(</span><span class="n">content</span><span class="o">=</span><span class="s2">&quot;alice@example.com&quot;</span><span class="p">)</span>
+<span class="n">resp1</span> <span class="o">=</span> <span class="n">vault</span><span class="o">.</span><span class="n">tokenize</span><span class="p">(</span><span class="n">req1</span><span class="p">)</span>
+<span class="n">session1</span> <span class="o">=</span> <span class="n">resp1</span><span class="o">.</span><span class="n">vault_session</span>
+<span class="n">token1</span> <span class="o">=</span> <span class="n">resp1</span><span class="o">.</span><span class="n">tokens</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+<span class="c1"># Create second session</span>
+<span class="n">req2</span> <span class="o">=</span> <span class="n">TokenizeRequest</span><span class="p">(</span><span class="n">content</span><span class="o">=</span><span class="s2">&quot;bob@example.com&quot;</span><span class="p">)</span>
+<span class="n">resp2</span> <span class="o">=</span> <span class="n">vault</span><span class="o">.</span><span class="n">tokenize</span><span class="p">(</span><span class="n">req2</span><span class="p">)</span>
+<span class="n">session2</span> <span class="o">=</span> <span class="n">resp2</span><span class="o">.</span><span class="n">vault_session</span>
+<span class="n">token2</span> <span class="o">=</span> <span class="n">resp2</span><span class="o">.</span><span class="n">tokens</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+<span class="c1"># Try to access token1 using session2 (BLOCKED)</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="n">vault</span><span class="o">.</span><span class="n">store</span><span class="o">.</span><span class="n">get_pii</span><span class="p">(</span><span class="n">session2</span><span class="p">,</span> <span class="n">token1</span><span class="o">.</span><span class="n">ref</span><span class="p">)</span>
+<span class="k">except</span> <span class="n">TokenSessionMismatchError</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;✅ Cross-session access prevented!&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="security-benefits">Security Benefits<a class="headerlink" href="#security-benefits" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Token Theft Prevention</strong>: Stolen token references cannot be used in different sessions</li>
+<li><strong>Session Isolation</strong>: Each session maintains independent token ownership</li>
+<li><strong>Replay Attack Mitigation</strong>: Tokens expire with their session TTL</li>
+</ul>
+<h3 id="error-handling">Error Handling<a class="headerlink" href="#error-handling" title="Permanent link">&para;</a></h3>
+<p>When session mismatch is detected, a <code>TokenSessionMismatchError</code> is raised:</p>
+<div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">TokenSessionMismatchError</span><span class="p">(</span><span class="n">PVPError</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Raised when attempting to redeem a token from a different session.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">message</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;Token does not belong to the requesting session&quot;</span><span class="p">,</span>
+        <span class="n">details</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">ErrorCode</span><span class="o">.</span><span class="n">ERR_TOKEN_SESSION_MISMATCH</span><span class="p">,</span> <span class="n">details</span><span class="p">)</span>
+</code></pre></div>
+<hr />
+<h2 id="2-result-tokenization-in-same-session">2. Result Tokenization in Same Session<a class="headerlink" href="#2-result-tokenization-in-same-session" title="Permanent link">&para;</a></h2>
+<h3 id="overview_2">Overview<a class="headerlink" href="#overview_2" title="Permanent link">&para;</a></h3>
+<p>When tools return results containing PII, that PII is automatically tokenized within the <em>same vault session</em> as the original request. This ensures session consistency and simplifies token lifecycle management.</p>
+<h3 id="implementation_1">Implementation<a class="headerlink" href="#implementation_1" title="Permanent link">&para;</a></h3>
+<p>During <code>deliver()</code> execution, result tokenization reuses the existing vault session:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># In vault.deliver()</span>
+<span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">detector</span><span class="p">:</span>
+    <span class="c1"># Detect PII in tool result</span>
+    <span class="n">result_detections</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">detector</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="n">result_content</span><span class="p">)</span>
+
+    <span class="c1"># Tokenize using SAME session</span>
+    <span class="n">result_tokenize_req</span> <span class="o">=</span> <span class="n">TokenizeRequest</span><span class="p">(</span>
+        <span class="n">content</span><span class="o">=</span><span class="n">result_content</span><span class="p">,</span>
+        <span class="n">vault_session</span><span class="o">=</span><span class="n">deliver_req</span><span class="o">.</span><span class="n">vault_session</span><span class="p">,</span>  <span class="c1"># Reuse session</span>
+        <span class="n">run</span><span class="o">=</span><span class="n">deliver_req</span><span class="o">.</span><span class="n">run</span><span class="p">,</span>
+        <span class="n">parent_audit_id</span><span class="o">=</span><span class="n">audit_id</span><span class="p">,</span>  <span class="c1"># Link to parent audit</span>
+    <span class="p">)</span>
+    <span class="n">result_resp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tokenize</span><span class="p">(</span><span class="n">result_tokenize_req</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="usage-example_1">Usage Example<a class="headerlink" href="#usage-example_1" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">mcp_pvp</span><span class="w"> </span><span class="kn">import</span> <span class="n">Vault</span><span class="p">,</span> <span class="n">TokenizeRequest</span><span class="p">,</span> <span class="n">DeliverRequest</span><span class="p">,</span> <span class="n">ToolCall</span><span class="p">,</span> <span class="n">RunContext</span>
+
+<span class="n">vault</span> <span class="o">=</span> <span class="n">Vault</span><span class="p">(</span><span class="n">policy</span><span class="o">=</span><span class="n">Policy</span><span class="p">(</span><span class="n">default_allow</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+
+<span class="c1"># Initial tokenization</span>
+<span class="n">tokenize_resp</span> <span class="o">=</span> <span class="n">vault</span><span class="o">.</span><span class="n">tokenize</span><span class="p">(</span><span class="n">TokenizeRequest</span><span class="p">(</span>
+    <span class="n">content</span><span class="o">=</span><span class="s2">&quot;Contact alice@example.com&quot;</span>
+<span class="p">))</span>
+<span class="n">session_id</span> <span class="o">=</span> <span class="n">tokenize_resp</span><span class="o">.</span><span class="n">vault_session</span>
+
+<span class="c1"># Deliver with result containing PII</span>
+<span class="n">deliver_resp</span> <span class="o">=</span> <span class="n">vault</span><span class="o">.</span><span class="n">deliver</span><span class="p">(</span><span class="n">DeliverRequest</span><span class="p">(</span>
+    <span class="n">vault_session</span><span class="o">=</span><span class="n">session_id</span><span class="p">,</span>
+    <span class="n">run</span><span class="o">=</span><span class="n">RunContext</span><span class="p">(</span><span class="n">run_id</span><span class="o">=</span><span class="s2">&quot;run1&quot;</span><span class="p">,</span> <span class="n">participant_id</span><span class="o">=</span><span class="s2">&quot;llm&quot;</span><span class="p">),</span>
+    <span class="n">tool_call</span><span class="o">=</span><span class="n">ToolCall</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;get_user_info&quot;</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">{}),</span>
+<span class="p">))</span>
+
+<span class="c1"># Result tokens belong to SAME session</span>
+<span class="k">for</span> <span class="n">token</span> <span class="ow">in</span> <span class="n">deliver_resp</span><span class="o">.</span><span class="n">result_tokens</span><span class="p">:</span>
+    <span class="n">pii</span> <span class="o">=</span> <span class="n">vault</span><span class="o">.</span><span class="n">store</span><span class="o">.</span><span class="n">get_pii</span><span class="p">(</span><span class="n">session_id</span><span class="p">,</span> <span class="n">token</span><span class="o">.</span><span class="n">ref</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">pii</span><span class="o">.</span><span class="n">vault_session</span> <span class="o">==</span> <span class="n">session_id</span>  <span class="c1"># ✅ Same session!</span>
+</code></pre></div>
+<h3 id="benefits">Benefits<a class="headerlink" href="#benefits" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Simplified Lifecycle</strong>: All tokens in a workflow share one session TTL</li>
+<li><strong>Audit Clarity</strong>: Single session traces complete request/response flow</li>
+<li><strong>Performance</strong>: No overhead creating new sessions for result tokens</li>
+<li><strong>Consistency</strong>: Token ownership is clear and predictable</li>
+</ul>
+<h3 id="session-reuse-logging">Session Reuse Logging<a class="headerlink" href="#session-reuse-logging" title="Permanent link">&para;</a></h3>
+<p>When a session is reused, the vault logs this event:</p>
+<div class="highlight"><pre><span></span><code><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;vault_tokenize_reusing_session&quot;</span><span class="p">,</span> <span class="n">vault_session</span><span class="o">=</span><span class="n">vault_session</span><span class="p">)</span>
+</code></pre></div>
+<hr />
+<h2 id="3-scanner-based-text-token-parser">3. Scanner-Based TEXT Token Parser<a class="headerlink" href="#3-scanner-based-text-token-parser" title="Permanent link">&para;</a></h2>
+<h3 id="overview_3">Overview<a class="headerlink" href="#overview_3" title="Permanent link">&para;</a></h3>
+<p>The scanner-based parser replaces the previous regex-based implementation with a high-performance O(n) state machine. This provides:</p>
+<ul>
+<li><strong>Linear time complexity</strong>: Single pass through content</li>
+<li><strong>Pathological input resistance</strong>: No regex backtracking vulnerabilities</li>
+<li><strong>Better error handling</strong>: Gracefully handles malformed tokens</li>
+<li><strong>Performance</strong>: 10-100x faster on complex inputs</li>
+</ul>
+<h3 id="state-machine">State Machine<a class="headerlink" href="#state-machine" title="Permanent link">&para;</a></h3>
+<p>The scanner uses 9 states to parse TEXT format tokens <code>[[PII:TYPE:ref]]</code>:</p>
+<div class="highlight"><pre><span></span><code>TEXT → BRACKET1 → BRACKET2 → PII → COLON1 → TYPE → COLON2 → REF → CLOSE1 → CLOSE2
+  ↓       ↓          ↓         ↓       ↓       ↓        ↓       ↓       ↓
+ [ERROR] [ERROR]  [ERROR]  [ERROR] [ERROR] [ERROR]  [ERROR] [ERROR] [ERROR]
+</code></pre></div>
+<h3 id="implementation_2">Implementation<a class="headerlink" href="#implementation_2" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">enum</span><span class="w"> </span><span class="kn">import</span> <span class="n">Enum</span><span class="p">,</span> <span class="n">auto</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">ScanState</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;States for the TEXT token scanner.&quot;&quot;&quot;</span>
+    <span class="n">TEXT</span> <span class="o">=</span> <span class="n">auto</span><span class="p">()</span>      <span class="c1"># Regular text</span>
+    <span class="n">BRACKET1</span> <span class="o">=</span> <span class="n">auto</span><span class="p">()</span>  <span class="c1"># Seen first &#39;[&#39;</span>
+    <span class="n">BRACKET2</span> <span class="o">=</span> <span class="n">auto</span><span class="p">()</span>  <span class="c1"># Seen second &#39;[&#39;</span>
+    <span class="n">PII</span> <span class="o">=</span> <span class="n">auto</span><span class="p">()</span>       <span class="c1"># Seen &#39;PII&#39;</span>
+    <span class="n">COLON1</span> <span class="o">=</span> <span class="n">auto</span><span class="p">()</span>    <span class="c1"># Seen first &#39;:&#39;</span>
+    <span class="n">TYPE</span> <span class="o">=</span> <span class="n">auto</span><span class="p">()</span>      <span class="c1"># Reading PII type</span>
+    <span class="n">COLON2</span> <span class="o">=</span> <span class="n">auto</span><span class="p">()</span>    <span class="c1"># Seen second &#39;:&#39;</span>
+    <span class="n">REF</span> <span class="o">=</span> <span class="n">auto</span><span class="p">()</span>       <span class="c1"># Reading token ref</span>
+    <span class="n">CLOSE1</span> <span class="o">=</span> <span class="n">auto</span><span class="p">()</span>    <span class="c1"># Seen first &#39;]&#39;</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">scan_text_tokens</span><span class="p">(</span><span class="n">content</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">TextToken</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Scan content for TEXT tokens using state machine.&quot;&quot;&quot;</span>
+    <span class="n">state</span> <span class="o">=</span> <span class="n">ScanState</span><span class="o">.</span><span class="n">TEXT</span>
+    <span class="c1"># ... implementation details</span>
+</code></pre></div>
+<h3 id="usage-example_2">Usage Example<a class="headerlink" href="#usage-example_2" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">mcp_pvp.tokens</span><span class="w"> </span><span class="kn">import</span> <span class="n">extract_text_tokens</span>
+
+<span class="n">content</span> <span class="o">=</span> <span class="s2">&quot;Email: [[PII:EMAIL:tkn_abc]] Phone: [[PII:PHONE:tkn_xyz]]&quot;</span>
+<span class="n">tokens</span> <span class="o">=</span> <span class="n">extract_text_tokens</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
+
+<span class="c1"># Returns: [</span>
+<span class="c1">#   TextToken(type=PIIType.EMAIL, ref=&quot;tkn_abc&quot;),</span>
+<span class="c1">#   TextToken(type=PIIType.PHONE, ref=&quot;tkn_xyz&quot;),</span>
+<span class="c1"># ]</span>
+</code></pre></div>
+<h3 id="performance-characteristics">Performance Characteristics<a class="headerlink" href="#performance-characteristics" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Input Type</th>
+<th>Regex Approach</th>
+<th>Scanner Approach</th>
+<th>Speedup</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Simple tokens</td>
+<td>0.1ms</td>
+<td>0.01ms</td>
+<td>10x</td>
+</tr>
+<tr>
+<td>Pathological input (1000 false starts)</td>
+<td>100ms+</td>
+<td>1ms</td>
+<td>100x+</td>
+</tr>
+<tr>
+<td>Large documents (100KB)</td>
+<td>50ms</td>
+<td>5ms</td>
+<td>10x</td>
+</tr>
+</tbody>
+</table>
+<h3 id="error-handling_1">Error Handling<a class="headerlink" href="#error-handling_1" title="Permanent link">&para;</a></h3>
+<p>The scanner gracefully handles malformed tokens:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Missing closing bracket</span>
+<span class="s2">&quot;[[PII:EMAIL:tkn_abc]&quot;</span> <span class="err">→</span> <span class="p">[]</span>  <span class="c1"># No tokens extracted</span>
+
+<span class="c1"># Invalid PII type</span>
+<span class="s2">&quot;[[PII:INVALID:tkn_abc]]&quot;</span> <span class="err">→</span> <span class="p">[]</span>  <span class="c1"># Type validation fails</span>
+
+<span class="c1"># Special characters in ref</span>
+<span class="s2">&quot;[[PII:EMAIL:tkn_abc-123_xyz]]&quot;</span> <span class="err">→</span> <span class="p">[</span><span class="n">TextToken</span><span class="p">(</span><span class="o">...</span><span class="p">)]</span>  <span class="c1"># Valid</span>
+<span class="s2">&quot;[[PII:EMAIL:tkn abc]]&quot;</span> <span class="err">→</span> <span class="p">[]</span>  <span class="c1"># Spaces not allowed</span>
+</code></pre></div>
+<hr />
+<h2 id="4-recursive-output-scrubbing">4. Recursive Output Scrubbing<a class="headerlink" href="#4-recursive-output-scrubbing" title="Permanent link">&para;</a></h2>
+<h3 id="overview_4">Overview<a class="headerlink" href="#overview_4" title="Permanent link">&para;</a></h3>
+<p>Recursive output scrubbing ensures that <em>any</em> Python object returned by a tool is thoroughly scanned for PII, including:</p>
+<ul>
+<li>Exceptions with tracebacks</li>
+<li>Nested dictionaries and lists</li>
+<li>Custom objects with attributes</li>
+<li>Mixed structures up to depth 10</li>
+</ul>
+<p>This prevents PII leakage through complex tool responses.</p>
+<h3 id="implementation_3">Implementation<a class="headerlink" href="#implementation_3" title="Permanent link">&para;</a></h3>
+<p>The <code>serialize_for_pii_detection()</code> function recursively converts any object to a string:</p>
+<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">serialize_for_pii_detection</span><span class="p">(</span><span class="n">obj</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">max_depth</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span> <span class="n">_depth</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Recursively serialize any Python object for PII detection.</span>
+
+<span class="sd">    Handles:</span>
+<span class="sd">    - Primitives (str, int, float, bool, None)</span>
+<span class="sd">    - Collections (list, tuple, set, dict)</span>
+<span class="sd">    - Exceptions (with traceback)</span>
+<span class="sd">    - Custom objects (via __dict__ inspection)</span>
+<span class="sd">    - Circular references (via depth limit)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Base cases</span>
+    <span class="k">if</span> <span class="n">obj</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;None&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)):</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+
+    <span class="c1"># Depth limit for circular reference protection</span>
+    <span class="k">if</span> <span class="n">_depth</span> <span class="o">&gt;=</span> <span class="n">max_depth</span><span class="p">:</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&lt;max_depth_reached:</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&gt;&quot;</span>
+
+    <span class="c1"># Exception with traceback</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="ne">Exception</span><span class="p">):</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">traceback</span>
+        <span class="n">tb</span> <span class="o">=</span> <span class="n">traceback</span><span class="o">.</span><span class="n">format_exception</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">obj</span><span class="p">),</span> <span class="n">obj</span><span class="p">,</span> <span class="n">obj</span><span class="o">.</span><span class="n">__traceback__</span><span class="p">)</span>
+        <span class="k">return</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tb</span><span class="p">)</span>
+
+    <span class="c1"># Collections</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="n">items</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">serialize_for_pii_detection</span><span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="w"> </span><span class="n">max_depth</span><span class="p">,</span><span class="w"> </span><span class="n">_depth</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="si">}</span><span class="s2">: &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">serialize_for_pii_detection</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="w"> </span><span class="n">max_depth</span><span class="p">,</span><span class="w"> </span><span class="n">_depth</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">obj</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+        <span class="p">]</span>
+        <span class="k">return</span> <span class="s2">&quot;{&quot;</span> <span class="o">+</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">items</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;}&quot;</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">,</span> <span class="nb">set</span><span class="p">)):</span>
+        <span class="n">items</span> <span class="o">=</span> <span class="p">[</span><span class="n">serialize_for_pii_detection</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">max_depth</span><span class="p">,</span> <span class="n">_depth</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">obj</span><span class="p">]</span>
+        <span class="k">return</span> <span class="s2">&quot;[&quot;</span> <span class="o">+</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">items</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;]&quot;</span>
+
+    <span class="c1"># Custom objects</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s2">&quot;__dict__&quot;</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">serialize_for_pii_detection</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">,</span> <span class="n">max_depth</span><span class="p">,</span> <span class="n">_depth</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="usage-example_3">Usage Example<a class="headerlink" href="#usage-example_3" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">mcp_pvp</span><span class="w"> </span><span class="kn">import</span> <span class="n">Vault</span><span class="p">,</span> <span class="n">DeliverRequest</span><span class="p">,</span> <span class="n">ToolCall</span><span class="p">,</span> <span class="n">RunContext</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">UserProfile</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">email</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">phone</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">email</span> <span class="o">=</span> <span class="n">email</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">phone</span> <span class="o">=</span> <span class="n">phone</span>
+
+<span class="c1"># Tool returns custom object</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_user_profile</span><span class="p">(</span><span class="n">user_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">UserProfile</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">UserProfile</span><span class="p">(</span><span class="s2">&quot;Alice&quot;</span><span class="p">,</span> <span class="s2">&quot;alice@example.com&quot;</span><span class="p">,</span> <span class="s2">&quot;555-1234&quot;</span><span class="p">)</span>
+
+<span class="c1"># Vault automatically scrubs the entire object</span>
+<span class="n">vault</span> <span class="o">=</span> <span class="n">Vault</span><span class="p">(</span><span class="n">policy</span><span class="o">=</span><span class="n">Policy</span><span class="p">(</span><span class="n">default_allow</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+<span class="n">deliver_resp</span> <span class="o">=</span> <span class="n">vault</span><span class="o">.</span><span class="n">deliver</span><span class="p">(</span><span class="n">DeliverRequest</span><span class="p">(</span>
+    <span class="n">vault_session</span><span class="o">=</span><span class="n">session_id</span><span class="p">,</span>
+    <span class="n">run</span><span class="o">=</span><span class="n">RunContext</span><span class="p">(</span><span class="n">run_id</span><span class="o">=</span><span class="s2">&quot;run1&quot;</span><span class="p">,</span> <span class="n">participant_id</span><span class="o">=</span><span class="s2">&quot;llm&quot;</span><span class="p">),</span>
+    <span class="n">tool_call</span><span class="o">=</span><span class="n">ToolCall</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;get_user_profile&quot;</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;user_id&quot;</span><span class="p">:</span> <span class="s2">&quot;123&quot;</span><span class="p">}),</span>
+<span class="p">))</span>
+
+<span class="c1"># Result is scrubbed:</span>
+<span class="c1"># {name: Alice, email: [[PII:EMAIL:tkn_xyz]], phone: [[PII:PHONE:tkn_abc]]}</span>
+<span class="k">assert</span> <span class="s2">&quot;[[PII:EMAIL:&quot;</span> <span class="ow">in</span> <span class="n">deliver_resp</span><span class="o">.</span><span class="n">tool_result</span>
+<span class="k">assert</span> <span class="s2">&quot;alice@example.com&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">deliver_resp</span><span class="o">.</span><span class="n">tool_result</span>
+</code></pre></div>
+<h3 id="exception-handling">Exception Handling<a class="headerlink" href="#exception-handling" title="Permanent link">&para;</a></h3>
+<p>Exceptions are fully serialized including tracebacks:</p>
+<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">buggy_tool</span><span class="p">():</span>
+    <span class="n">email</span> <span class="o">=</span> <span class="s2">&quot;admin@example.com&quot;</span>
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid email: </span><span class="si">{</span><span class="n">email</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># Exception traceback is scrubbed:</span>
+<span class="c1"># ValueError: Invalid email: [[PII:EMAIL:tkn_xyz]]</span>
+<span class="c1"># Traceback shows [[PII:EMAIL:tkn_xyz]] instead of raw email</span>
+</code></pre></div>
+<h3 id="depth-protection">Depth Protection<a class="headerlink" href="#depth-protection" title="Permanent link">&para;</a></h3>
+<p>Circular references and deeply nested structures are handled:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Circular reference</span>
+<span class="n">obj</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;self&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">}</span>
+<span class="n">obj</span><span class="p">[</span><span class="s2">&quot;self&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">obj</span>
+
+<span class="n">serialized</span> <span class="o">=</span> <span class="n">serialize_for_pii_detection</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+<span class="c1"># Result: {self: &lt;max_depth_reached:dict&gt;}</span>
+</code></pre></div>
+<h3 id="supported-types">Supported Types<a class="headerlink" href="#supported-types" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Handling</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>str</code>, <code>int</code>, <code>float</code>, <code>bool</code>, <code>None</code></td>
+<td>Direct conversion to string</td>
+</tr>
+<tr>
+<td><code>dict</code></td>
+<td>Recursive serialization of keys and values</td>
+</tr>
+<tr>
+<td><code>list</code>, <code>tuple</code>, <code>set</code></td>
+<td>Recursive serialization of items</td>
+</tr>
+<tr>
+<td><code>Exception</code></td>
+<td>Full traceback with <code>traceback.format_exception()</code></td>
+</tr>
+<tr>
+<td>Custom objects</td>
+<td>Serialization via <code>__dict__</code> inspection</td>
+</tr>
+<tr>
+<td>Circular references</td>
+<td>Depth limit prevents infinite recursion</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="5-audit-coherence">5. Audit Coherence<a class="headerlink" href="#5-audit-coherence" title="Permanent link">&para;</a></h2>
+<h3 id="overview_5">Overview<a class="headerlink" href="#overview_5" title="Permanent link">&para;</a></h3>
+<p>Audit coherence provides complete traceability by linking child audit events (result tokenization) to their parent events (deliver operations). This enables:</p>
+<ul>
+<li><strong>Complete audit trails</strong>: Track entire request/response flows</li>
+<li><strong>Parent-child queries</strong>: Find all child events for a deliver operation</li>
+<li><strong>Debugging</strong>: Understand full context of tokenization operations</li>
+<li><strong>Compliance</strong>: Prove complete handling of sensitive data</li>
+</ul>
+<h3 id="implementation_4">Implementation<a class="headerlink" href="#implementation_4" title="Permanent link">&para;</a></h3>
+<p>The <code>AuditEvent</code> model includes a <code>parent_audit_id</code> field:</p>
+<div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">AuditEvent</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Audit event record.&quot;&quot;&quot;</span>
+
+    <span class="n">audit_id</span><span class="p">:</span> <span class="nb">str</span>  <span class="c1"># Unique event ID</span>
+    <span class="n">timestamp</span><span class="p">:</span> <span class="n">datetime</span>
+    <span class="n">event_type</span><span class="p">:</span> <span class="n">AuditEventType</span>  <span class="c1"># TOKENIZE, DELIVER, etc.</span>
+    <span class="n">vault_session</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span>
+    <span class="n">run</span><span class="p">:</span> <span class="n">RunContext</span> <span class="o">|</span> <span class="kc">None</span>
+    <span class="n">parent_audit_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span>  <span class="c1"># 🔗 Links to parent event</span>
+    <span class="n">details</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>
+</code></pre></div>
+<p>During <code>deliver()</code>, result tokenization events reference their parent:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># In vault.deliver()</span>
+<span class="n">audit_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">audit_logger</span><span class="o">.</span><span class="n">log_deliver</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+
+<span class="c1"># Result tokenization includes parent reference</span>
+<span class="n">result_resp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tokenize</span><span class="p">(</span>
+    <span class="n">result_tokenize_req</span><span class="p">,</span>
+    <span class="n">parent_audit_id</span><span class="o">=</span><span class="n">audit_id</span>  <span class="c1"># 🔗 Link to parent deliver event</span>
+<span class="p">)</span>
+</code></pre></div>
+<h3 id="usage-example_4">Usage Example<a class="headerlink" href="#usage-example_4" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">mcp_pvp</span><span class="w"> </span><span class="kn">import</span> <span class="n">Vault</span><span class="p">,</span> <span class="n">DeliverRequest</span><span class="p">,</span> <span class="n">ToolCall</span><span class="p">,</span> <span class="n">RunContext</span>
+
+<span class="n">vault</span> <span class="o">=</span> <span class="n">Vault</span><span class="p">(</span><span class="n">policy</span><span class="o">=</span><span class="n">Policy</span><span class="p">(</span><span class="n">default_allow</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+
+<span class="c1"># Perform deliver operation</span>
+<span class="n">deliver_resp</span> <span class="o">=</span> <span class="n">vault</span><span class="o">.</span><span class="n">deliver</span><span class="p">(</span><span class="n">DeliverRequest</span><span class="p">(</span>
+    <span class="n">vault_session</span><span class="o">=</span><span class="n">session_id</span><span class="p">,</span>
+    <span class="n">run</span><span class="o">=</span><span class="n">RunContext</span><span class="p">(</span><span class="n">run_id</span><span class="o">=</span><span class="s2">&quot;run1&quot;</span><span class="p">,</span> <span class="n">participant_id</span><span class="o">=</span><span class="s2">&quot;llm&quot;</span><span class="p">),</span>
+    <span class="n">tool_call</span><span class="o">=</span><span class="n">ToolCall</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;get_info&quot;</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">{}),</span>
+<span class="p">))</span>
+
+<span class="c1"># Query audit trail</span>
+<span class="n">events</span> <span class="o">=</span> <span class="n">vault</span><span class="o">.</span><span class="n">audit_logger</span><span class="o">.</span><span class="n">get_events</span><span class="p">()</span>
+
+<span class="c1"># Find deliver event</span>
+<span class="n">deliver_events</span> <span class="o">=</span> <span class="p">[</span><span class="n">e</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">events</span> <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">event_type</span> <span class="o">==</span> <span class="s2">&quot;DELIVER&quot;</span><span class="p">]</span>
+<span class="n">deliver_event</span> <span class="o">=</span> <span class="n">deliver_events</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+<span class="c1"># Find child tokenization events</span>
+<span class="n">child_events</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">e</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">events</span> 
+    <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">parent_audit_id</span> <span class="o">==</span> <span class="n">deliver_event</span><span class="o">.</span><span class="n">audit_id</span>
+<span class="p">]</span>
+
+<span class="c1"># Verify parent-child relationship</span>
+<span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">child_events</span><span class="p">:</span>
+    <span class="k">assert</span> <span class="n">child</span><span class="o">.</span><span class="n">parent_audit_id</span> <span class="o">==</span> <span class="n">deliver_event</span><span class="o">.</span><span class="n">audit_id</span>
+    <span class="k">assert</span> <span class="n">child</span><span class="o">.</span><span class="n">event_type</span> <span class="o">==</span> <span class="s2">&quot;TOKENIZE&quot;</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Child event </span><span class="si">{</span><span class="n">child</span><span class="o">.</span><span class="n">audit_id</span><span class="si">}</span><span class="s2"> links to parent </span><span class="si">{</span><span class="n">deliver_event</span><span class="o">.</span><span class="n">audit_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="audit-trail-visualization">Audit Trail Visualization<a class="headerlink" href="#audit-trail-visualization" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>run_1 events:
+  ├─ aud_abc123 [TOKENIZE] (initial)
+  │   └─ vault_session: vs_xyz
+  │
+  ├─ aud_def456 [DELIVER]
+  │   ├─ vault_session: vs_xyz
+  │   └─ tool_name: get_user_info
+  │       │
+  │       └─ aud_ghi789 [TOKENIZE] (result)
+  │           ├─ parent_audit_id: aud_def456  🔗
+  │           ├─ vault_session: vs_xyz
+  │           └─ tokens_created: 3
+</code></pre></div>
+<h3 id="query-patterns">Query Patterns<a class="headerlink" href="#query-patterns" title="Permanent link">&para;</a></h3>
+<h4 id="get-all-events-for-a-run">Get all events for a run<a class="headerlink" href="#get-all-events-for-a-run" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="n">events</span> <span class="o">=</span> <span class="n">vault</span><span class="o">.</span><span class="n">audit_logger</span><span class="o">.</span><span class="n">get_events_for_run</span><span class="p">(</span><span class="s2">&quot;run1&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h4 id="get-child-events-for-a-specific-parent">Get child events for a specific parent<a class="headerlink" href="#get-child-events-for-a-specific-parent" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="n">parent_id</span> <span class="o">=</span> <span class="s2">&quot;aud_abc123&quot;</span>
+<span class="n">children</span> <span class="o">=</span> <span class="p">[</span><span class="n">e</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">events</span> <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">parent_audit_id</span> <span class="o">==</span> <span class="n">parent_id</span><span class="p">]</span>
+</code></pre></div>
+<h4 id="build-complete-event-tree">Build complete event tree<a class="headerlink" href="#build-complete-event-tree" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">build_event_tree</span><span class="p">(</span><span class="n">events</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">AuditEvent</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Build parent-child event tree.&quot;&quot;&quot;</span>
+    <span class="n">tree</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">events</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">parent_audit_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">tree</span><span class="p">[</span><span class="n">event</span><span class="o">.</span><span class="n">audit_id</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;event&quot;</span><span class="p">:</span> <span class="n">event</span><span class="p">,</span> <span class="s2">&quot;children&quot;</span><span class="p">:</span> <span class="p">[]}</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">parent</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">parent_audit_id</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">parent</span><span class="p">:</span>
+                <span class="n">parent</span><span class="p">[</span><span class="s2">&quot;children&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">event</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">tree</span>
+</code></pre></div>
+<h3 id="audit-event-details">Audit Event Details<a class="headerlink" href="#audit-event-details" title="Permanent link">&para;</a></h3>
+<p>Each audit event includes comprehensive details (without raw PII):</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># TOKENIZE event details</span>
+<span class="p">{</span>
+    <span class="s2">&quot;detections&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>           <span class="c1"># Number of PII instances found</span>
+    <span class="s2">&quot;tokens_created&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>       <span class="c1"># Number of tokens created</span>
+    <span class="s2">&quot;types&quot;</span><span class="p">:</span> <span class="p">{</span>                 <span class="c1"># PII type distribution</span>
+        <span class="s2">&quot;EMAIL&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="s2">&quot;PHONE&quot;</span><span class="p">:</span> <span class="mi">1</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="c1"># DELIVER event details</span>
+<span class="p">{</span>
+    <span class="s2">&quot;tool_name&quot;</span><span class="p">:</span> <span class="s2">&quot;send_email&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;disclosed&quot;</span><span class="p">:</span> <span class="p">{</span>             <span class="c1"># What was disclosed (counts only)</span>
+        <span class="s2">&quot;EMAIL&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="s2">&quot;PHONE&quot;</span><span class="p">:</span> <span class="mi">0</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<hr />
+<h2 id="integration-best-practices">Integration &amp; Best Practices<a class="headerlink" href="#integration-best-practices" title="Permanent link">&para;</a></h2>
+<h3 id="using-all-features-together">Using All Features Together<a class="headerlink" href="#using-all-features-together" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">mcp_pvp</span><span class="w"> </span><span class="kn">import</span> <span class="n">Vault</span><span class="p">,</span> <span class="n">TokenizeRequest</span><span class="p">,</span> <span class="n">DeliverRequest</span><span class="p">,</span> <span class="n">ToolCall</span><span class="p">,</span> <span class="n">RunContext</span><span class="p">,</span> <span class="n">Policy</span>
+
+<span class="c1"># Initialize vault with policy</span>
+<span class="n">vault</span> <span class="o">=</span> <span class="n">Vault</span><span class="p">(</span><span class="n">policy</span><span class="o">=</span><span class="n">Policy</span><span class="p">(</span><span class="n">default_allow</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+
+<span class="c1"># 1. Initial tokenization (creates session)</span>
+<span class="n">tokenize_resp</span> <span class="o">=</span> <span class="n">vault</span><span class="o">.</span><span class="n">tokenize</span><span class="p">(</span><span class="n">TokenizeRequest</span><span class="p">(</span>
+    <span class="n">content</span><span class="o">=</span><span class="s2">&quot;Contact alice@example.com or call 555-1234&quot;</span>
+<span class="p">))</span>
+<span class="n">session_id</span> <span class="o">=</span> <span class="n">tokenize_resp</span><span class="o">.</span><span class="n">vault_session</span>
+
+<span class="c1"># Session integrity: Tokens bound to session_id</span>
+<span class="k">assert</span> <span class="nb">all</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">ref</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;tkn_&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">tokenize_resp</span><span class="o">.</span><span class="n">tokens</span><span class="p">)</span>
+
+<span class="c1"># 2. Deliver with complex result</span>
+<span class="n">deliver_resp</span> <span class="o">=</span> <span class="n">vault</span><span class="o">.</span><span class="n">deliver</span><span class="p">(</span><span class="n">DeliverRequest</span><span class="p">(</span>
+    <span class="n">vault_session</span><span class="o">=</span><span class="n">session_id</span><span class="p">,</span>  <span class="c1"># Reuse session</span>
+    <span class="n">run</span><span class="o">=</span><span class="n">RunContext</span><span class="p">(</span><span class="n">run_id</span><span class="o">=</span><span class="s2">&quot;run1&quot;</span><span class="p">,</span> <span class="n">participant_id</span><span class="o">=</span><span class="s2">&quot;llm&quot;</span><span class="p">),</span>
+    <span class="n">tool_call</span><span class="o">=</span><span class="n">ToolCall</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;complex_tool&quot;</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">{}),</span>
+<span class="p">))</span>
+
+<span class="c1"># Result tokenization: Same session, recursive scrubbing</span>
+<span class="k">assert</span> <span class="nb">all</span><span class="p">(</span>
+    <span class="n">vault</span><span class="o">.</span><span class="n">store</span><span class="o">.</span><span class="n">get_pii</span><span class="p">(</span><span class="n">session_id</span><span class="p">,</span> <span class="n">t</span><span class="o">.</span><span class="n">ref</span><span class="p">)</span><span class="o">.</span><span class="n">vault_session</span> <span class="o">==</span> <span class="n">session_id</span>
+    <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">deliver_resp</span><span class="o">.</span><span class="n">result_tokens</span>
+<span class="p">)</span>
+
+<span class="c1"># Scanner: Fast parsing of result tokens</span>
+<span class="k">assert</span> <span class="s2">&quot;[[PII:&quot;</span> <span class="ow">in</span> <span class="n">deliver_resp</span><span class="o">.</span><span class="n">tool_result</span>
+
+<span class="c1"># 3. Audit trail: Complete parent-child tracking</span>
+<span class="n">events</span> <span class="o">=</span> <span class="n">vault</span><span class="o">.</span><span class="n">audit_logger</span><span class="o">.</span><span class="n">get_events</span><span class="p">()</span>
+<span class="n">deliver_events</span> <span class="o">=</span> <span class="p">[</span><span class="n">e</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">events</span> <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">event_type</span> <span class="o">==</span> <span class="s2">&quot;DELIVER&quot;</span><span class="p">]</span>
+<span class="n">result_tokenize_events</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">e</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">events</span>
+    <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">event_type</span> <span class="o">==</span> <span class="s2">&quot;TOKENIZE&quot;</span> <span class="ow">and</span> <span class="n">e</span><span class="o">.</span><span class="n">parent_audit_id</span> <span class="o">==</span> <span class="n">deliver_events</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">audit_id</span>
+<span class="p">]</span>
+<span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">result_tokenize_events</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span>  <span class="c1"># Child events exist</span>
+</code></pre></div>
+<h3 id="performance-considerations">Performance Considerations<a class="headerlink" href="#performance-considerations" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>Session Reuse</strong>: Reduces session creation overhead</li>
+<li><strong>Scanner Performance</strong>: O(n) parsing handles large documents efficiently</li>
+<li><strong>Recursive Scrubbing</strong>: Depth limit (10) prevents excessive overhead</li>
+<li><strong>Audit Coherence</strong>: Minimal overhead for parent_audit_id tracking</li>
+</ol>
+<h3 id="security-best-practices">Security Best Practices<a class="headerlink" href="#security-best-practices" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>Validate Session TTL</strong>: Set appropriate TTL for your use case</li>
+<li><strong>Monitor Audit Trails</strong>: Track unusual parent-child patterns</li>
+<li><strong>Limit Recursion Depth</strong>: Adjust max_depth based on expected data structures</li>
+<li><strong>Review Policies</strong>: Ensure deliver operations are properly scoped</li>
+</ol>
+<h3 id="monitoring-observability">Monitoring &amp; Observability<a class="headerlink" href="#monitoring-observability" title="Permanent link">&para;</a></h3>
+<p>All features emit structured logs:</p>
+<div class="highlight"><pre><span></span><code><span class="c1">// Session reuse</span>
+<span class="p">{</span><span class="nt">&quot;event&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;vault_tokenize_reusing_session&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;vault_session&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;vs_xyz&quot;</span><span class="p">}</span>
+
+<span class="c1">// Result tokenization</span>
+<span class="p">{</span><span class="nt">&quot;event&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;vault_tokenize_complete&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;tokens_created&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;vault_session&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;vs_xyz&quot;</span><span class="p">}</span>
+
+<span class="c1">// Audit parent-child</span>
+<span class="p">{</span><span class="nt">&quot;event&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;audit_event&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;parent_audit_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;aud_abc&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;event_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;TOKENIZE&quot;</span><span class="p">}</span>
+
+<span class="c1">// Scanner performance</span>
+<span class="p">{</span><span class="nt">&quot;event&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;vault_tokenize_complete&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;detections&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;elapsed&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;0.001s&quot;</span><span class="p">}</span>
+</code></pre></div>
+<hr />
+<h2 id="testing">Testing<a class="headerlink" href="#testing" title="Permanent link">&para;</a></h2>
+<p>All features are comprehensively tested:</p>
+<ul>
+<li><strong>Unit Tests</strong>: 138 tests covering individual features</li>
+<li><strong>Integration Tests</strong>: 10 tests validating features working together</li>
+<li><strong>Total Coverage</strong>: 148 tests, 87% code coverage</li>
+</ul>
+<p>Run the test suite:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># All tests</span>
+uv<span class="w"> </span>run<span class="w"> </span>pytest<span class="w"> </span>-v
+
+<span class="c1"># Integration tests only</span>
+uv<span class="w"> </span>run<span class="w"> </span>pytest<span class="w"> </span>tests/test_integration.py<span class="w"> </span>-v
+
+<span class="c1"># Specific feature tests</span>
+uv<span class="w"> </span>run<span class="w"> </span>pytest<span class="w"> </span>tests/test_session_integrity.py<span class="w"> </span>-v
+uv<span class="w"> </span>run<span class="w"> </span>pytest<span class="w"> </span>tests/test_result_tokenization.py<span class="w"> </span>-v
+uv<span class="w"> </span>run<span class="w"> </span>pytest<span class="w"> </span>tests/test_scanner.py<span class="w"> </span>-v
+uv<span class="w"> </span>run<span class="w"> </span>pytest<span class="w"> </span>tests/test_recursive_scrubbing.py<span class="w"> </span>-v
+uv<span class="w"> </span>run<span class="w"> </span>pytest<span class="w"> </span>tests/test_audit_coherence.py<span class="w"> </span>-v
+</code></pre></div>
+<hr />
+<h2 id="migration-guide">Migration Guide<a class="headerlink" href="#migration-guide" title="Permanent link">&para;</a></h2>
+<p>All features are <strong>backward compatible</strong>. No code changes required for existing deployments.</p>
+<h3 id="whats-new">What's New<a class="headerlink" href="#whats-new" title="Permanent link">&para;</a></h3>
+<ol>
+<li><code>PIIRecord.vault_session</code> field (automatically populated)</li>
+<li><code>serialize_for_pii_detection()</code> function in <code>vault.py</code></li>
+<li>Scanner-based parser (replaces regex, same API)</li>
+<li><code>parent_audit_id</code> in <code>AuditEvent</code> (automatically populated)</li>
+<li>Session reuse in result tokenization (automatic)</li>
+</ol>
+<h3 id="optional-enhancements">Optional Enhancements<a class="headerlink" href="#optional-enhancements" title="Permanent link">&para;</a></h3>
+<p>If you want to leverage new features explicitly:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># 1. Access vault_session on PII records</span>
+<span class="n">pii</span> <span class="o">=</span> <span class="n">vault</span><span class="o">.</span><span class="n">store</span><span class="o">.</span><span class="n">get_pii</span><span class="p">(</span><span class="n">session_id</span><span class="p">,</span> <span class="n">token_ref</span><span class="p">)</span>
+<span class="k">assert</span> <span class="n">pii</span><span class="o">.</span><span class="n">vault_session</span> <span class="o">==</span> <span class="n">session_id</span>
+
+<span class="c1"># 2. Serialize custom objects before detection</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mcp_pvp.vault</span><span class="w"> </span><span class="kn">import</span> <span class="n">serialize_for_pii_detection</span>
+<span class="n">serialized</span> <span class="o">=</span> <span class="n">serialize_for_pii_detection</span><span class="p">(</span><span class="n">custom_object</span><span class="p">)</span>
+
+<span class="c1"># 3. Query audit trails with parent relationships</span>
+<span class="n">events</span> <span class="o">=</span> <span class="n">vault</span><span class="o">.</span><span class="n">audit_logger</span><span class="o">.</span><span class="n">get_events</span><span class="p">()</span>
+<span class="n">children</span> <span class="o">=</span> <span class="p">[</span><span class="n">e</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">events</span> <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">parent_audit_id</span> <span class="o">==</span> <span class="n">parent_id</span><span class="p">]</span>
+</code></pre></div>
+<hr />
+<h2 id="summary">Summary<a class="headerlink" href="#summary" title="Permanent link">&para;</a></h2>
+<p>The vault hardening features provide:</p>
+<p>✅ <strong>Enhanced Security</strong>: Session integrity prevents token theft<br />
+✅ <strong>Better Performance</strong>: Scanner provides O(n) parsing with no regex backtracking<br />
+✅ <strong>Complete Coverage</strong>: Recursive scrubbing finds PII in any Python object<br />
+✅ <strong>Full Traceability</strong>: Audit coherence links all related events<br />
+✅ <strong>Simplified Management</strong>: Session reuse reduces complexity  </p>
+<p>All features are production-ready, fully tested, and backward compatible.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/Spidux-ai/mcp-pvp" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.instant", "navigation.sections", "navigation.top", "navigation.tabs", "navigation.tabs.sticky", "navigation.expand", "toc.follow", "toc.integrate", "search.suggest", "search.highlight", "content.code.copy", "content.tabs.link"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>
