@@ -43,7 +43,7 @@ class ToolExecutor(ABC):
     """
 
     @abstractmethod
-    def execute(self, tool_name: str, injected_args: dict[str, Any]) -> Any:
+    async def execute(self, tool_name: str, injected_args: dict[str, Any]) -> Any:
         """Execute a tool call with PII-injected arguments.
 
         Args:
@@ -65,6 +65,41 @@ class ToolExecutor(ABC):
         """
         pass
 
+    @abstractmethod
+    async def list_tools(self) -> list[str]:
+        """Return a list of available tool names that this executor can execute."""
+        pass
+
+    @abstractmethod
+    async def get_tool_info(self, tool_name: str) -> dict[str, Any]:
+        """Return metadata about a specific tool.
+
+        Args:
+            tool_name: Name of the tool to get info for
+
+        Returns:
+            Dict with tool metadata (e.g. description, argument schema)
+        Raises:
+            KeyError: If tool_name is not found
+        """
+        pass
+
+    @abstractmethod
+    async def get_tool(self, tool_name: str) -> Any:
+        """Return the actual tool function or callable for the given tool name.
+
+        This is used for synchronous execution contexts where an async execute()
+        method may not be suitable.
+
+        Args:
+            tool_name: Name of the tool to retrieve
+        Returns:
+            Callable that implements the tool's functionality
+        Raises:
+            KeyError: If tool_name is not found
+        """
+        pass
+
 
 class DummyExecutor(ToolExecutor):
     """Reference implementation that returns stub results.
@@ -80,7 +115,7 @@ class DummyExecutor(ToolExecutor):
     Do NOT use this in production - implement your own ToolExecutor.
     """
 
-    def execute(self, tool_name: str, injected_args: dict[str, Any]) -> Any:
+    async def execute(self, tool_name: str, injected_args: dict[str, Any]) -> Any:
         """Return stub result showing what would have been executed.
 
         Args:
@@ -97,6 +132,47 @@ class DummyExecutor(ToolExecutor):
             "args_received": True,
             "arg_count": len(injected_args),
         }
+    
+    async def list_tools(self) -> list[str]:
+        """Return a list of available tool names."""
+        return ["add_numbers", "get_user_info", "send_email"]
+    
+    async def get_tool_info(self, tool_name: str) -> dict[str, Any]:
+        """Return metadata about a specific tool."""
+        tool_info = {
+            "add_numbers": {
+                "description": "Add two numbers together",
+                "args": {"a": "number", "b": "number"},
+            },
+            "get_user_info": {
+                "description": "Get user information by email",
+                "args": {"email": "string"},
+            },
+            "send_email": {
+                "description": "Send an email to a recipient",
+                "args": {"recipient_email": "string", "subject": "string", "body": "string"},
+            },
+        }
+        if tool_name not in tool_info:
+            raise KeyError(f"Tool '{tool_name}' not found in DummyExecutor")
+        return tool_info[tool_name]
+    
+    async def get_tool(self, tool_name: str) -> Any:
+        """Return stub tool callable."""
+        tool_names = await self.list_tools()
+        if tool_name not in tool_names:
+            raise KeyError(f"Tool '{tool_name}' not found in DummyExecutor")
+        
+        # Return a simple stub callable
+        async def stub_tool(**kwargs):
+            return {
+                "status": "stub",
+                "message": f"DummyExecutor stub for tool '{tool_name}'",
+                "args": kwargs,
+            }
+        
+        return stub_tool
+    
 
 
 class MCP_ToolExecutor(ToolExecutor):
@@ -129,7 +205,7 @@ class MCP_ToolExecutor(ToolExecutor):
         """
         self.mcp_session = mcp_session
 
-    def execute(self, tool_name: str, injected_args: dict[str, Any]) -> Any:
+    async def execute(self, tool_name: str, injected_args: dict[str, Any]) -> Any:
         """Execute tool via MCP with injected PII.
 
         Args:
@@ -142,18 +218,58 @@ class MCP_ToolExecutor(ToolExecutor):
         Raises:
             Exception: Any exception from MCP tool execution
         """
-        # Import here to avoid requiring mcp SDK for basic usage
-        try:
-            from mcp.types import CallToolRequest
-        except ImportError as e:
-            raise ImportError(
-                "MCP SDK not installed. Install with: pip install 'mcp-pvp[mcp]'"
-            ) from e
 
         # Call the MCP tool with injected args
         # Note: This is synchronous - for async, use AsyncMCP_ToolExecutor
-        result = self.mcp_session.call_tool(
-            CallToolRequest(name=tool_name, arguments=injected_args)  # type: ignore[call-arg]
+        result = await self.mcp_session.call_tool(
+            name=tool_name,
+            arguments=injected_args
         )
 
         return result
+    
+    async def list_tools(self) -> list[str]:
+        """List available tools from the MCP session."""
+        tools = await self.mcp_session.list_tools()
+        return [tool.name for tool in tools.tools]
+    
+    async def get_tool_info(self, tool_name: str) -> dict[str, Any]:
+        """Get metadata about a specific tool from the MCP session."""
+        tools = await self.mcp_session.list_tools()
+        for tool in tools.tools:
+            if tool.name == tool_name:
+                return {
+                    "description": tool.description,
+                    "args": tool.inputSchema,
+                    "name": tool.name,
+                }
+        raise KeyError(f"Tool '{tool_name}' not found in MCP session")
+    
+
+    async def get_tool(self, tool_name: str) -> Any:
+        """Get the actual tool function or callable for the given tool name.
+
+        Note: This is a placeholder implementation. In a real implementation,
+        you would return a callable that executes the tool logic, possibly
+        by calling self.mcp_session.call_tool() internally.
+
+        Args:
+            tool_name: Name of the tool to retrieve
+        Returns:
+            Callable that implements the tool's functionality
+        Raises:
+            KeyError: If tool_name is not found
+        """
+        # For demonstration, return a simple callable that calls execute()
+        tool_names = await self.list_tools()
+        if tool_name not in  tool_names:
+            raise KeyError(f"Tool '{tool_name}' not found in MCP session")
+        
+        tools = await self.mcp_session.list_tools()
+        tools = tools.tools
+        for tool in tools:
+            if tool.name == tool_name:
+                return tool 
+            
+        return None
+            

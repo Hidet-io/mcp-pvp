@@ -19,7 +19,7 @@ from mcp_pvp.vault import Vault
 class EchoExecutor(ToolExecutor):
     """Test executor that echoes PII back in results."""
 
-    def execute(self, tool_name: str, injected_args: dict) -> dict:
+    async def execute(self, tool_name: str, injected_args: dict) -> dict:
         """Echo the email back in the result."""
         email = injected_args.get("email", "unknown")
         return {
@@ -27,12 +27,21 @@ class EchoExecutor(ToolExecutor):
             "message": f"Sent notification to {email}",
             "recipient": email,
         }
+    
+    async def list_tools(self) -> list[str]:
+        return []
+    
+    async def get_tool_info(self, tool_name: str) -> dict:
+        return {}
+    
+    async def get_tool(self, tool_name: str):
+        return None
 
 
 class GenerateNewPIIExecutor(ToolExecutor):
     """Test executor that generates NEW PII in results."""
 
-    def execute(self, tool_name: str, injected_args: dict) -> dict:
+    async def execute(self, tool_name: str, injected_args: dict) -> dict:
         """Generate a result with NEW email not in the original request."""
         return {
             "status": "success",
@@ -40,6 +49,15 @@ class GenerateNewPIIExecutor(ToolExecutor):
             "support_email": "support@example.com",  # NEW PII not in input
             "backup_contact": "backup@example.com",  # Another NEW PII
         }
+    
+    async def list_tools(self) -> list[str]:
+        return []
+    
+    async def get_tool_info(self, tool_name: str) -> dict:
+        return {}
+    
+    async def get_tool(self, tool_name: str):
+        return None
 
 
 class TestResultTokenizationSameSession:
@@ -100,7 +118,8 @@ class TestResultTokenizationSameSession:
         session = vault.store.get_session(initial_session)
         assert len(session.tokens) == initial_token_count + len(response2.tokens)
 
-    def test_deliver_result_tokens_belong_to_same_session(self):
+    @pytest.mark.asyncio
+    async def test_deliver_result_tokens_belong_to_same_session(self):
         """Test that result tokenization reuses the deliver request's session."""
         policy = Policy(
             sinks={
@@ -126,7 +145,7 @@ class TestResultTokenizationSameSession:
         email_token = tokenize_response.tokens[0]
 
         # Deliver with token (tool result will contain PII and get tokenized)
-        deliver_response = vault.deliver(
+        deliver_response = await vault.deliver(
             DeliverRequest(
                 vault_session=original_session,
                 tool_call=ToolCall(
@@ -144,7 +163,8 @@ class TestResultTokenizationSameSession:
             stored = vault.store.get_pii(original_session, result_token.ref)
             assert stored.vault_session == original_session
 
-    def test_session_token_count_increases_with_result_tokenization(self):
+    @pytest.mark.asyncio
+    async def test_session_token_count_increases_with_result_tokenization(self):
         """Test that session token count increases when results are tokenized with NEW PII."""
         policy = Policy(
             sinks={
@@ -171,7 +191,7 @@ class TestResultTokenizationSameSession:
         initial_token_count = len(vault.store.get_session(session_id).tokens)
 
         # Deliver (result will contain NEW PII that gets tokenized in same session)
-        deliver_response = vault.deliver(
+        deliver_response = await vault.deliver(
             DeliverRequest(
                 vault_session=session_id,
                 tool_call=ToolCall(
@@ -193,7 +213,8 @@ class TestResultTokenizationSameSession:
             stored = vault.store.get_pii(session_id, result_token.ref)
             assert stored.vault_session == session_id
 
-    def test_multi_round_deliver_maintains_single_session(self):
+    @pytest.mark.asyncio
+    async def test_multi_round_deliver_maintains_single_session(self):
         """Test that multiple deliver calls can maintain a single session."""
         policy = Policy(
             sinks={
@@ -218,7 +239,7 @@ class TestResultTokenizationSameSession:
         session_id = tokenize_response.vault_session
 
         # First deliver
-        vault.deliver(
+        await vault.deliver(
             DeliverRequest(
                 vault_session=session_id,
                 tool_call=ToolCall(
@@ -240,7 +261,7 @@ class TestResultTokenizationSameSession:
         # Should still be same session
         assert tokenize_response2.vault_session == session_id
 
-        vault.deliver(
+        await vault.deliver(
             DeliverRequest(
                 vault_session=session_id,
                 tool_call=ToolCall(
@@ -255,7 +276,8 @@ class TestResultTokenizationSameSession:
         for token_ref in session.tokens:
             assert session.tokens[token_ref].vault_session == session_id
 
-    def test_result_tokenization_respects_session_integrity(self):
+    @pytest.mark.asyncio
+    async def test_result_token_session_mismatch_raises_error(self):
         """Test that result tokens are validated by session integrity checks."""
         policy = Policy(
             sinks={
@@ -279,7 +301,7 @@ class TestResultTokenizationSameSession:
         session1 = response1.vault_session
 
         # Deliver and get result tokens in session 1
-        deliver_response = vault.deliver(
+        deliver_response = await vault.deliver(
             DeliverRequest(
                 vault_session=session1,
                 tool_call=ToolCall(

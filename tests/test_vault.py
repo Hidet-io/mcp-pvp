@@ -28,11 +28,40 @@ class CustomExecutor(ToolExecutor):
     def __init__(self):
         self.last_args = None
 
-    def execute(self, tool_name: str, injected_args: dict[str, Any]) -> Any:
+    async def execute(self, tool_name: str, injected_args: dict[str, Any]) -> Any:
         """Record args and return a simple response without PII."""
         self.last_args = injected_args
         return f"Tool {tool_name} executed successfully"
-
+    
+    async def get_tool_info(self, tool_name: str) -> dict[str, Any]:
+        """Return stub tool info."""
+        tool_info = {
+            "send_email": {
+                "description": "Send an email to a recipient",
+                "args": {"recipient_email": "string", "subject": "string", "body": "string"},
+            }
+        }
+        return tool_info.get(tool_name, {})
+    
+    async def list_tools(self) -> list[str]:
+        """Return list of available tool names."""
+        return ["send_email"]
+    
+    async def get_tool(self, tool_name: str) -> Any:
+        """Return stub tool callable."""
+        tool_names = await self.list_tools()
+        if tool_name not in tool_names:
+            raise KeyError(f"Tool '{tool_name}' not found in CustomExecutor")
+        
+        # Return a simple stub callable
+        async def stub_tool(**kwargs):
+            return {
+                "status": "stub",
+                "message": f"CustomExecutor stub for tool '{tool_name}'",
+                "args": kwargs,
+            }
+        
+        return stub_tool
 
 def test_vault_tokenize_text_format() -> None:
     """Test vault tokenization with text format."""
@@ -105,7 +134,8 @@ def test_vault_resolve_with_policy() -> None:
     assert resolve_resp.audit_id.startswith("aud_")
 
 
-def test_vault_deliver_mode() -> None:
+@pytest.mark.asyncio
+async def test_vault_deliver_mode() -> None:
     """Test vault deliver mode."""
     policy = Policy(
         sinks={
@@ -133,7 +163,7 @@ def test_vault_deliver_mode() -> None:
         ),
     )
 
-    deliver_resp = vault.deliver(deliver_req)
+    deliver_resp = await vault.deliver(deliver_req)
 
     assert deliver_resp.delivered is True
     assert deliver_resp.audit_id.startswith("aud_")
@@ -158,7 +188,8 @@ def test_vault_multiple_detections() -> None:
     assert PIIType.PHONE in response.stats.types
 
 
-def test_vault_deliver_with_text_tokens_in_strings() -> None:
+@pytest.mark.asyncio
+async def test_vault_deliver_with_text_tokens_in_strings() -> None:
     """Test vault deliver mode with TEXT format tokens embedded in string arguments."""
     policy = Policy(
         sinks={
@@ -199,7 +230,7 @@ def test_vault_deliver_with_text_tokens_in_strings() -> None:
         ),
     )
 
-    deliver_resp = vault.deliver(deliver_req)
+    deliver_resp = await vault.deliver(deliver_req)
 
     assert deliver_resp.delivered is True
     # Verify executor received PII-injected args (TEXT tokens were replaced)
@@ -209,7 +240,8 @@ def test_vault_deliver_with_text_tokens_in_strings() -> None:
     assert "[[PII:" not in executor.last_args["body"]  # No tokens should remain
 
 
-def test_vault_deliver_with_mixed_json_and_text_tokens() -> None:
+@pytest.mark.asyncio
+async def test_vault_deliver_with_mixed_json_and_text_tokens() -> None:
     """Test vault deliver mode with both JSON and TEXT format tokens."""
     policy = Policy(
         sinks={
@@ -249,7 +281,7 @@ def test_vault_deliver_with_mixed_json_and_text_tokens() -> None:
         ),
     )
 
-    deliver_resp = vault.deliver(deliver_req)
+    deliver_resp = await vault.deliver(deliver_req)
 
     assert deliver_resp.delivered is True
     # Verify executor received both JSON and TEXT tokens replaced
@@ -261,7 +293,9 @@ def test_vault_deliver_with_mixed_json_and_text_tokens() -> None:
     assert "$pii_ref" not in str(executor.last_args)  # No JSON tokens remain
 
 
-def test_vault_deliver_text_tokens_policy_denial() -> None:
+@pytest.mark.asyncio
+
+async def test_vault_deliver_text_tokens_policy_denial() -> None:
     """Test that TEXT tokens in strings are subject to policy enforcement."""
     # Policy only allows EMAIL in 'to', not in 'body'
     policy = Policy(
@@ -296,10 +330,11 @@ def test_vault_deliver_text_tokens_policy_denial() -> None:
     from mcp_pvp.errors import PolicyDeniedError
 
     with pytest.raises(PolicyDeniedError):
-        vault.deliver(deliver_req)
+        await vault.deliver(deliver_req)
 
 
-def test_vault_deliver_text_tokens_nested_objects() -> None:
+@pytest.mark.asyncio
+async def test_vault_deliver_text_tokens_nested_objects() -> None:
     """Test TEXT tokens in nested object structures."""
     policy = Policy(
         sinks={
@@ -338,7 +373,7 @@ def test_vault_deliver_text_tokens_nested_objects() -> None:
         ),
     )
 
-    deliver_resp = vault.deliver(deliver_req)
+    deliver_resp = await vault.deliver(deliver_req)
 
     assert deliver_resp.delivered is True
     # Verify executor received all TEXT tokens replaced in nested structure
@@ -351,7 +386,8 @@ def test_vault_deliver_text_tokens_nested_objects() -> None:
     assert "[[PII:" not in str(executor.last_args)  # No tokens should remain
 
 
-def test_vault_deliver_text_tokens_in_lists() -> None:
+@pytest.mark.asyncio
+async def test_vault_deliver_text_tokens_in_lists() -> None:
     """Test TEXT tokens in list structures."""
     policy = Policy(
         sinks={
@@ -389,7 +425,7 @@ def test_vault_deliver_text_tokens_in_lists() -> None:
         ),
     )
 
-    deliver_resp = vault.deliver(deliver_req)
+    deliver_resp = await vault.deliver(deliver_req)
 
     assert deliver_resp.delivered is True
     # Verify executor received all TEXT tokens replaced in list
@@ -402,7 +438,8 @@ def test_vault_deliver_text_tokens_in_lists() -> None:
     assert "[[PII:" not in str(messages)  # No tokens should remain
 
 
-def test_vault_deliver_duplicate_text_token_disclosure_counting() -> None:
+@pytest.mark.asyncio
+async def test_vault_deliver_duplicate_text_token_disclosure_counting() -> None:
     """Test that duplicate TEXT token refs only count as one disclosure."""
     policy = Policy(
         sinks={
@@ -432,7 +469,7 @@ def test_vault_deliver_duplicate_text_token_disclosure_counting() -> None:
         ),
     )
 
-    deliver_resp = vault.deliver(deliver_req)
+    deliver_resp = await vault.deliver(deliver_req)
 
     assert deliver_resp.delivered is True
 

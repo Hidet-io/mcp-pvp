@@ -25,10 +25,19 @@ class CustomExecutor(ToolExecutor):
     def __init__(self):
         self.executions = []
 
-    def execute(self, tool_name: str, injected_args: dict) -> dict:
+    async def execute(self, tool_name: str, injected_args: dict) -> dict:
         """Record execution and return result."""
         self.executions.append({"tool": tool_name, "args": injected_args})
         return {"success": True, "tool": tool_name}
+
+    async def list_tools(self) -> list[str]:
+        return []
+
+    async def get_tool_info(self, tool_name: str) -> dict:
+        return {}
+
+    async def get_tool(self, tool_name: str):
+        return None
 
 
 def test_dummy_executor_default():
@@ -37,7 +46,8 @@ def test_dummy_executor_default():
     assert isinstance(vault.executor, DummyExecutor)
 
 
-def test_custom_executor_integration():
+@pytest.mark.asyncio
+async def test_custom_executor_integration():
     """Test vault.deliver() with custom executor."""
     # Create custom executor
     executor = CustomExecutor()
@@ -64,7 +74,7 @@ def test_custom_executor_integration():
         ),
     )
 
-    deliver_resp = vault.deliver(deliver_req)
+    deliver_resp = await vault.deliver(deliver_req)
 
     # Verify executor was called
     assert len(executor.executions) == 1
@@ -80,11 +90,12 @@ def test_custom_executor_integration():
     assert tool_result["success"] is True
 
 
-def test_dummy_executor_stub_response():
+@pytest.mark.asyncio
+async def test_dummy_executor_stub_response():
     """Test DummyExecutor returns stub response."""
     executor = DummyExecutor()
 
-    result = executor.execute("test_tool", {"arg1": "value1", "arg2": "value2"})
+    result = await executor.execute("test_tool", {"arg1": "value1", "arg2": "value2"})
 
     assert result["status"] == "stub"
     assert result["tool"] == "test_tool"
@@ -92,13 +103,22 @@ def test_dummy_executor_stub_response():
     assert result["args_received"] is True
     assert result["arg_count"] == 2
 
-
-def test_executor_failure_propagates():
+@pytest.mark.asyncio
+async def test_executor_failure_propagates():
     """Test that executor exceptions propagate to caller."""
 
     class FailingExecutor(ToolExecutor):
-        def execute(self, tool_name: str, injected_args: dict) -> dict:
+        async def execute(self, tool_name: str, injected_args: dict) -> dict:
             raise ValueError("Tool execution failed")
+
+        async def list_tools(self) -> list[str]:
+            return []
+
+        async def get_tool_info(self, tool_name: str) -> dict:
+            return {}
+
+        async def get_tool(self, tool_name: str):
+            return None
 
     policy = Policy(
         sinks={"tool:failing_tool": SinkPolicy(allow=[PolicyAllow(type=PIIType.EMAIL)])}
@@ -117,13 +137,13 @@ def test_executor_failure_propagates():
         tool_call=ToolCall(name="failing_tool", args={"email": token.model_dump(by_alias=True)}),
     )
 
-    deliver_resp = vault.deliver(deliver_req)
+    deliver_resp = await vault.deliver(deliver_req)
     assert deliver_resp.delivered is False
     assert deliver_resp.error is not None
     assert "Tool execution failed" in deliver_resp.error
 
-
-def test_executor_receives_pii_injected_args():
+@pytest.mark.asyncio
+async def test_executor_receives_pii_injected_args():
     """Test that executor receives arguments with PII injected."""
 
     class InspectingExecutor(ToolExecutor):
@@ -133,6 +153,13 @@ def test_executor_receives_pii_injected_args():
         def execute(self, tool_name: str, injected_args: dict) -> dict:
             self.last_args = injected_args
             return {"done": True}
+        
+        async def list_tools(self) -> list[str]:
+            return []
+        async def get_tool_info(self, tool_name: str) -> dict:
+            return {}
+        async def get_tool(self, tool_name: str):
+            return None
 
     executor = InspectingExecutor()
     policy = Policy(sinks={"tool:test": SinkPolicy(allow=[PolicyAllow(type=PIIType.EMAIL)])})
@@ -158,7 +185,7 @@ def test_executor_receives_pii_injected_args():
         ),
     )
 
-    vault.deliver(deliver_req)
+    await vault.deliver(deliver_req)
 
     # Verify raw PII was injected
     assert executor.last_args is not None
@@ -166,16 +193,26 @@ def test_executor_receives_pii_injected_args():
     assert executor.last_args["recipient2"] == "bob@example.com"
 
 
-def test_executor_receives_mixed_text_and_json_tokens():
+@pytest.mark.asyncio
+async def test_executor_receives_mixed_text_and_json_tokens():
     """Test that executor receives both JSON and TEXT token replacements."""
 
     class InspectingExecutor(ToolExecutor):
         def __init__(self):
             self.last_args = None
 
-        def execute(self, tool_name: str, injected_args: dict) -> dict:
+        async def execute(self, tool_name: str, injected_args: dict) -> dict:
             self.last_args = injected_args
             return {"done": True}
+
+        async def list_tools(self) -> list[str]:
+            return []
+
+        async def get_tool_info(self, tool_name: str) -> dict:
+            return {}
+
+        async def get_tool(self, tool_name: str):
+            return None
 
     executor = InspectingExecutor()
     policy = Policy(
@@ -213,7 +250,7 @@ def test_executor_receives_mixed_text_and_json_tokens():
         ),
     )
 
-    vault.deliver(deliver_req)
+    await vault.deliver(deliver_req)
 
     # Verify executor received raw PII values (no tokens)
     assert executor.last_args is not None
@@ -224,16 +261,26 @@ def test_executor_receives_mixed_text_and_json_tokens():
     assert "$pii_ref" not in str(executor.last_args)  # No JSON tokens should remain
 
 
-def test_executor_text_tokens_in_nested_structures():
+@pytest.mark.asyncio
+async def test_executor_text_tokens_in_nested_structures():
     """Test executor receives TEXT tokens replaced in deeply nested structures."""
 
     class RecordingExecutor(ToolExecutor):
         def __init__(self):
             self.executions = []
 
-        def execute(self, tool_name: str, injected_args: dict) -> dict:
+        async def execute(self, tool_name: str, injected_args: dict) -> dict:
             self.executions.append(injected_args)
             return {"status": "ok"}
+
+        async def list_tools(self) -> list[str]:
+            return []
+
+        async def get_tool_info(self, tool_name: str) -> dict:
+            return {}
+
+        async def get_tool(self, tool_name: str):
+            return None
 
     executor = RecordingExecutor()
     policy = Policy(sinks={"tool:complex": SinkPolicy(allow=[PolicyAllow(type=PIIType.EMAIL)])})
@@ -264,7 +311,7 @@ def test_executor_text_tokens_in_nested_structures():
         ),
     )
 
-    vault.deliver(deliver_req)
+    await vault.deliver(deliver_req)
 
     # Verify all TEXT tokens were replaced in nested structure
     args = executor.executions[0]
@@ -273,16 +320,26 @@ def test_executor_text_tokens_in_nested_structures():
     assert "[[PII:" not in json.dumps(args)  # No tokens anywhere
 
 
-def test_executor_text_tokens_policy_enforcement():
+@pytest.mark.asyncio
+async def test_executor_text_tokens_policy_enforcement():
     """Test that TEXT tokens in strings are properly validated against policy."""
 
     class CountingExecutor(ToolExecutor):
         def __init__(self):
             self.execution_count = 0
 
-        def execute(self, tool_name: str, injected_args: dict) -> dict:
+        async def execute(self, tool_name: str, injected_args: dict) -> dict:
             self.execution_count += 1
             return {}
+
+        async def list_tools(self) -> list[str]:
+            return []
+
+        async def get_tool_info(self, tool_name: str) -> dict:
+            return {}
+
+        async def get_tool(self, tool_name: str):
+            return None
 
     executor = CountingExecutor()
 
@@ -314,7 +371,7 @@ def test_executor_text_tokens_policy_enforcement():
     from mcp_pvp.errors import PolicyDeniedError
 
     with pytest.raises(PolicyDeniedError):
-        vault.deliver(deliver_req)
+        await vault.deliver(deliver_req)
 
     # Executor should not have been called
     assert executor.execution_count == 0

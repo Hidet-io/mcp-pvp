@@ -31,7 +31,7 @@ class ComplexToolExecutor(ToolExecutor):
         self.result_type = result_type
         self.execution_count = 0
 
-    def execute(
+    async def execute(
         self, tool_name: str, injected_args: dict
     ) -> dict | list | CustomResultObject | None:
         """Execute tool and return complex result based on type."""
@@ -69,6 +69,15 @@ class ComplexToolExecutor(ToolExecutor):
         else:
             return None
 
+    async def list_tools(self) -> list[str]:
+        return []
+
+    async def get_tool_info(self, tool_name: str) -> dict:
+        return {}
+
+    async def get_tool(self, tool_name: str):
+        return None
+
 
 class TestSessionIntegrityWithResultTokenization:
     """Test session integrity feature combined with result tokenization."""
@@ -80,7 +89,8 @@ class TestSessionIntegrityWithResultTokenization:
             policy=Policy(default_allow=True), executor=ComplexToolExecutor(result_type="dict")
         )
 
-    def test_result_tokens_belong_to_same_session(self, vault):
+    @pytest.mark.asyncio
+    async def test_result_tokens_belong_to_same_session(self, vault):
         """Test that result tokenization creates tokens in the same session."""
         # Initial tokenization - detect actual PII
         tokenize_req = TokenizeRequest(
@@ -96,7 +106,7 @@ class TestSessionIntegrityWithResultTokenization:
             run=RunContext(run_id="run1", participant_id="llm"),
             tool_call=ToolCall(name="test_tool", args={"email": "alice@example.com"}),
         )
-        deliver_resp = vault.deliver(deliver_req)
+        deliver_resp = await vault.deliver(deliver_req)
 
         # Verify result tokens were created
         assert len(deliver_resp.result_tokens) > 0
@@ -106,7 +116,8 @@ class TestSessionIntegrityWithResultTokenization:
             assert hasattr(token, "ref")
             assert token.ref.startswith("tkn_")
 
-    def test_result_tokens_respect_session_isolation(self, vault):
+    @pytest.mark.asyncio
+    async def test_result_tokens_respect_session_isolation(self, vault):
         """Test that result tokens from one session cannot be accessed from another."""
         # Session 1: tokenize and deliver
         tokenize_req1 = TokenizeRequest(
@@ -121,7 +132,7 @@ class TestSessionIntegrityWithResultTokenization:
             run=RunContext(run_id="run1", participant_id="llm"),
             tool_call=ToolCall(name="tool1", args={"email": "session1@example.com"}),
         )
-        deliver_resp1 = vault.deliver(deliver_req1)
+        deliver_resp1 = await vault.deliver(deliver_req1)
         result_tokens_session1 = deliver_resp1.result_tokens
 
         # Verify session 1 has result tokens
@@ -145,7 +156,7 @@ class TestSessionIntegrityWithResultTokenization:
             run=RunContext(run_id="run2", participant_id="llm"),
             tool_call=ToolCall(name="tool2", args={}),
         )
-        deliver_resp2 = vault.deliver(deliver_req2)
+        deliver_resp2 = await vault.deliver(deliver_req2)
 
         # Both sessions should have their own result tokens
         assert len(deliver_resp2.result_tokens) > 0
@@ -161,7 +172,8 @@ class TestAuditCoherenceWithRecursiveScrubbing:
             policy=Policy(default_allow=True), executor=ComplexToolExecutor(result_type="custom")
         )
 
-    def test_audit_trail_for_custom_object_scrubbing(self, vault):
+    @pytest.mark.asyncio
+    async def test_audit_trail_for_custom_object_scrubbing(self, vault):
         """Test that audit trail is maintained when scrubbing custom objects."""
         # Tokenize initial content
         tokenize_req = TokenizeRequest(
@@ -176,7 +188,7 @@ class TestAuditCoherenceWithRecursiveScrubbing:
             run=RunContext(run_id="run1", participant_id="llm"),
             tool_call=ToolCall(name="test_tool", args={}),
         )
-        deliver_resp = vault.deliver(deliver_req)
+        deliver_resp = await vault.deliver(deliver_req)
 
         # Verify result tokens were created (custom object was scrubbed)
         assert len(deliver_resp.result_tokens) > 0
@@ -256,7 +268,8 @@ class TestAllFeaturesIntegrated:
             policy=Policy(default_allow=True), executor=ComplexToolExecutor(result_type="dict")
         )
 
-    def test_complete_workflow_with_all_features(self, vault):
+    @pytest.mark.asyncio
+    async def test_complete_workflow_with_all_features(self, vault):
         """Test complete workflow: tokenize → deliver → result scrubbing → audit trail."""
         # Step 1: Tokenize with actual PII (scanner processes it)
         complex_input = "Process alice@example.com and 555-1234 with 192.168.1.1"
@@ -279,7 +292,7 @@ class TestAllFeaturesIntegrated:
             run=RunContext(run_id="run1", participant_id="llm"),
             tool_call=ToolCall(name="process_user", args={"email": "test@example.com"}),
         )
-        deliver_resp = vault.deliver(deliver_req)
+        deliver_resp = await vault.deliver(deliver_req)
 
         # Step 3: Verify result was scrubbed (recursive scrubbing)
         # The ComplexToolExecutor returns nested dict with PII
@@ -311,7 +324,8 @@ class TestAllFeaturesIntegrated:
         # Result tokenization should have deliver as parent
         assert len(child_tokenize_events) > 0
 
-    def test_multi_round_interaction_preserves_all_features(self, vault):
+    @pytest.mark.asyncio
+    async def test_multi_round_interaction_preserves_all_features(self, vault):
         """Test multiple deliver rounds maintain session integrity, audit trail, and scrubbing."""
         # Round 1: Initial tokenization
         tokenize_req = TokenizeRequest(
@@ -330,7 +344,7 @@ class TestAllFeaturesIntegrated:
                 run=RunContext(run_id=f"run{i}", participant_id="llm"),
                 tool_call=ToolCall(name=f"tool{i}", args={"email": f"user{i}@example.com"}),
             )
-            deliver_resp = vault.deliver(deliver_req)
+            deliver_resp = await vault.deliver(deliver_req)
 
             # Collect all result tokens count
             all_result_tokens_count += len(deliver_resp.result_tokens)
@@ -349,7 +363,8 @@ class TestAllFeaturesIntegrated:
             # Should have result tokenization children
             assert len(child_events) > 0
 
-    def test_scanner_handles_all_pii_types_with_session_integrity(self, vault):
+    @pytest.mark.asyncio
+    async def test_scanner_handles_all_pii_types_with_session_integrity(self, vault):
         """Test scanner handles all PIIType values while maintaining session integrity."""
         # Create content with actual PII of different types
         content = "Email: user@example.com Phone: 555-1234 IP: 192.168.1.1"
@@ -373,7 +388,7 @@ class TestAllFeaturesIntegrated:
             run=RunContext(run_id="run1", participant_id="llm"),
             tool_call=ToolCall(name="test", args={}),
         )
-        deliver_resp = vault.deliver(deliver_req)
+        deliver_resp = await vault.deliver(deliver_req)
 
         # Verify result tokens were created
         assert len(deliver_resp.result_tokens) > 0
@@ -394,7 +409,8 @@ class TestComplexExceptionHandling:
             executor=ComplexToolExecutor(result_type="exception"),
         )
 
-    def test_exception_in_result_is_scrubbed_with_audit_trail(self, vault):
+    @pytest.mark.asyncio
+    async def test_exception_in_result_is_scrubbed_with_audit_trail(self, vault):
         """Test that exceptions in tool results are scrubbed and audited properly."""
         # Tokenize with actual PII
         tokenize_req = TokenizeRequest(
@@ -410,7 +426,7 @@ class TestComplexExceptionHandling:
             run=RunContext(run_id="run1", participant_id="llm"),
             tool_call=ToolCall(name="test", args={}),
         )
-        deliver_resp = vault.deliver(deliver_req)
+        deliver_resp = await vault.deliver(deliver_req)
 
         # The result contains an exception with PII - should be scrubbed
         assert deliver_resp.delivered
@@ -441,7 +457,8 @@ class TestPerformanceWithAllFeatures:
             policy=Policy(default_allow=True), executor=ComplexToolExecutor(result_type="list")
         )
 
-    def test_large_session_with_many_tokens(self, vault):
+    @pytest.mark.asyncio
+    async def test_large_session_with_many_tokens(self, vault):
         """Test that large sessions with many tokens still maintain integrity."""
         # Create content with many actual PII instances
         content = " ".join([f"user{i}@example.com" for i in range(100)])
@@ -465,7 +482,7 @@ class TestPerformanceWithAllFeatures:
             run=RunContext(run_id="run1", participant_id="llm"),
             tool_call=ToolCall(name="test", args={}),
         )
-        deliver_resp = vault.deliver(deliver_req)
+        deliver_resp = await vault.deliver(deliver_req)
 
         # Result tokens should exist
         assert len(deliver_resp.result_tokens) > 0

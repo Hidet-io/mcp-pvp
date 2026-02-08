@@ -1,5 +1,7 @@
 """Tests for audit coherence (Task 5: Vault Hardening)."""
 
+import pytest
+
 from mcp_pvp.audit import AuditEventType, InMemoryAuditLogger
 from mcp_pvp.executor import ToolExecutor
 from mcp_pvp.models import (
@@ -18,13 +20,22 @@ from mcp_pvp.vault import Vault
 class PIIGeneratingExecutor(ToolExecutor):
     """Test executor that generates PII in results."""
 
-    def execute(self, tool_name: str, injected_args: dict) -> dict:
+    async def execute(self, tool_name: str, injected_args: dict) -> dict:
         """Return result with PII."""
         return {
             "status": "success",
             "support_email": "support@example.com",
             "admin_contact": "admin@example.org",
         }
+    
+    async def list_tools(self) -> list[str]:
+        return []
+    
+    async def get_tool_info(self, tool_name: str) -> dict:
+        return {}
+    
+    async def get_tool(self, tool_name: str):
+        return None
 
 
 class TestAuditCoherence:
@@ -60,7 +71,8 @@ class TestAuditCoherence:
         tokenize_event = next(e for e in events if e.event_type == AuditEventType.TOKENIZE)
         assert tokenize_event.parent_audit_id is None
 
-    def test_deliver_result_tokenization_has_parent_audit_id(self):
+    @pytest.mark.asyncio
+    async def test_deliver_result_tokenization_has_parent_audit_id(self):
         """Test that result tokenization is linked to deliver event via parent_audit_id."""
         policy = Policy(
             sinks={
@@ -86,7 +98,7 @@ class TestAuditCoherence:
         session_id = tokenize_response.vault_session
 
         # Deliver (will tokenize result with PII)
-        vault.deliver(
+        await vault.deliver(
             DeliverRequest(
                 vault_session=session_id,
                 tool_call=ToolCall(
@@ -118,7 +130,8 @@ class TestAuditCoherence:
         result_tokenize = next(e for e in tokenize_events if e.parent_audit_id is not None)
         assert result_tokenize.parent_audit_id == deliver_event.audit_id
 
-    def test_audit_trail_shows_complete_parent_child_relationship(self):
+    @pytest.mark.asyncio
+    async def test_audit_trail_shows_complete_parent_child_relationship(self):
         """Test that we can trace audit trail from deliver to result tokenization."""
         policy = Policy(
             sinks={
@@ -144,7 +157,7 @@ class TestAuditCoherence:
         session_id = tokenize_response.vault_session
 
         # Deliver
-        deliver_response = vault.deliver(
+        deliver_response = await vault.deliver(
             DeliverRequest(
                 vault_session=session_id,
                 tool_call=ToolCall(
@@ -170,7 +183,8 @@ class TestAuditCoherence:
         assert len(child_events) >= 1
         assert all(e.event_type == AuditEventType.TOKENIZE for e in child_events)
 
-    def test_multiple_delivers_maintain_separate_audit_trails(self):
+    @pytest.mark.asyncio
+    async def test_multiple_delivers_maintain_separate_audit_trails(self):
         """Test that multiple deliver calls have separate audit trails."""
         policy = Policy(
             sinks={
@@ -195,7 +209,7 @@ class TestAuditCoherence:
         session_id = tokenize_response.vault_session
 
         # First deliver
-        deliver1_response = vault.deliver(
+        deliver1_response = await vault.deliver(
             DeliverRequest(
                 vault_session=session_id,
                 tool_call=ToolCall(
@@ -215,7 +229,7 @@ class TestAuditCoherence:
         )
 
         # Second deliver
-        deliver2_response = vault.deliver(
+        deliver2_response = await vault.deliver(
             DeliverRequest(
                 vault_session=session_id,
                 tool_call=ToolCall(
@@ -245,7 +259,8 @@ class TestAuditCoherence:
         deliver2_child_ids = {e.audit_id for e in deliver2_children}
         assert deliver1_child_ids.isdisjoint(deliver2_child_ids)
 
-    def test_audit_query_by_parent_id(self):
+    @pytest.mark.asyncio
+    async def test_audit_query_by_parent_id(self):
         """Test querying audit events by parent_audit_id."""
         policy = Policy(
             sinks={
@@ -268,7 +283,7 @@ class TestAuditCoherence:
             )
         )
 
-        deliver_response = vault.deliver(
+        deliver_response = await vault.deliver(
             DeliverRequest(
                 vault_session=tokenize_response.vault_session,
                 tool_call=ToolCall(
@@ -287,7 +302,8 @@ class TestAuditCoherence:
         assert len(children) > 0
         assert all(e.vault_session == tokenize_response.vault_session for e in children)
 
-    def test_deliver_without_result_tokenization_has_no_children(self):
+    @pytest.mark.asyncio
+    async def test_deliver_without_result_tokenization_has_no_children(self):
         """Test that deliver without PII in result has no child audit events."""
         policy = Policy(
             sinks={
@@ -300,9 +316,18 @@ class TestAuditCoherence:
         )
 
         class SimpleExecutor(ToolExecutor):
-            def execute(self, tool_name: str, injected_args: dict) -> dict:
+            async def execute(self, tool_name: str, injected_args: dict) -> dict:
                 # Return result WITHOUT any PII
                 return {"status": "ok", "code": 200}
+            
+            async def list_tools(self) -> list[str]:
+                return []
+            
+            async def get_tool_info(self, tool_name: str) -> dict:
+                return {}
+            
+            async def get_tool(self, tool_name: str):
+                return None
 
         audit_logger = InMemoryAuditLogger()
         vault = Vault(policy=policy, executor=SimpleExecutor(), audit_logger=audit_logger)
@@ -315,7 +340,7 @@ class TestAuditCoherence:
             )
         )
 
-        deliver_response = vault.deliver(
+        deliver_response = await vault.deliver(
             DeliverRequest(
                 vault_session=tokenize_response.vault_session,
                 tool_call=ToolCall(
@@ -335,7 +360,8 @@ class TestAuditCoherence:
         if children:
             assert all(e.details.get("tokens_created", 0) == 0 for e in children)
 
-    def test_audit_event_parent_id_appears_in_logs(self):
+    @pytest.mark.asyncio
+    async def test_audit_event_parent_id_appears_in_logs(self):
         """Test that parent_audit_id is included in structured logs."""
         policy = Policy(
             sinks={
@@ -357,7 +383,7 @@ class TestAuditCoherence:
             )
         )
 
-        vault.deliver(
+        await vault.deliver(
             DeliverRequest(
                 vault_session=tokenize_response.vault_session,
                 tool_call=ToolCall(

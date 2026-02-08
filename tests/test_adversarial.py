@@ -185,7 +185,8 @@ class TestCapabilityTampering:
 class TestDeliverModeBoundary:
     """Test that deliver mode never leaks PII to response."""
 
-    def test_deliver_mode_pii_never_in_response(self):
+    @pytest.mark.asyncio
+    async def test_deliver_mode_pii_never_in_response(self):
         """PII is injected locally but never returned to LLM."""
         policy = Policy()
         vault = Vault(policy=policy)
@@ -202,20 +203,21 @@ class TestDeliverModeBoundary:
                 "args": {"to": "EMAIL_TOKEN_001", "subject": "Test"},
             },
         )
-        deliver_resp = vault.deliver(deliver_req)
+        deliver_resp = await vault.deliver(deliver_req)
 
         # Response should NOT contain the raw email
         result_str = str(deliver_resp.tool_result)
         assert "alice@example.com" not in result_str, "PII leaked in deliver response!"
         assert deliver_resp.delivered is True
 
-    def test_tool_result_pii_is_tokenized(self):
+    @pytest.mark.asyncio
+    async def test_tool_result_pii_is_tokenized(self):
         """Tool results containing PII should be automatically tokenized."""
         from mcp_pvp.executor import ToolExecutor
 
         # Custom executor that returns PII in the result
         class PIIReturningExecutor(ToolExecutor):
-            def execute(self, tool_name: str, injected_args: dict) -> dict:
+            async def execute(self, tool_name: str, injected_args: dict) -> dict:
                 # Simulate a tool that returns user data with PII
                 return {
                     "status": "success",
@@ -223,6 +225,15 @@ class TestDeliverModeBoundary:
                     "user_phone": "+1-555-123-4567",
                     "message": "User data retrieved successfully",
                 }
+            
+            async def list_tools(self) -> list[str]:
+                return []
+            
+            async def get_tool_info(self, tool_name: str) -> dict:
+                return {}
+            
+            async def get_tool(self, tool_name: str):
+                return None
 
         policy = Policy()
         vault = Vault(policy=policy, executor=PIIReturningExecutor())
@@ -239,7 +250,7 @@ class TestDeliverModeBoundary:
                 "args": {"user_id": 123},
             },
         )
-        deliver_resp = vault.deliver(deliver_req)
+        deliver_resp = await vault.deliver(deliver_req)
 
         # Tool result should be tokenized - no raw PII
         result_str = str(deliver_resp.tool_result)
@@ -402,7 +413,8 @@ class TestAuditLogging:
         assert tok_resp.vault_session is not None
         assert tok_resp.vault_session.startswith("vs_")
 
-    def test_deliver_audit_event(self):
+    @pytest.mark.asyncio
+    async def test_deliver_audit_event(self):
         """Deliver operation creates audit event."""
         policy = Policy()
         vault = Vault(policy=policy)
@@ -414,7 +426,7 @@ class TestAuditLogging:
             vault_session=tok_resp.vault_session,
             tool_call={"name": "test_tool", "args": {}},
         )
-        deliver_resp = vault.deliver(deliver_req)
+        deliver_resp =  await vault.deliver(deliver_req)
 
         # Should have audit ID
         assert deliver_resp.audit_id is not None

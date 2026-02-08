@@ -425,7 +425,7 @@ class Vault:
             disclosed=disclosed_types,
         )
 
-    def deliver(self, request: DeliverRequest) -> DeliverResponse:
+    async def deliver(self, request: DeliverRequest) -> DeliverResponse:
         """
         Deliver: inject PII into tool call and execute (stub).
 
@@ -594,7 +594,7 @@ class Vault:
         # SECURITY: Raw PII exists in injected_args - handle with care
         # Execute tool call via executor
         try:
-            tool_result = self.executor.execute(
+            tool_result = await self.executor.execute(
                 tool_name=request.tool_call.name,
                 injected_args=injected_args,
             )

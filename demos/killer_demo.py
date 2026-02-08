@@ -480,8 +480,8 @@ valid: [[PII:PHONE:{phone_tok.ref}]]
 
     print("Sample audit IDs from previous operations:")
     print(
-        f"  Initial tokenize: {
-            tokenize_resp.audit_id if hasattr(tokenize_resp, 'audit_id') else 'N/A'
+        f"  Initial tokenize: {tokenize_resp.audit_id if hasattr(
+            tokenize_resp, 'audit_id') else 'N/A'
         }"
     )
     print(f"  Last deliver: {ticket_resp.audit_id}")

@@ -41,6 +41,13 @@ from mcp_pvp.models import (
     ToolCall,
     VaultSession,
 )
+from mcp_pvp.session import (
+    MCPHttpSessionManager,
+    MCPSessionManager,
+    create_mcp_executor,
+    create_mcp_executor_http,
+    create_mcp_executor_sync,
+)
 from mcp_pvp.vault import Vault
 
 __all__ = [
@@ -52,6 +59,8 @@ __all__ = [
     "DummyExecutor",
     "JSONToken",
     "MCP_ToolExecutor",
+    "MCPHttpSessionManager",
+    "MCPSessionManager",
     "PIIDetection",
     # Models
     "PIIType",
@@ -83,4 +92,8 @@ __all__ = [
     "Vault",
     "VaultSession",
     "__version__",
+    # Session Management
+    "create_mcp_executor",
+    "create_mcp_executor_http",
+    "create_mcp_executor_sync",
 ]

@@ -1,5 +1,6 @@
 """Tests for recursive output scrubbing in vault.deliver()."""
 
+from typing import Any
 import pytest
 
 from mcp_pvp.models import (
@@ -265,14 +266,22 @@ class TestRecursiveOutputScrubbing:
         assert "admin@company.com" not in tokenize_resp.redacted
         assert "requester@example.com" not in tokenize_resp.redacted
 
-    def test_deliver_handles_none_result(self, vault):
+    @pytest.mark.asyncio
+    async def test_deliver_handles_none_result(self, vault):
         """Test that None results are handled without errors."""
         # Create a custom executor that returns None
         from mcp_pvp.executor import DummyExecutor
 
         class NoneExecutor(DummyExecutor):
-            def execute(self, tool_name: str, injected_args: dict) -> None:
+            async def execute(self, tool_name: str, injected_args: dict) -> None:
                 return None
+            async def list_tools(self) -> list[str]:
+                return []
+            async def get_tool_info(self, tool_name: str) -> dict[str, Any]:
+                return {}
+            def get_tool(self, tool_name: str) -> dict[str, Any]:
+                return {}
+            
 
         # Replace the vault's executor
         vault.executor = NoneExecutor()
@@ -291,7 +300,7 @@ class TestRecursiveOutputScrubbing:
             tool_call=ToolCall(name="test_tool", args={}),
         )
 
-        deliver_resp = vault.deliver(deliver_req)
+        deliver_resp = await vault.deliver(deliver_req)
         assert deliver_resp.delivered
         assert deliver_resp.tool_result is None
         assert len(deliver_resp.result_tokens) == 0
