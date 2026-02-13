@@ -70,13 +70,14 @@ class MCPSessionManager:
             self.exit_stack = AsyncExitStack()
             
             # Build server command
-            # Use shell to execute Python command with stderr redirect
             shell_command = f"{self.server_command} {self.server_path}"
             if self.server_args:
                 shell_command += " " + " ".join(self.server_args)
-            shell_command += " 2>/dev/null"
+            
+            logger.info(f"Starting MCP server: {shell_command}")
             
             # Connect to MCP server via stdio
+            # Note: stderr is NOT suppressed so startup errors are visible
             read, write = await self.exit_stack.enter_async_context(
                 stdio_client(
                     server=StdioServerParameters(
@@ -87,11 +88,21 @@ class MCPSessionManager:
                 )
             )
             
-            # Create and initialize client session
+            # Create and initialize client session with a timeout
+            # If the MCP server crashes on startup (e.g. missing deps),
+            # initialize() would hang forever waiting for a response.
             self.session = await self.exit_stack.enter_async_context(
                 ClientSession(read, write)
             )
-            await self.session.initialize()
+            try:
+                await asyncio.wait_for(self.session.initialize(), timeout=30.0)
+            except asyncio.TimeoutError:
+                raise RuntimeError(
+                    f"Timed out waiting for MCP server to respond (30s). "
+                    f"The server process may have crashed on startup. "
+                    f"Check that '{self.server_command}' can run '{self.server_path}' "
+                    f"and that all dependencies (e.g. 'mcp' package) are installed."
+                )
             
             logger.info(f"Connected to MCP server: {self.server_path}")
             return self.session
