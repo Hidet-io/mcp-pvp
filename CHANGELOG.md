@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### [0.6.0] - 2026-02-13
+### Added
+- Fixed a critical issue that is leading to the process to crash when mcp server crashes.
+
+
+
 ### [0.5.2] - 2026-01-20
 ### Fixed a bug in docs workflow
 - **Documentation Deployment**: Fixed an issue in the GitHub Actions workflow that prevented successful deployment
