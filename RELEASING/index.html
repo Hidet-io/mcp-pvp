@@ -773,60 +773,68 @@ make<span class="w"> </span>install-dev
 <p>Ensure all checks pass before releasing:</p>
 <div class="highlight"><pre><span></span><code>make<span class="w"> </span>check<span class="w">   </span><span class="c1"># runs lint, format-check, typecheck, security, test</span>
 </code></pre></div>
-<h2 id="step-by-step-release">Step-by-Step Release<a class="headerlink" href="#step-by-step-release" title="Permanent link">&para;</a></h2>
-<h3 id="1-bump-the-version">1. Bump the version<a class="headerlink" href="#1-bump-the-version" title="Permanent link">&para;</a></h3>
-<p>Use one of the following:</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># Automatic bump</span>
-make<span class="w"> </span>bump-patch<span class="w">   </span><span class="c1"># 0.6.0 → 0.6.1</span>
-make<span class="w"> </span>bump-minor<span class="w">   </span><span class="c1"># 0.6.0 → 0.7.0</span>
-make<span class="w"> </span>bump-major<span class="w">   </span><span class="c1"># 0.6.0 → 1.0.0</span>
+<h2 id="automated-release-recommended">Automated Release (Recommended)<a class="headerlink" href="#automated-release-recommended" title="Permanent link">&para;</a></h2>
+<p>The release script handles the entire flow in one command:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># One-command release</span>
+make<span class="w"> </span>auto-release-patch<span class="w">   </span><span class="c1"># bump patch, check, commit, tag, push</span>
+make<span class="w"> </span>auto-release-minor<span class="w">   </span><span class="c1"># bump minor, check, commit, tag, push</span>
+make<span class="w"> </span>auto-release-major<span class="w">   </span><span class="c1"># bump major, check, commit, tag, push</span>
 
-<span class="c1"># Or set an explicit version</span>
-make<span class="w"> </span>bump-version<span class="w"> </span><span class="nv">VERSION</span><span class="o">=</span><span class="m">0</span>.7.0
+<span class="c1"># Or run the script directly for more options</span>
+./scripts/release.sh<span class="w"> </span>patch
+./scripts/release.sh<span class="w"> </span>minor
+./scripts/release.sh<span class="w"> </span><span class="m">0</span>.8.0<span class="w">          </span><span class="c1"># explicit version</span>
+./scripts/release.sh<span class="w"> </span>patch<span class="w"> </span>--dry-run<span class="w"> </span><span class="c1"># preview without changes</span>
+./scripts/release.sh<span class="w"> </span>patch<span class="w"> </span>--no-push<span class="w"> </span><span class="c1"># stop after tagging</span>
 </code></pre></div>
-<p>This updates <code>pyproject.toml</code> and <code>src/mcp_pvp/__init__.py</code>.</p>
-<h3 id="2-update-changelogmd">2. Update CHANGELOG.md<a class="headerlink" href="#2-update-changelogmd" title="Permanent link">&para;</a></h3>
-<p>Move items from <code>[Unreleased]</code> into a new version section with today's date:</p>
+<h3 id="what-the-script-does">What the script does<a class="headerlink" href="#what-the-script-does" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>Preflight checks</strong> — verifies you're on <code>main</code>, no uncommitted changes, up to date with remote</li>
+<li><strong>Bumps the version</strong> — updates <code>pyproject.toml</code> and <code>src/mcp_pvp/__init__.py</code></li>
+<li><strong>Updates CHANGELOG.md</strong> — moves <code>[Unreleased]</code> entries into a dated version section (warns if empty)</li>
+<li><strong>Runs all checks</strong> — lint, format, typecheck, security, tests (<code>make check</code>)</li>
+<li><strong>Commits</strong> — <code>git add -A &amp;&amp; git commit -m "Release vX.Y.Z"</code></li>
+<li><strong>Tags</strong> — <code>git tag -a vX.Y.Z -m "Release vX.Y.Z"</code></li>
+<li><strong>Pushes</strong> — pushes commit and tag to origin (asks for confirmation)</li>
+</ol>
+<h3 id="before-you-run-it">Before you run it<a class="headerlink" href="#before-you-run-it" title="Permanent link">&para;</a></h3>
+<p>Add your changes under <code>[Unreleased]</code> in <code>CHANGELOG.md</code>:</p>
 <div class="highlight"><pre><span></span><code><span class="gu">## [Unreleased]</span>
-
-<span class="gu">## [0.7.0] - 2026-02-14</span>
 <span class="gu">### Added</span>
 <span class="k">-</span><span class="w"> </span>New feature description
 
 <span class="gu">### Fixed</span>
 <span class="k">-</span><span class="w"> </span>Bug fix description
-
-<span class="gu">### Changed</span>
-<span class="k">-</span><span class="w"> </span>Breaking change or behavioral change
 </code></pre></div>
 <blockquote>
-<p><strong>Tip:</strong> The GitHub Actions release workflow extracts the changelog section matching the tag version to populate the GitHub Release body. Make sure the heading format is exactly <code>## [X.Y.Z]</code>.</p>
+<p><strong>Tip:</strong> The GitHub Actions release workflow extracts the changelog section matching the tag version to populate the GitHub Release body. Make sure entries are under <code>[Unreleased]</code> before running the script.</p>
 </blockquote>
-<h3 id="3-verify-the-version">3. Verify the version<a class="headerlink" href="#3-verify-the-version" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code>make<span class="w"> </span>version<span class="w">  </span><span class="c1"># prints the current version from __init__.py</span>
+<h3 id="dry-run">Dry run<a class="headerlink" href="#dry-run" title="Permanent link">&para;</a></h3>
+<p>Preview what would happen without making any changes:</p>
+<div class="highlight"><pre><span></span><code>make<span class="w"> </span>auto-release-dry<span class="w"> </span><span class="nv">BUMP</span><span class="o">=</span>patch
 </code></pre></div>
-<h3 id="4-run-all-checks">4. Run all checks<a class="headerlink" href="#4-run-all-checks" title="Permanent link">&para;</a></h3>
+<hr />
+<h2 id="manual-release-step-by-step">Manual Release (Step-by-Step)<a class="headerlink" href="#manual-release-step-by-step" title="Permanent link">&para;</a></h2>
+<p>If you prefer to run each step individually:</p>
+<h3 id="1-bump-the-version">1. Bump the version<a class="headerlink" href="#1-bump-the-version" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>make<span class="w"> </span>bump-patch<span class="w">   </span><span class="c1"># 0.6.0 → 0.6.1</span>
+make<span class="w"> </span>bump-minor<span class="w">   </span><span class="c1"># 0.6.0 → 0.7.0</span>
+make<span class="w"> </span>bump-major<span class="w">   </span><span class="c1"># 0.6.0 → 1.0.0</span>
+</code></pre></div>
+<h3 id="2-update-changelogmd">2. Update CHANGELOG.md<a class="headerlink" href="#2-update-changelogmd" title="Permanent link">&para;</a></h3>
+<p>Move <code>[Unreleased]</code> entries into a new version section with today's date.</p>
+<h3 id="3-run-all-checks">3. Run all checks<a class="headerlink" href="#3-run-all-checks" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code>make<span class="w"> </span>check
 </code></pre></div>
-<p>This runs <code>lint</code>, <code>format-check</code>, <code>typecheck</code>, <code>security</code>, and <code>test</code> in sequence. All must pass.</p>
-<h3 id="5-commit-the-version-bump">5. Commit the version bump<a class="headerlink" href="#5-commit-the-version-bump" title="Permanent link">&para;</a></h3>
+<h3 id="4-commit-tag-push">4. Commit, tag, push<a class="headerlink" href="#4-commit-tag-push" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code>git<span class="w"> </span>add<span class="w"> </span>-A
 git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;Release v0.7.0&quot;</span>
-</code></pre></div>
-<h3 id="6-create-a-git-tag">6. Create a git tag<a class="headerlink" href="#6-create-a-git-tag" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code>make<span class="w"> </span>release<span class="w"> </span><span class="nv">VERSION</span><span class="o">=</span><span class="m">0</span>.7.0
-</code></pre></div>
-<p>This will:
-- Verify there are no uncommitted changes
-- Create an annotated tag <code>v0.7.0</code></p>
-<p>Alternatively, tag manually:</p>
-<div class="highlight"><pre><span></span><code>git<span class="w"> </span>tag<span class="w"> </span>-a<span class="w"> </span>v0.7.0<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;Release v0.7.0&quot;</span>
-</code></pre></div>
-<h3 id="7-push-to-github">7. Push to GitHub<a class="headerlink" href="#7-push-to-github" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code>git<span class="w"> </span>push<span class="w"> </span>origin<span class="w"> </span>main
+make<span class="w"> </span>release<span class="w"> </span><span class="nv">VERSION</span><span class="o">=</span><span class="m">0</span>.7.0
+git<span class="w"> </span>push<span class="w"> </span>origin<span class="w"> </span>main
 git<span class="w"> </span>push<span class="w"> </span>origin<span class="w"> </span>v0.7.0
 </code></pre></div>
-<h3 id="8-github-actions-takes-over">8. GitHub Actions takes over<a class="headerlink" href="#8-github-actions-takes-over" title="Permanent link">&para;</a></h3>
+<hr />
+<h2 id="github-actions-takes-over">GitHub Actions takes over<a class="headerlink" href="#github-actions-takes-over" title="Permanent link">&para;</a></h2>
 <p>Pushing the tag triggers the <a href="../.github/workflows/release.yml">release workflow</a>, which automatically:</p>
 <ol>
 <li><strong>Validates</strong> — verifies the tag version matches <code>__version__</code>, runs tests, lint, and type checks</li>
@@ -841,11 +849,23 @@ git<span class="w"> </span>push<span class="w"> </span>origin<span class="w"> </
 <table>
 <thead>
 <tr>
-<th>Step</th>
+<th>Action</th>
 <th>Command</th>
 </tr>
 </thead>
 <tbody>
+<tr>
+<td><strong>Full automated release</strong></td>
+<td><code>make auto-release-patch</code> / <code>minor</code> / <code>major</code></td>
+</tr>
+<tr>
+<td>Dry run</td>
+<td><code>make auto-release-dry BUMP=patch</code></td>
+</tr>
+<tr>
+<td>Script with options</td>
+<td><code>./scripts/release.sh patch --no-push</code></td>
+</tr>
 <tr>
 <td>Check current version</td>
 <td><code>make version</code></td>
@@ -855,23 +875,11 @@ git<span class="w"> </span>push<span class="w"> </span>origin<span class="w"> </
 <td><code>make check</code></td>
 </tr>
 <tr>
-<td>Bump patch version</td>
-<td><code>make bump-patch</code></td>
+<td>Bump version only</td>
+<td><code>make bump-patch</code> / <code>bump-minor</code> / <code>bump-major</code></td>
 </tr>
 <tr>
-<td>Bump minor version</td>
-<td><code>make bump-minor</code></td>
-</tr>
-<tr>
-<td>Bump major version</td>
-<td><code>make bump-major</code></td>
-</tr>
-<tr>
-<td>Set explicit version</td>
-<td><code>make bump-version VERSION=X.Y.Z</code></td>
-</tr>
-<tr>
-<td>Create release tag</td>
+<td>Create tag only</td>
 <td><code>make release VERSION=X.Y.Z</code></td>
 </tr>
 <tr>
