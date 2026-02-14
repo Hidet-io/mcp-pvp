@@ -164,7 +164,7 @@ class DummyExecutor(ToolExecutor):
             raise KeyError(f"Tool '{tool_name}' not found in DummyExecutor")
 
         # Return a simple stub callable
-        async def stub_tool(**kwargs):
+        async def stub_tool(**kwargs: dict[str, Any]) -> dict[str, Any]:
             return {
                 "status": "stub",
                 "message": f"DummyExecutor stub for tool '{tool_name}'",

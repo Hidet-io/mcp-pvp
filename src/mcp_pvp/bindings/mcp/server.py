@@ -84,7 +84,7 @@ def resolve(
 
 
 @mcp.tool()
-def deliver(
+async def deliver(
     vault_session: str,
     tool_call: dict[str, Any],
 ) -> dict[str, Any]:
@@ -104,8 +104,9 @@ def deliver(
         vault_session=vault_session,
         tool_call=tool_call,
     )
-    response = _vault.deliver(request)
-    return response.model_dump(mode="json")
+    response = await _vault.deliver(request)
+    result: dict[str, Any] = response.model_dump(mode="json")
+    return result
 
 
 def main() -> None:

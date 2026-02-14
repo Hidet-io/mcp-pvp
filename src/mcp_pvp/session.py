@@ -12,6 +12,7 @@ Example:
 
 import asyncio
 import logging
+import types
 from collections.abc import AsyncIterator
 from contextlib import AsyncExitStack, asynccontextmanager
 
@@ -111,7 +112,12 @@ class MCPSessionManager:
                 await self.exit_stack.aclose()
             raise RuntimeError(f"Failed to connect to MCP server: {e}") from e
 
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
+    async def __aexit__(
+        self,
+        exc_type: type | None,
+        exc_val: BaseException | None,
+        exc_tb: types.TracebackType | None,
+    ) -> bool:
         """Disconnect from MCP server and clean up resources."""
         if self.exit_stack:
             await self.exit_stack.aclose()
@@ -237,7 +243,12 @@ class MCPHttpSessionManager:
                 await self.exit_stack.aclose()
             raise RuntimeError(f"Failed to connect to HTTP MCP server: {e}") from e
 
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
+    async def __aexit__(
+        self,
+        exc_type: type | None,
+        exc_val: BaseException | None,
+        exc_tb: types.TracebackType | None,
+    ) -> bool:
         """Disconnect from HTTP MCP server and clean up resources."""
         if self.exit_stack:
             await self.exit_stack.aclose()
