@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### [0.6.1] - 2026-02-14
+### Fixed lint issues
+- Fixed linting errors
+
+
 ### [0.6.0] - 2026-02-13
 ### Added
 - Fixed a critical issue that is leading to the process to crash when mcp server crashes.
