@@ -9,18 +9,17 @@ Tests cover:
 - Resource cleanup and exception safety
 """
 
-import pytest
 import asyncio
-from unittest.mock import Mock, AsyncMock, MagicMock, patch, call
-from contextlib import asynccontextmanager
-from typing import AsyncIterator
+from unittest.mock import AsyncMock, Mock
 
+import pytest
+
+from mcp_pvp.executor import MCP_ToolExecutor
 from mcp_pvp.session import (
     MCPSessionManager,
     create_mcp_executor,
     create_mcp_executor_sync,
 )
-from mcp_pvp.executor import MCP_ToolExecutor
 
 
 class TestMCPSessionManagerInit:
@@ -46,10 +45,7 @@ class TestMCPSessionManagerInit:
 
     def test_initialization_with_custom_command(self):
         """Test initialization with custom server command."""
-        manager = MCPSessionManager(
-            server_command="node",
-            server_path="/path/to/server.js"
-        )
+        manager = MCPSessionManager(server_command="node", server_path="/path/to/server.js")
 
         assert manager.server_command == "node"
         assert manager.server_path == "/path/to/server.js"
@@ -57,10 +53,7 @@ class TestMCPSessionManagerInit:
     def test_initialization_with_server_args(self):
         """Test initialization with server arguments."""
         args = ["--debug", "--port=8080"]
-        manager = MCPSessionManager(
-            server_path="/path/to/server.py",
-            server_args=args
-        )
+        manager = MCPSessionManager(server_path="/path/to/server.py", server_args=args)
 
         assert manager.server_args == args
         assert len(manager.server_args) == 2
@@ -178,7 +171,7 @@ class TestCreateMCPExecutor:
     async def test_without_session_requires_server_path(self):
         """Test create_mcp_executor without session requires server_path."""
         with pytest.raises(RuntimeError, match="MCP server path not configured"):
-            async with create_mcp_executor() as executor:
+            async with create_mcp_executor():
                 pass
 
     @pytest.mark.asyncio
@@ -188,14 +181,13 @@ class TestCreateMCPExecutor:
 
         async with create_mcp_executor(session=mock_session) as executor:
             assert isinstance(executor, MCP_ToolExecutor)
-            assert hasattr(executor, 'execute')
-            assert hasattr(executor, 'mcp_session')
+            assert hasattr(executor, "execute")
+            assert hasattr(executor, "mcp_session")
 
     @pytest.mark.asyncio
     async def test_executor_cleanup_on_normal_exit(self):
         """Test cleanup happens on normal context exit."""
         mock_session = Mock()
-        cleanup_called = False
 
         async with create_mcp_executor(session=mock_session) as executor:
             assert executor is not None
@@ -210,7 +202,7 @@ class TestCreateMCPExecutor:
         mock_session = Mock()
 
         with pytest.raises(ValueError, match="test error"):
-            async with create_mcp_executor(session=mock_session) as executor:
+            async with create_mcp_executor(session=mock_session):
                 raise ValueError("test error")
 
         # Cleanup should have happened despite exception
@@ -233,20 +225,19 @@ class TestCreateMCPExecutor:
         mock_session1 = Mock()
         mock_session2 = Mock()
 
-        async with create_mcp_executor(session=mock_session1) as executor1:
-            async with create_mcp_executor(session=mock_session2) as executor2:
-                assert executor1.mcp_session is mock_session1
-                assert executor2.mcp_session is mock_session2
+        async with (
+            create_mcp_executor(session=mock_session1) as executor1,
+            create_mcp_executor(session=mock_session2) as executor2,
+        ):
+            assert executor1.mcp_session is mock_session1
+            assert executor2.mcp_session is mock_session2
 
     @pytest.mark.asyncio
     async def test_with_custom_server_command(self):
         """Test create_mcp_executor with custom server command."""
         mock_session = Mock()
 
-        async with create_mcp_executor(
-            server_command="node",
-            session=mock_session
-        ) as executor:
+        async with create_mcp_executor(server_command="node", session=mock_session) as executor:
             assert isinstance(executor, MCP_ToolExecutor)
 
     @pytest.mark.asyncio
@@ -255,8 +246,7 @@ class TestCreateMCPExecutor:
         mock_session = Mock()
 
         async with create_mcp_executor(
-            server_args=["--debug", "--verbose"],
-            session=mock_session
+            server_args=["--debug", "--verbose"], session=mock_session
         ) as executor:
             assert isinstance(executor, MCP_ToolExecutor)
 
@@ -277,7 +267,7 @@ class TestCreateMCPExecutor:
         mock_session = Mock()
         results = []
 
-        async with create_mcp_executor(session=mock_session) as executor:
+        async with create_mcp_executor(session=mock_session):
             # Simulate async operations
             for i in range(3):
                 results.append(i)
@@ -322,7 +312,6 @@ class TestCreateMCPExecutorSync:
         assert executor1 is not executor2
 
     @pytest.mark.asyncio
-
     async def test_with_none_session(self):
         """Test behavior with None session."""
         executor = create_mcp_executor_sync(None)
@@ -335,11 +324,11 @@ class TestCreateMCPExecutorSync:
     def test_session_not_managed_by_factory(self):
         """Test that factory doesn't manage session lifecycle."""
         mock_session = Mock()
-        executor = create_mcp_executor_sync(mock_session)
+        create_mcp_executor_sync(mock_session)
 
         # Factory doesn't close the session - caller manages it
         # Mock objects have 'close' as a method, but it shouldn't be called
-        if hasattr(mock_session, 'close'):
+        if hasattr(mock_session, "close"):
             assert not mock_session.close.called
 
 
@@ -367,10 +356,7 @@ class TestSessionManagerEdgeCases:
     @pytest.mark.asyncio
     async def test_empty_server_command(self):
         """Test with empty server command string."""
-        manager = MCPSessionManager(
-            server_command="",
-            server_path="/path/to/server.py"
-        )
+        manager = MCPSessionManager(server_command="", server_path="/path/to/server.py")
 
         with pytest.raises(RuntimeError):  # Will fail to execute
             async with manager:
@@ -380,10 +366,7 @@ class TestSessionManagerEdgeCases:
     async def test_very_long_server_args(self):
         """Test with many server arguments."""
         long_args = [f"--arg{i}=value{i}" for i in range(100)]
-        manager = MCPSessionManager(
-            server_path="/path/to/server.py",
-            server_args=long_args
-        )
+        manager = MCPSessionManager(server_path="/path/to/server.py", server_args=long_args)
 
         assert len(manager.server_args) == 100
 
@@ -421,10 +404,7 @@ class TestSessionManagerConcurrency:
                 return executor.mcp_session
 
         # Run in parallel
-        results = await asyncio.gather(
-            use_executor(mock_session1),
-            use_executor(mock_session2)
-        )
+        results = await asyncio.gather(use_executor(mock_session1), use_executor(mock_session2))
 
         assert results[0] is mock_session1
         assert results[1] is mock_session2
@@ -474,7 +454,7 @@ class TestSessionManagerErrorRecovery:
         cleanup_tracker = []
 
         try:
-            async with create_mcp_executor(session=mock_session) as executor:
+            async with create_mcp_executor(session=mock_session):
                 cleanup_tracker.append("entered")
                 raise RuntimeError("test exception")
         except RuntimeError:
@@ -488,7 +468,7 @@ class TestSessionManagerErrorRecovery:
         mock_session = Mock()
 
         with pytest.raises(KeyboardInterrupt):
-            async with create_mcp_executor(session=mock_session) as executor:
+            async with create_mcp_executor(session=mock_session):
                 raise KeyboardInterrupt()
 
         # Context should have exited cleanly
@@ -499,7 +479,7 @@ class TestSessionManagerErrorRecovery:
         mock_session = Mock()
 
         with pytest.raises(SystemExit):
-            async with create_mcp_executor(session=mock_session) as executor:
+            async with create_mcp_executor(session=mock_session):
                 raise SystemExit(1)
 
 
@@ -510,11 +490,12 @@ class TestSessionManagerLogging:
     async def test_logs_connection_with_mock_session(self, caplog):
         """Test that connection is logged."""
         import logging
+
         caplog.set_level(logging.INFO)
 
         mock_session = Mock()
 
-        async with create_mcp_executor(session=mock_session) as executor:
+        async with create_mcp_executor(session=mock_session):
             pass
 
         # Check for log messages
@@ -524,11 +505,12 @@ class TestSessionManagerLogging:
     async def test_logs_cleanup(self, caplog):
         """Test that cleanup is logged."""
         import logging
+
         caplog.set_level(logging.INFO)
 
         mock_session = Mock()
 
-        async with create_mcp_executor(session=mock_session) as executor:
+        async with create_mcp_executor(session=mock_session):
             pass
 
         # Check for log messages related to executor lifecycle

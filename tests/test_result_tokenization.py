@@ -27,13 +27,13 @@ class EchoExecutor(ToolExecutor):
             "message": f"Sent notification to {email}",
             "recipient": email,
         }
-    
+
     async def list_tools(self) -> list[str]:
         return []
-    
+
     async def get_tool_info(self, tool_name: str) -> dict:
         return {}
-    
+
     async def get_tool(self, tool_name: str):
         return None
 
@@ -49,13 +49,13 @@ class GenerateNewPIIExecutor(ToolExecutor):
             "support_email": "support@example.com",  # NEW PII not in input
             "backup_contact": "backup@example.com",  # Another NEW PII
         }
-    
+
     async def list_tools(self) -> list[str]:
         return []
-    
+
     async def get_tool_info(self, tool_name: str) -> dict:
         return {}
-    
+
     async def get_tool(self, tool_name: str):
         return None
 

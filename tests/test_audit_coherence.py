@@ -27,13 +27,13 @@ class PIIGeneratingExecutor(ToolExecutor):
             "support_email": "support@example.com",
             "admin_contact": "admin@example.org",
         }
-    
+
     async def list_tools(self) -> list[str]:
         return []
-    
+
     async def get_tool_info(self, tool_name: str) -> dict:
         return {}
-    
+
     async def get_tool(self, tool_name: str):
         return None
 
@@ -319,13 +319,13 @@ class TestAuditCoherence:
             async def execute(self, tool_name: str, injected_args: dict) -> dict:
                 # Return result WITHOUT any PII
                 return {"status": "ok", "code": 200}
-            
+
             async def list_tools(self) -> list[str]:
                 return []
-            
+
             async def get_tool_info(self, tool_name: str) -> dict:
                 return {}
-            
+
             async def get_tool(self, tool_name: str):
                 return None
 

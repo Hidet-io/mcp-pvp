@@ -103,6 +103,7 @@ async def test_dummy_executor_stub_response():
     assert result["args_received"] is True
     assert result["arg_count"] == 2
 
+
 @pytest.mark.asyncio
 async def test_executor_failure_propagates():
     """Test that executor exceptions propagate to caller."""
@@ -142,6 +143,7 @@ async def test_executor_failure_propagates():
     assert deliver_resp.error is not None
     assert "Tool execution failed" in deliver_resp.error
 
+
 @pytest.mark.asyncio
 async def test_executor_receives_pii_injected_args():
     """Test that executor receives arguments with PII injected."""
@@ -153,11 +155,13 @@ async def test_executor_receives_pii_injected_args():
         def execute(self, tool_name: str, injected_args: dict) -> dict:
             self.last_args = injected_args
             return {"done": True}
-        
+
         async def list_tools(self) -> list[str]:
             return []
+
         async def get_tool_info(self, tool_name: str) -> dict:
             return {}
+
         async def get_tool(self, tool_name: str):
             return None
 

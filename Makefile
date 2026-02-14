@@ -38,13 +38,13 @@ help:
 
 # Installation
 install:
-	uv pip install -e .
+	uv sync
 
 install-dev:
-	uv pip install -e ".[dev]"
+	uv sync --extra dev
 
 install-all:
-	uv pip install -e ".[all]"
+	uv sync --all-extras
 
 # Cleanup
 clean:
@@ -62,29 +62,29 @@ clean:
 
 # Testing
 test:
-	pytest
+	uv run pytest
 
 test-cov:
-	pytest --cov --cov-report=html --cov-report=term
+	uv run pytest --cov --cov-report=html --cov-report=term
 
 test-fast:
-	pytest -x
+	uv run pytest -x
 
 # Code quality
 lint:
-	ruff check .
+	uv run ruff check .
 
 lint-fix:
-	ruff check . --fix
+	uv run ruff check . --fix
 
 format:
-	ruff format .
+	uv run ruff format .
 
 format-check:
-	ruff format --check .
+	uv run ruff format --check .
 
 typecheck:
-	mypy src/
+	uv run mypy src/
 
 security:
 	uv run bandit -r src/ -c pyproject.toml
@@ -111,17 +111,17 @@ check: lint format-check typecheck security test
 
 # Run services
 run-http:
-	python -m mcp_pvp.bindings.http.app
+	uv run python -m mcp_pvp.bindings.http.app
 
 run-mcp:
-	python -m mcp_pvp.bindings.mcp.server
+	uv run python -m mcp_pvp.bindings.mcp.server
 
 example:
-	python examples/safe_email_sender/example.py
+	uv run python examples/safe_email_sender/example.py
 
 # Build
 build:
-	python -m build
+	uv run python -m build
 
 # Release (maintainers only)
 release-check:
@@ -154,21 +154,21 @@ update:
 
 # Show current version
 version:
-	@python -c "from src.mcp_pvp import __version__; print(__version__)"
+	@uv run python -c "from src.mcp_pvp import __version__; print(__version__)"
 
 # Version bumping
 bump-major:
-	@python scripts/bump_version.py --major
+	@uv run python scripts/bump_version.py --major
 
 bump-minor:
-	@python scripts/bump_version.py --minor
+	@uv run python scripts/bump_version.py --minor
 
 bump-patch:
-	@python scripts/bump_version.py --patch
+	@uv run python scripts/bump_version.py --patch
 
 bump-version:
 	@if [ -z "$(VERSION)" ]; then \
 		echo "Error: VERSION not specified. Usage: make bump-version VERSION=0.x.x"; \
 		exit 1; \
 	fi
-	@python scripts/bump_version.py $(VERSION)
+	@uv run python scripts/bump_version.py $(VERSION)

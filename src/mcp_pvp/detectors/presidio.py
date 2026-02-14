@@ -25,7 +25,7 @@ class PresidioDetector(PIIDetector):
         Initialize Presidio detector.
 
         Raises:
-            ImportError: If presidio is not installed
+            ImportError: If presidio is not installed or spaCy model is missing
         """
         try:
             from presidio_analyzer import AnalyzerEngine
@@ -34,6 +34,11 @@ class PresidioDetector(PIIDetector):
         except ImportError as e:
             raise ImportError(
                 "Presidio is not installed. Install with: pip install mcp-pvp[presidio]"
+            ) from e
+        except Exception as e:
+            raise ImportError(
+                f"Presidio installed but failed to initialize (missing spaCy model?). "
+                f"Run: python -m spacy download en_core_web_lg. Error: {e}"
             ) from e
 
     def detect(

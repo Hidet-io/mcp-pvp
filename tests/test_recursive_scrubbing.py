@@ -1,6 +1,7 @@
 """Tests for recursive output scrubbing in vault.deliver()."""
 
 from typing import Any
+
 import pytest
 
 from mcp_pvp.models import (
@@ -275,13 +276,15 @@ class TestRecursiveOutputScrubbing:
         class NoneExecutor(DummyExecutor):
             async def execute(self, tool_name: str, injected_args: dict) -> None:
                 return None
+
             async def list_tools(self) -> list[str]:
                 return []
+
             async def get_tool_info(self, tool_name: str) -> dict[str, Any]:
                 return {}
+
             def get_tool(self, tool_name: str) -> dict[str, Any]:
                 return {}
-            
 
         # Replace the vault's executor
         vault.executor = NoneExecutor()

@@ -127,7 +127,7 @@ class Vault:
     def __init__(
         self,
         policy: Policy | None = None,
-        detector: PIIDetector | None = None,
+        detector: PIIDetector | str | None = None,
         secret_key: bytes | None = None,
         audit_logger: AuditLogger | None = None,
         executor: ToolExecutor | None = None,
@@ -137,7 +137,8 @@ class Vault:
 
         Args:
             policy: Policy specification (default: deny all)
-            detector: PII detector (default: try Presidio, fallback to regex)
+            detector: PII detector instance, or 'presidio' to use Presidio,
+                     or None for RegexDetector (default)
             secret_key: Secret key for capabilities (default: generate random)
             audit_logger: Audit logger (default: in-memory)
             executor: ToolExecutor for deliver mode (default: DummyExecutor)
@@ -150,17 +151,21 @@ class Vault:
         self.executor = executor or DummyExecutor()
 
         # Initialize detector
-        if detector is None:
+        if isinstance(detector, PIIDetector):
+            self.detector: PIIDetector = detector
+        elif detector == "presidio":
             try:
                 from mcp_pvp.detectors.presidio import PresidioDetector
 
-                self.detector: PIIDetector = PresidioDetector()
+                self.detector = PresidioDetector()
                 logger.info("vault_initialized", detector="presidio")
-            except ImportError:
+            except Exception as e:
+                logger.warning("presidio_unavailable", error=str(e), fallback="regex")
                 self.detector = RegexDetector()
                 logger.info("vault_initialized", detector="regex_fallback")
         else:
-            self.detector = detector
+            self.detector = RegexDetector()
+            logger.info("vault_initialized", detector="regex")
 
         # Initialize capability manager
         if secret_key is None:

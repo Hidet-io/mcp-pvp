@@ -32,7 +32,7 @@ class CustomExecutor(ToolExecutor):
         """Record args and return a simple response without PII."""
         self.last_args = injected_args
         return f"Tool {tool_name} executed successfully"
-    
+
     async def get_tool_info(self, tool_name: str) -> dict[str, Any]:
         """Return stub tool info."""
         tool_info = {
@@ -42,17 +42,17 @@ class CustomExecutor(ToolExecutor):
             }
         }
         return tool_info.get(tool_name, {})
-    
+
     async def list_tools(self) -> list[str]:
         """Return list of available tool names."""
         return ["send_email"]
-    
+
     async def get_tool(self, tool_name: str) -> Any:
         """Return stub tool callable."""
         tool_names = await self.list_tools()
         if tool_name not in tool_names:
             raise KeyError(f"Tool '{tool_name}' not found in CustomExecutor")
-        
+
         # Return a simple stub callable
         async def stub_tool(**kwargs):
             return {
@@ -60,8 +60,9 @@ class CustomExecutor(ToolExecutor):
                 "message": f"CustomExecutor stub for tool '{tool_name}'",
                 "args": kwargs,
             }
-        
+
         return stub_tool
+
 
 def test_vault_tokenize_text_format() -> None:
     """Test vault tokenization with text format."""
@@ -294,7 +295,6 @@ async def test_vault_deliver_with_mixed_json_and_text_tokens() -> None:
 
 
 @pytest.mark.asyncio
-
 async def test_vault_deliver_text_tokens_policy_denial() -> None:
     """Test that TEXT tokens in strings are subject to policy enforcement."""
     # Policy only allows EMAIL in 'to', not in 'body'

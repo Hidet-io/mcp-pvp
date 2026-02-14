@@ -225,13 +225,13 @@ class TestDeliverModeBoundary:
                     "user_phone": "+1-555-123-4567",
                     "message": "User data retrieved successfully",
                 }
-            
+
             async def list_tools(self) -> list[str]:
                 return []
-            
+
             async def get_tool_info(self, tool_name: str) -> dict:
                 return {}
-            
+
             async def get_tool(self, tool_name: str):
                 return None
 
@@ -426,7 +426,7 @@ class TestAuditLogging:
             vault_session=tok_resp.vault_session,
             tool_call={"name": "test_tool", "args": {}},
         )
-        deliver_resp =  await vault.deliver(deliver_req)
+        deliver_resp = await vault.deliver(deliver_req)
 
         # Should have audit ID
         assert deliver_resp.audit_id is not None

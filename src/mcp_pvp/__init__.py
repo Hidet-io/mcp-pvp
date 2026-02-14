@@ -58,13 +58,11 @@ __all__ = [
     "DetectionError",
     "DummyExecutor",
     "JSONToken",
-    "MCP_ToolExecutor",
     "MCPHttpSessionManager",
     "MCPSessionManager",
+    "MCP_ToolExecutor",
     "PIIDetection",
-    # Models
     "PIIType",
-    # Errors
     "PVPError",
     "Policy",
     "PolicyAllow",
@@ -86,13 +84,10 @@ __all__ = [
     "TokenizeRequest",
     "TokenizeResponse",
     "ToolCall",
-    # Executors
     "ToolExecutor",
-    # Core
     "Vault",
     "VaultSession",
     "__version__",
-    # Session Management
     "create_mcp_executor",
     "create_mcp_executor_http",
     "create_mcp_executor_sync",

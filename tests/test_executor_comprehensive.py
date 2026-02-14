@@ -8,11 +8,12 @@ Tests cover:
 - Security considerations
 """
 
-import pytest
-from unittest.mock import Mock, MagicMock, patch, AsyncMock
 from typing import Any
+from unittest.mock import AsyncMock, Mock
 
-from mcp_pvp.executor import ToolExecutor, DummyExecutor, MCP_ToolExecutor
+import pytest
+
+from mcp_pvp.executor import DummyExecutor, MCP_ToolExecutor, ToolExecutor
 
 
 class TestToolExecutorInterface:
@@ -25,6 +26,7 @@ class TestToolExecutorInterface:
 
     def test_must_implement_execute_method(self):
         """Test that subclasses must implement all abstract methods."""
+
         class IncompleteExecutor(ToolExecutor):
             pass
 
@@ -33,6 +35,7 @@ class TestToolExecutorInterface:
 
     def test_must_implement_all_abstract_methods(self):
         """Test that subclasses must implement all abstract methods."""
+
         # Missing list_tools, get_tool_info, get_tool
         class PartialExecutor(ToolExecutor):
             async def execute(self, tool_name: str, injected_args: dict[str, Any]) -> Any:
@@ -43,19 +46,21 @@ class TestToolExecutorInterface:
 
     def test_valid_subclass_implementation(self):
         """Test that valid subclass can be instantiated."""
+
         class ValidExecutor(ToolExecutor):
             async def execute(self, tool_name: str, injected_args: dict[str, Any]) -> Any:
                 return {"status": "ok"}
-            
+
             async def list_tools(self) -> list[str]:
                 return ["tool1", "tool2"]
-            
+
             async def get_tool_info(self, tool_name: str) -> dict[str, Any]:
                 return {"description": "Test tool"}
-            
+
             async def get_tool(self, tool_name: str) -> Any:
                 async def stub():
                     return "result"
+
                 return stub
 
         executor = ValidExecutor()
@@ -64,31 +69,32 @@ class TestToolExecutorInterface:
     @pytest.mark.asyncio
     async def test_all_methods_are_async(self):
         """Test that all abstract methods are async."""
+
         class TestExecutor(ToolExecutor):
             async def execute(self, tool_name: str, injected_args: dict[str, Any]) -> Any:
                 return {"status": "ok"}
-            
+
             async def list_tools(self) -> list[str]:
                 return ["test_tool"]
-            
+
             async def get_tool_info(self, tool_name: str) -> dict[str, Any]:
                 return {"description": "Test"}
-            
+
             async def get_tool(self, tool_name: str) -> Any:
                 return None
 
         executor = TestExecutor()
-        
+
         # All methods should be awaitable
         result = await executor.execute("test", {})
         assert result["status"] == "ok"
-        
+
         tools = await executor.list_tools()
         assert isinstance(tools, list)
-        
+
         info = await executor.get_tool_info("test")
         assert isinstance(info, dict)
-        
+
         tool = await executor.get_tool("test")
         assert tool is None
 
@@ -147,12 +153,9 @@ class TestDummyExecutor:
         args = {
             "user": {
                 "name": "Alice",
-                "contact": {
-                    "email": "alice@example.com",
-                    "phone": "+1-555-0100"
-                }
+                "contact": {"email": "alice@example.com", "phone": "+1-555-0100"},
             },
-            "metadata": {"timestamp": "2026-02-08"}
+            "metadata": {"timestamp": "2026-02-08"},
         }
         result = await executor.execute("nested_tool", args)
 
@@ -188,7 +191,7 @@ class TestDummyExecutor:
         sensitive_args = {
             "ssn": "123-45-6789",
             "credit_card": "4111-1111-1111-1111",
-            "email": "secret@example.com"
+            "email": "secret@example.com",
         }
 
         # Should not raise exception
@@ -215,7 +218,7 @@ class TestDummyExecutor:
     async def test_get_tool_info_valid_tool(self):
         """Test get_tool_info returns metadata for valid tool."""
         executor = DummyExecutor()
-        
+
         # Test add_numbers
         info = await executor.get_tool_info("add_numbers")
         assert isinstance(info, dict)
@@ -240,7 +243,7 @@ class TestDummyExecutor:
     async def test_get_tool_info_invalid_tool(self):
         """Test get_tool_info raises KeyError for invalid tool."""
         executor = DummyExecutor()
-        
+
         with pytest.raises(KeyError, match="Tool 'nonexistent_tool' not found"):
             await executor.get_tool_info("nonexistent_tool")
 
@@ -248,10 +251,10 @@ class TestDummyExecutor:
     async def test_get_tool_valid_tool(self):
         """Test get_tool returns callable for valid tool."""
         executor = DummyExecutor()
-        
+
         tool = await executor.get_tool("add_numbers")
         assert callable(tool)
-        
+
         # Call the tool
         result = await tool(a=5, b=3)
         assert isinstance(result, dict)
@@ -264,7 +267,7 @@ class TestDummyExecutor:
     async def test_get_tool_invalid_tool(self):
         """Test get_tool raises KeyError for invalid tool."""
         executor = DummyExecutor()
-        
+
         with pytest.raises(KeyError, match="Tool 'invalid_tool' not found"):
             await executor.get_tool("invalid_tool")
 
@@ -272,13 +275,17 @@ class TestDummyExecutor:
     async def test_get_tool_callable_execution(self):
         """Test that tool callable can be executed multiple times."""
         executor = DummyExecutor()
-        
+
         send_email = await executor.get_tool("send_email")
-        
+
         # Execute multiple times
-        result1 = await send_email(recipient_email="alice@example.com", subject="Test 1", body="Hello")
-        result2 = await send_email(recipient_email="bob@example.com", subject="Test 2", body="World")
-        
+        result1 = await send_email(
+            recipient_email="alice@example.com", subject="Test 1", body="Hello"
+        )
+        result2 = await send_email(
+            recipient_email="bob@example.com", subject="Test 2", body="World"
+        )
+
         assert result1["args"]["recipient_email"] == "alice@example.com"
         assert result2["args"]["recipient_email"] == "bob@example.com"
         assert result1["message"] == result2["message"]  # Same stub message
@@ -320,10 +327,7 @@ class TestMCPToolExecutor:
         await executor.execute("send_email", tool_args)
 
         # Verify call parameters
-        mock_session.call_tool.assert_called_once_with(
-            name="send_email",
-            arguments=tool_args
-        )
+        mock_session.call_tool.assert_called_once_with(name="send_email", arguments=tool_args)
 
     @pytest.mark.asyncio
     async def test_execute_with_injected_pii(self):
@@ -335,7 +339,7 @@ class TestMCPToolExecutor:
         injected_args = {
             "to": "alice@example.com",  # Raw PII injected by vault
             "from": "system@example.com",
-            "message": "Your account balance is $1000"
+            "message": "Your account balance is $1000",
         }
 
         result = await executor.execute("send_email", injected_args)
@@ -363,16 +367,10 @@ class TestMCPToolExecutor:
         complex_result = {
             "status": "success",
             "data": {
-                "users": [
-                    {"id": 1, "name": "Alice"},
-                    {"id": 2, "name": "Bob"}
-                ],
-                "metadata": {
-                    "total": 2,
-                    "page": 1
-                }
+                "users": [{"id": 1, "name": "Alice"}, {"id": 2, "name": "Bob"}],
+                "metadata": {"total": 2, "page": 1},
             },
-            "timestamp": "2026-02-08T12:00:00Z"
+            "timestamp": "2026-02-08T12:00:00Z",
         }
         mock_session.call_tool.return_value = complex_result
 
@@ -391,21 +389,14 @@ class TestMCPToolExecutor:
         executor = MCP_ToolExecutor(mock_session)
         result = await executor.execute("no_args_tool", {})
 
-        mock_session.call_tool.assert_called_once_with(
-            name="no_args_tool",
-            arguments={}
-        )
+        mock_session.call_tool.assert_called_once_with(name="no_args_tool", arguments={})
         assert result["status"] == "ok"
 
     @pytest.mark.asyncio
     async def test_multiple_sequential_executions(self):
         """Test multiple tool executions in sequence."""
         mock_session = AsyncMock()
-        results = [
-            {"result": "first"},
-            {"result": "second"},
-            {"result": "third"}
-        ]
+        results = [{"result": "first"}, {"result": "second"}, {"result": "third"}]
         mock_session.call_tool.side_effect = results
 
         executor = MCP_ToolExecutor(mock_session)
@@ -432,7 +423,7 @@ class TestMCPToolExecutor:
             "process_payment",
             "log_analytics_event",
             "fetch_user_profile",
-            "update_database"
+            "update_database",
         ]
 
         for tool_name in tools:
@@ -444,7 +435,7 @@ class TestMCPToolExecutor:
     async def test_list_tools_from_mcp_session(self):
         """Test list_tools retrieves tools from MCP session."""
         mock_session = AsyncMock()
-        
+
         # Mock MCP list_tools response
         mock_tool1 = Mock()
         mock_tool1.name = "send_email"
@@ -452,14 +443,14 @@ class TestMCPToolExecutor:
         mock_tool2.name = "get_weather"
         mock_tool3 = Mock()
         mock_tool3.name = "calculate"
-        
+
         mock_result = Mock()
         mock_result.tools = [mock_tool1, mock_tool2, mock_tool3]
         mock_session.list_tools.return_value = mock_result
-        
+
         executor = MCP_ToolExecutor(mock_session)
         tools = await executor.list_tools()
-        
+
         assert isinstance(tools, list)
         assert len(tools) == 3
         assert "send_email" in tools
@@ -471,7 +462,7 @@ class TestMCPToolExecutor:
     async def test_get_tool_info_from_mcp_session(self):
         """Test get_tool_info retrieves metadata from MCP session."""
         mock_session = AsyncMock()
-        
+
         # Mock MCP tool with metadata
         mock_tool = Mock()
         mock_tool.name = "send_email"
@@ -481,17 +472,17 @@ class TestMCPToolExecutor:
             "properties": {
                 "to": {"type": "string"},
                 "subject": {"type": "string"},
-                "body": {"type": "string"}
-            }
+                "body": {"type": "string"},
+            },
         }
-        
+
         mock_result = Mock()
         mock_result.tools = [mock_tool]
         mock_session.list_tools.return_value = mock_result
-        
+
         executor = MCP_ToolExecutor(mock_session)
         info = await executor.get_tool_info("send_email")
-        
+
         assert isinstance(info, dict)
         assert info["name"] == "send_email"
         assert info["description"] == "Send an email to a recipient"
@@ -502,15 +493,15 @@ class TestMCPToolExecutor:
     async def test_get_tool_info_tool_not_found(self):
         """Test get_tool_info raises KeyError for non-existent tool."""
         mock_session = AsyncMock()
-        
+
         mock_tool = Mock()
         mock_tool.name = "send_email"
         mock_result = Mock()
         mock_result.tools = [mock_tool]
         mock_session.list_tools.return_value = mock_result
-        
+
         executor = MCP_ToolExecutor(mock_session)
-        
+
         with pytest.raises(KeyError, match="Tool 'nonexistent' not found"):
             await executor.get_tool_info("nonexistent")
 
@@ -518,19 +509,19 @@ class TestMCPToolExecutor:
     async def test_get_tool_from_mcp_session(self):
         """Test get_tool retrieves tool object from MCP session."""
         mock_session = AsyncMock()
-        
+
         # Mock MCP tool
         mock_tool = Mock()
         mock_tool.name = "calculate"
         mock_tool.description = "Perform calculations"
-        
+
         mock_result = Mock()
         mock_result.tools = [mock_tool]
         mock_session.list_tools.return_value = mock_result
-        
+
         executor = MCP_ToolExecutor(mock_session)
         tool = await executor.get_tool("calculate")
-        
+
         assert tool is not None
         assert tool.name == "calculate"
         assert tool.description == "Perform calculations"
@@ -539,15 +530,15 @@ class TestMCPToolExecutor:
     async def test_get_tool_not_found(self):
         """Test get_tool raises KeyError for non-existent tool."""
         mock_session = AsyncMock()
-        
+
         mock_tool = Mock()
         mock_tool.name = "existing_tool"
         mock_result = Mock()
         mock_result.tools = [mock_tool]
         mock_session.list_tools.return_value = mock_result
-        
+
         executor = MCP_ToolExecutor(mock_session)
-        
+
         with pytest.raises(KeyError, match="Tool 'missing_tool' not found"):
             await executor.get_tool("missing_tool")
 
@@ -555,14 +546,14 @@ class TestMCPToolExecutor:
     async def test_get_tool_returns_none_if_not_in_list(self):
         """Test get_tool behavior when tool not in session."""
         mock_session = AsyncMock()
-        
+
         # Empty tools list
         mock_result = Mock()
         mock_result.tools = []
         mock_session.list_tools.return_value = mock_result
-        
+
         executor = MCP_ToolExecutor(mock_session)
-        
+
         with pytest.raises(KeyError):
             await executor.get_tool("any_tool")
 
@@ -570,14 +561,14 @@ class TestMCPToolExecutor:
     async def test_list_tools_empty_session(self):
         """Test list_tools when MCP session has no tools."""
         mock_session = AsyncMock()
-        
+
         mock_result = Mock()
         mock_result.tools = []
         mock_session.list_tools.return_value = mock_result
-        
+
         executor = MCP_ToolExecutor(mock_session)
         tools = await executor.list_tools()
-        
+
         assert isinstance(tools, list)
         assert len(tools) == 0
 
@@ -585,7 +576,7 @@ class TestMCPToolExecutor:
     async def test_get_tool_info_multiple_tools(self):
         """Test get_tool_info with multiple tools in session."""
         mock_session = AsyncMock()
-        
+
         # Create multiple mock tools
         tools = []
         for i in range(5):
@@ -594,13 +585,13 @@ class TestMCPToolExecutor:
             tool.description = f"Description for tool {i}"
             tool.inputSchema = {"type": "object"}
             tools.append(tool)
-        
+
         mock_result = Mock()
         mock_result.tools = tools
         mock_session.list_tools.return_value = mock_result
-        
+
         executor = MCP_ToolExecutor(mock_session)
-        
+
         # Test retrieving info for tool in the middle
         info = await executor.get_tool_info("tool_2")
         assert info["name"] == "tool_2"
@@ -613,6 +604,7 @@ class TestExecutorSecurityConsiderations:
     @pytest.mark.asyncio
     async def test_pii_exposure_minimization(self):
         """Test that PII exposure is minimized in executor flow."""
+
         class TrackingExecutor(ToolExecutor):
             def __init__(self):
                 self.pii_seen = []
@@ -622,13 +614,13 @@ class TestExecutorSecurityConsiderations:
                 if "email" in injected_args:
                     self.pii_seen.append(injected_args["email"])
                 return {"status": "ok"}
-            
+
             async def list_tools(self) -> list[str]:
                 return []
-            
+
             async def get_tool_info(self, tool_name: str) -> dict[str, Any]:
                 return {}
-            
+
             async def get_tool(self, tool_name: str) -> Any:
                 return None
 
@@ -646,7 +638,7 @@ class TestExecutorSecurityConsiderations:
         sensitive_data = {
             "password": "super_secret_123",
             "api_key": "sk_test_1234567890",
-            "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
+            "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9",
         }
 
         result = await executor.execute("secure_tool", sensitive_data)
@@ -664,6 +656,7 @@ class TestExecutorSecurityConsiderations:
     @pytest.mark.asyncio
     async def test_custom_executor_can_implement_logging_prevention(self):
         """Test custom executor can prevent logging of sensitive data."""
+
         class SecureExecutor(ToolExecutor):
             async def execute(self, tool_name: str, injected_args: dict[str, Any]) -> Any:
                 # Executor explicitly avoids logging injected_args
@@ -674,13 +667,13 @@ class TestExecutorSecurityConsiderations:
                 except Exception as e:
                     # Log error without args
                     return {"success": False, "error": str(e)}
-            
+
             async def list_tools(self) -> list[str]:
                 return []
-            
+
             async def get_tool_info(self, tool_name: str) -> dict[str, Any]:
                 return {}
-            
+
             async def get_tool(self, tool_name: str) -> Any:
                 return None
 
@@ -739,7 +732,7 @@ class TestExecutorEdgeCases:
             "newlines": "line1\nline2\nline3",
             "tabs": "col1\tcol2\tcol3",
             "quotes": 'She said "Hello"',
-            "backslash": "C:\\Users\\test\\file.txt"
+            "backslash": "C:\\Users\\test\\file.txt",
         }
         result = await executor.execute("special_tool", special_args)
 
@@ -756,6 +749,7 @@ class TestExecutorEdgeCases:
     @pytest.mark.asyncio
     async def test_executor_memory_cleanup(self):
         """Test that executor doesn't retain references to PII."""
+
         class CleanupExecutor(ToolExecutor):
             def __init__(self):
                 self.last_args = None
@@ -765,13 +759,13 @@ class TestExecutorEdgeCases:
                 result = {"tool": tool_name, "arg_count": len(injected_args)}
                 # injected_args goes out of scope here
                 return result
-            
+
             async def list_tools(self) -> list[str]:
                 return []
-            
+
             async def get_tool_info(self, tool_name: str) -> dict[str, Any]:
                 return {}
-            
+
             async def get_tool(self, tool_name: str) -> Any:
                 return None
 

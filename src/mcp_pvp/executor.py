@@ -132,11 +132,11 @@ class DummyExecutor(ToolExecutor):
             "args_received": True,
             "arg_count": len(injected_args),
         }
-    
+
     async def list_tools(self) -> list[str]:
         """Return a list of available tool names."""
         return ["add_numbers", "get_user_info", "send_email"]
-    
+
     async def get_tool_info(self, tool_name: str) -> dict[str, Any]:
         """Return metadata about a specific tool."""
         tool_info = {
@@ -156,13 +156,13 @@ class DummyExecutor(ToolExecutor):
         if tool_name not in tool_info:
             raise KeyError(f"Tool '{tool_name}' not found in DummyExecutor")
         return tool_info[tool_name]
-    
+
     async def get_tool(self, tool_name: str) -> Any:
         """Return stub tool callable."""
         tool_names = await self.list_tools()
         if tool_name not in tool_names:
             raise KeyError(f"Tool '{tool_name}' not found in DummyExecutor")
-        
+
         # Return a simple stub callable
         async def stub_tool(**kwargs):
             return {
@@ -170,9 +170,8 @@ class DummyExecutor(ToolExecutor):
                 "message": f"DummyExecutor stub for tool '{tool_name}'",
                 "args": kwargs,
             }
-        
+
         return stub_tool
-    
 
 
 class MCP_ToolExecutor(ToolExecutor):
@@ -221,18 +220,15 @@ class MCP_ToolExecutor(ToolExecutor):
 
         # Call the MCP tool with injected args
         # Note: This is synchronous - for async, use AsyncMCP_ToolExecutor
-        result = await self.mcp_session.call_tool(
-            name=tool_name,
-            arguments=injected_args
-        )
+        result = await self.mcp_session.call_tool(name=tool_name, arguments=injected_args)
 
         return result
-    
+
     async def list_tools(self) -> list[str]:
         """List available tools from the MCP session."""
         tools = await self.mcp_session.list_tools()
         return [tool.name for tool in tools.tools]
-    
+
     async def get_tool_info(self, tool_name: str) -> dict[str, Any]:
         """Get metadata about a specific tool from the MCP session."""
         tools = await self.mcp_session.list_tools()
@@ -244,7 +240,6 @@ class MCP_ToolExecutor(ToolExecutor):
                     "name": tool.name,
                 }
         raise KeyError(f"Tool '{tool_name}' not found in MCP session")
-    
 
     async def get_tool(self, tool_name: str) -> Any:
         """Get the actual tool function or callable for the given tool name.
@@ -262,14 +257,13 @@ class MCP_ToolExecutor(ToolExecutor):
         """
         # For demonstration, return a simple callable that calls execute()
         tool_names = await self.list_tools()
-        if tool_name not in  tool_names:
+        if tool_name not in tool_names:
             raise KeyError(f"Tool '{tool_name}' not found in MCP session")
-        
+
         tools = await self.mcp_session.list_tools()
         tools = tools.tools
         for tool in tools:
             if tool.name == tool_name:
-                return tool 
-            
+                return tool
+
         return None
-            
