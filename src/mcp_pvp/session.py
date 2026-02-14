@@ -114,14 +114,28 @@ class MCPSessionManager:
 
         except RuntimeError:
             # Re-raise RuntimeError as-is (don't double-wrap)
-            if self.exit_stack:
-                await self.exit_stack.aclose()
+            await self._safe_cleanup()
             raise
         except (Exception, asyncio.CancelledError, BaseExceptionGroup) as e:
             logger.error(f"Failed to connect to MCP server: {e}")
-            if self.exit_stack:
-                await self.exit_stack.aclose()
+            await self._safe_cleanup()
             raise RuntimeError(f"Failed to connect to MCP server: {e}") from e
+
+    async def _safe_cleanup(self) -> None:
+        """Clean up exit stack, suppressing errors from broken transports.
+
+        When an MCP subprocess crashes, closing the stdio_client context
+        manager can raise BaseExceptionGroup from anyio's TaskGroup teardown.
+        We must suppress these to avoid masking the original error.
+        """
+        if self.exit_stack:
+            try:
+                await self.exit_stack.aclose()
+            except BaseException as cleanup_err:
+                logger.debug(f"Suppressed error during cleanup: {cleanup_err}")
+            finally:
+                self.exit_stack = None
+                self.session = None
 
     async def __aexit__(
         self,
