@@ -3,7 +3,7 @@
 import secrets
 from abc import ABC, abstractmethod
 from datetime import UTC, datetime
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 
 import structlog
@@ -12,7 +12,7 @@ from pydantic import BaseModel, Field
 from mcp_pvp.models import PIIType, RunContext
 
 
-class AuditEventType(str, Enum):
+class AuditEventType(StrEnum):
     """Types of audit events."""
 
     TOKENIZE = "TOKENIZE"

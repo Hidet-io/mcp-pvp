@@ -1,7 +1,7 @@
 """Pydantic models for PVP protocol."""
 
 from datetime import datetime
-from enum import Enum
+from enum import StrEnum
 from typing import Any, Literal
 
 from pydantic import BaseModel, Field
@@ -9,7 +9,7 @@ from pydantic import BaseModel, Field
 from mcp_pvp.utils import utc_now
 
 
-class PIIType(str, Enum):
+class PIIType(StrEnum):
     """Types of PII that can be detected and tokenized."""
 
     EMAIL = "EMAIL"
@@ -20,14 +20,14 @@ class PIIType(str, Enum):
     CUSTOM = "CUSTOM"  # Custom pattern
 
 
-class TokenFormat(str, Enum):
+class TokenFormat(StrEnum):
     """Format for token representation."""
 
     TEXT = "TEXT"  # [[PII:TYPE:REF]]
     JSON = "JSON"  # {"$pii_ref": "tkn_x", "type": "EMAIL", "cap": "cap_x"}
 
 
-class SinkKind(str, Enum):
+class SinkKind(StrEnum):
     """Kind of sink for disclosure."""
 
     TOOL = "tool"  # MCP tool

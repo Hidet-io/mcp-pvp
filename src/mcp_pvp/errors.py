@@ -1,10 +1,10 @@
 """Error types and error codes for PVP."""
 
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 
 
-class ErrorCode(str, Enum):
+class ErrorCode(StrEnum):
     """PVP error codes."""
 
     ERR_POLICY_DENIED = "ERR_POLICY_DENIED"

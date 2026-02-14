@@ -32,8 +32,12 @@ help:
 	@echo "  make bump-patch       - Bump patch version (0.0.x)"
 	@echo ""
 	@echo "Release (Maintainers):"
-	@echo "  make release-check    - Pre-release checklist"
-	@echo "  make release VERSION=0.x.x - Create and tag release"
+	@echo "  make auto-release-patch  - Automated release: bump patch, check, commit, tag, push"
+	@echo "  make auto-release-minor  - Automated release: bump minor, check, commit, tag, push"
+	@echo "  make auto-release-major  - Automated release: bump major, check, commit, tag, push"
+	@echo "  make auto-release-dry BUMP=patch - Dry run (show what would happen)"
+	@echo "  make release-check       - Pre-release checklist (manual flow)"
+	@echo "  make release VERSION=0.x.x - Create tag only (manual flow)"
 	@echo ""
 
 # Installation
@@ -147,6 +151,19 @@ release:
 	@echo "  1. Review tag: git show v$(VERSION)"
 	@echo "  2. Push tag: git push origin v$(VERSION)"
 	@echo "  3. GitHub Actions will build and publish to PyPI"
+
+# Automated release (recommended)
+auto-release-patch:
+	@./scripts/release.sh patch
+
+auto-release-minor:
+	@./scripts/release.sh minor
+
+auto-release-major:
+	@./scripts/release.sh major
+
+auto-release-dry:
+	@./scripts/release.sh $(BUMP) --dry-run
 
 # Update dependencies
 update:

@@ -27,89 +27,94 @@ Ensure all checks pass before releasing:
 make check   # runs lint, format-check, typecheck, security, test
 ```
 
-## Step-by-Step Release
+## Automated Release (Recommended)
 
-### 1. Bump the version
-
-Use one of the following:
+The release script handles the entire flow in one command:
 
 ```bash
-# Automatic bump
-make bump-patch   # 0.6.0 → 0.6.1
-make bump-minor   # 0.6.0 → 0.7.0
-make bump-major   # 0.6.0 → 1.0.0
+# One-command release
+make auto-release-patch   # bump patch, check, commit, tag, push
+make auto-release-minor   # bump minor, check, commit, tag, push
+make auto-release-major   # bump major, check, commit, tag, push
 
-# Or set an explicit version
-make bump-version VERSION=0.7.0
+# Or run the script directly for more options
+./scripts/release.sh patch
+./scripts/release.sh minor
+./scripts/release.sh 0.8.0          # explicit version
+./scripts/release.sh patch --dry-run # preview without changes
+./scripts/release.sh patch --no-push # stop after tagging
 ```
 
-This updates `pyproject.toml` and `src/mcp_pvp/__init__.py`.
+### What the script does
 
-### 2. Update CHANGELOG.md
+1. **Preflight checks** — verifies you're on `main`, no uncommitted changes, up to date with remote
+2. **Bumps the version** — updates `pyproject.toml` and `src/mcp_pvp/__init__.py`
+3. **Updates CHANGELOG.md** — moves `[Unreleased]` entries into a dated version section (warns if empty)
+4. **Runs all checks** — lint, format, typecheck, security, tests (`make check`)
+5. **Commits** — `git add -A && git commit -m "Release vX.Y.Z"`
+6. **Tags** — `git tag -a vX.Y.Z -m "Release vX.Y.Z"`
+7. **Pushes** — pushes commit and tag to origin (asks for confirmation)
 
-Move items from `[Unreleased]` into a new version section with today's date:
+### Before you run it
+
+Add your changes under `[Unreleased]` in `CHANGELOG.md`:
 
 ```markdown
 ## [Unreleased]
-
-## [0.7.0] - 2026-02-14
 ### Added
 - New feature description
 
 ### Fixed
 - Bug fix description
-
-### Changed
-- Breaking change or behavioral change
 ```
 
-> **Tip:** The GitHub Actions release workflow extracts the changelog section matching the tag version to populate the GitHub Release body. Make sure the heading format is exactly `## [X.Y.Z]`.
+> **Tip:** The GitHub Actions release workflow extracts the changelog section matching the tag version to populate the GitHub Release body. Make sure entries are under `[Unreleased]` before running the script.
 
-### 3. Verify the version
+### Dry run
+
+Preview what would happen without making any changes:
 
 ```bash
-make version  # prints the current version from __init__.py
+make auto-release-dry BUMP=patch
 ```
 
-### 4. Run all checks
+---
+
+## Manual Release (Step-by-Step)
+
+If you prefer to run each step individually:
+
+### 1. Bump the version
+
+```bash
+make bump-patch   # 0.6.0 → 0.6.1
+make bump-minor   # 0.6.0 → 0.7.0
+make bump-major   # 0.6.0 → 1.0.0
+```
+
+### 2. Update CHANGELOG.md
+
+Move `[Unreleased]` entries into a new version section with today's date.
+
+### 3. Run all checks
 
 ```bash
 make check
 ```
 
-This runs `lint`, `format-check`, `typecheck`, `security`, and `test` in sequence. All must pass.
-
-### 5. Commit the version bump
+### 4. Commit, tag, push
 
 ```bash
 git add -A
 git commit -m "Release v0.7.0"
-```
-
-### 6. Create a git tag
-
-```bash
 make release VERSION=0.7.0
-```
-
-This will:
-- Verify there are no uncommitted changes
-- Create an annotated tag `v0.7.0`
-
-Alternatively, tag manually:
-
-```bash
-git tag -a v0.7.0 -m "Release v0.7.0"
-```
-
-### 7. Push to GitHub
-
-```bash
 git push origin main
 git push origin v0.7.0
 ```
 
-### 8. GitHub Actions takes over
+---
+
+## GitHub Actions takes over
 
 Pushing the tag triggers the [release workflow](../.github/workflows/release.yml), which automatically:
 
@@ -122,15 +127,15 @@ Pushing the tag triggers the [release workflow](../.github/workflows/release.yml
 
 ## Quick Reference
 
-| Step | Command |
-|------|---------|
+| Action | Command |
+|--------|---------|
+| **Full automated release** | `make auto-release-patch` / `minor` / `major` |
+| Dry run | `make auto-release-dry BUMP=patch` |
+| Script with options | `./scripts/release.sh patch --no-push` |
 | Check current version | `make version` |
 | Run all checks | `make check` |
-| Bump patch version | `make bump-patch` |
-| Bump minor version | `make bump-minor` |
-| Bump major version | `make bump-major` |
-| Set explicit version | `make bump-version VERSION=X.Y.Z` |
-| Create release tag | `make release VERSION=X.Y.Z` |
+| Bump version only | `make bump-patch` / `bump-minor` / `bump-major` |
+| Create tag only | `make release VERSION=X.Y.Z` |
 | Build locally | `make build` |
 
 ## Troubleshooting
