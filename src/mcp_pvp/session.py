@@ -102,11 +102,22 @@ class MCPSessionManager:
                     f"Check that '{self.server_command}' can run '{self.server_path}' "
                     f"and that all dependencies (e.g. 'mcp' package) are installed."
                 ) from e
+            except (asyncio.CancelledError, BaseExceptionGroup) as e:
+                logger.error(f"MCP server process failed during initialization: {e}")
+                raise RuntimeError(
+                    f"MCP server process terminated unexpectedly. "
+                    f"Check that '{self.server_command} {self.server_path}' is a valid command."
+                ) from e
 
             logger.info(f"Connected to MCP server: {self.server_path}")
             return self.session
 
-        except Exception as e:
+        except RuntimeError:
+            # Re-raise RuntimeError as-is (don't double-wrap)
+            if self.exit_stack:
+                await self.exit_stack.aclose()
+            raise
+        except (Exception, asyncio.CancelledError, BaseExceptionGroup) as e:
             logger.error(f"Failed to connect to MCP server: {e}")
             if self.exit_stack:
                 await self.exit_stack.aclose()
