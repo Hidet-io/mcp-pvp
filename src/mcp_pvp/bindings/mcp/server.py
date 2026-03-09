@@ -1,131 +1,206 @@
 """MCP tool server for PVP using official MCP Python SDK.
 
-Exposes pvp.tokenize, pvp.resolve, and pvp.deliver as real MCP tools.
+Vault session lifecycle is tied to the MCP connection via lifespan:
+- When a client connects, a vault session is created automatically.
+- Clients discover their vault session by reading the ``pvp://session`` resource.
+- All tool calls transparently resolve PII tokens and re-tokenize results using
+  that connection-scoped session — no hidden arguments required.
 """
 
-from typing import Any
+import json
+from contextlib import asynccontextmanager
+from dataclasses import dataclass
+from typing import Any, AsyncIterator, Sequence
 
 import structlog
 from mcp.server.fastmcp import FastMCP
+from mcp.types import ContentBlock, TextContent
 
-from mcp_pvp.models import (
-    DeliverRequest,
-    Policy,
-    ResolveRequest,
-    TokenFormat,
-    TokenizeRequest,
-)
+from mcp_pvp.models import Policy
 from mcp_pvp.vault import Vault
 
 logger = structlog.get_logger(__name__)
 
-# Initialize vault with default policy
-_policy = Policy()
-_vault = Vault(policy=_policy)
 
-# Create MCP server
-mcp = FastMCP("PVP - Privacy Vault Protocol")
+@dataclass
+class PvpLifespanContext:
+    """Per-connection state held in the MCP lifespan context."""
+
+    vault_session: str
 
 
-@mcp.tool()
-def tokenize(
-    content: str,
-    token_format: str = "JSON",
-    include_caps: bool = True,
-    session_ttl_seconds: int = 3600,
-) -> dict[str, Any]:
-    """Tokenize content containing PII/secrets before LLM sees it.
+class FastPvpMCP(FastMCP):
+    """FastMCP server with automatic PII tokenization/resolution per connection.
 
-    Args:
-        content: Content to tokenize
-        token_format: Token format (TEXT or JSON)
-        include_caps: Whether to include capabilities in response
-        session_ttl_seconds: Session TTL in seconds
-
-    Returns:
-        Tokenization response with tokens and vault session
+    On every MCP connection the server creates a dedicated vault session via the
+    ``lifespan`` hook.  Clients read ``pvp://session`` to discover their session
+    ID, use it to tokenize PII before calling tools, and receive back results
+    where any PII is re-tokenized automatically.
     """
-    request = TokenizeRequest(
-        content=content,
-        token_format=TokenFormat(token_format),
-        include_caps=include_caps,
-        session_ttl_seconds=session_ttl_seconds,
-    )
-    response = _vault.tokenize(request)
-    return response.model_dump(mode="json")
 
+    def __init__(self, *args: Any, vault: Vault = None, **kwargs: Any) -> None:
+        # Store vault before calling super so the lifespan can reference it.
+        self._vault = vault or Vault()
+        super().__init__(*args, lifespan=self._pvp_lifespan, **kwargs)
 
-@mcp.tool()
-def resolve(
-    vault_session: str,
-    tokens: list[dict[str, str]],
-    sink: dict[str, Any],
-) -> dict[str, Any]:
-    """Resolve tokens to raw values (with policy enforcement).
+        # ── Resource: pvp://session ──────────────────────────────────────────
+        # Clients read this once after connecting to get their vault session ID.
+        @self.resource(
+            "pvp://session",
+            name="PVP Vault Session",
+            description=(
+                "The vault session ID for this MCP connection. "
+                "Read this resource first, then pass the returned ID to "
+                "vault.tokenize() when creating PII tokens. The server will "
+                "automatically resolve those tokens in tool arguments and "
+                "re-tokenize any PII in tool results."
+            ),
+            mime_type="text/plain",
+        )
+        def _pvp_session_resource() -> str:
+            ctx = self.get_context()
+            lifespan_ctx: PvpLifespanContext = ctx.request_context.lifespan_context
+            return lifespan_ctx.vault_session
 
-    SECURITY: This operation enforces the PVP policy and validates capabilities.
-    Use pvp.deliver instead if possible - it's safer and never returns PII to the LLM.
+    # ── Lifespan ─────────────────────────────────────────────────────────────
 
-    Args:
-        vault_session: Vault session ID
-        tokens: List of token references with capabilities
-        sink: Sink specification (kind, name, arg_path)
+    @asynccontextmanager
+    async def _pvp_lifespan(self, app: FastMCP) -> AsyncIterator[PvpLifespanContext]:
+        """Create a vault session when a client connects; clean up on disconnect."""
+        session = self._vault.store.create_session()
+        logger.info("pvp_connection_established", vault_session=session.session_id)
+        try:
+            yield PvpLifespanContext(vault_session=session.session_id)
+        finally:
+            logger.info("pvp_connection_closed", vault_session=session.session_id)
 
-    Returns:
-        Resolution response with raw values
-    """
-    request = ResolveRequest(
-        vault_session=vault_session,
-        tokens=tokens,
-        sink=sink,
-    )
-    response = _vault.resolve(request)
-    return response.model_dump(mode="json")
+    # ── Properties ───────────────────────────────────────────────────────────
 
+    @property
+    def policy(self) -> Policy:
+        """Get current policy."""
+        return self._vault.policy
 
-@mcp.tool()
-async def deliver(
-    vault_session: str,
-    tool_call: dict[str, Any],
-) -> dict[str, Any]:
-    """Inject PII into tool call and execute locally (RECOMMENDED - most secure).
+    @policy.setter
+    def policy(self, new_policy: Policy) -> None:
+        """Set new policy and update vault."""
+        self._vault.policy = new_policy
 
-    This is the recommended mode: PII never leaves the vault, is injected locally,
-    and the sanitized response is returned to the LLM.
+    @property
+    def vault(self) -> Vault:
+        """Get vault instance."""
+        return self._vault
 
-    Args:
-        vault_session: Vault session ID
-        tool_call: Tool call specification (name, args)
+    @vault.setter
+    def vault(self, new_vault: Vault) -> None:
+        """Set new vault instance."""
+        self._vault = new_vault
 
-    Returns:
-        Delivery response with executed result
-    """
-    request = DeliverRequest(
-        vault_session=vault_session,
-        tool_call=tool_call,
-    )
-    response = await _vault.deliver(request)
-    result: dict[str, Any] = response.model_dump(mode="json")
-    return result
+    # ── Tool call override ────────────────────────────────────────────────────
 
+    async def call_tool(self, name: str, arguments: dict[str, Any]) -> Sequence[ContentBlock] | dict[str, Any]:
+        """Resolve PII tokens in arguments, execute the tool, re-tokenize results.
 
-def main() -> None:
-    """Run MCP server with stdio transport."""
-    # Configure structured logging
-    structlog.configure(
-        processors=[
-            structlog.processors.TimeStamper(fmt="iso"),
-            structlog.processors.StackInfoRenderer(),
-            structlog.processors.format_exc_info,
-            structlog.processors.JSONRenderer(),
-        ],
-    )
+        The vault session is read from the per-connection lifespan context — no
+        ``_vault_session`` argument is needed or accepted from callers.
 
-    logger.info("mcp_pvp_server_starting", transport="stdio")
+        Steps:
+        1. Read vault session from lifespan context (set on connection by ``_pvp_lifespan``).
+        2. Resolve any PII tokens in *arguments* to their real values.
+        3. Execute the tool via FastMCP's default ``call_tool``.
+        4. Scan the result for PII and replace it with fresh tokens.
+        5. Return the tokenized result in the original FastMCP format.
+        """
+        # ── 1. Obtain vault session from the connection-scoped lifespan context ──
+        vault_session: str | None = None
+        try:
+            ctx = self.get_context()
+            lifespan_ctx: PvpLifespanContext = ctx.request_context.lifespan_context
+            vault_session = lifespan_ctx.vault_session
+        except (ValueError, AttributeError):
+            # No active request context — tool was called directly (e.g. unit tests).
+            pass
 
-    # Run with stdio transport (default for MCP)
-    mcp.run(transport="stdio")
+        # ── 2. Resolve tokens in arguments ───────────────────────────────────
+        if vault_session:
+            logger.info(
+                "resolving_tokens_for_tool",
+                tool_name=name,
+                vault_session=vault_session,
+            )
+            replacements, disclosed_types = self._vault.resolve_tokens_in_args(
+                args=arguments,
+                vault_session=vault_session,
+                tool_name=name,
+                run=None,
+            )
+            arguments = self._vault.inject_pii_into_args(arguments, replacements)
+            logger.info(
+                "tokens_resolved_for_tool",
+                tool_name=name,
+                resolved_count=len(replacements),
+                disclosed_types=disclosed_types,
+            )
 
+        # ── 3. Execute the tool ──────────────────────────────────────────────
+        logger.info("executing_tool", tool_name=name)
+        result = await super().call_tool(name, arguments)
 
-if __name__ == "__main__":
-    main()
+        # ── 4. Re-tokenize result to prevent PII leakage ─────────────────────
+        if vault_session:
+            logger.info("tokenizing_tool_result", tool_name=name, vault_session=vault_session)
+            all_tokens = []
+
+            # FastMCP may return a tuple (content_blocks, raw_data).
+            if isinstance(result, tuple) and len(result) == 2:
+                content_blocks, raw_data = result
+
+                tokenized_blocks = []
+                if isinstance(content_blocks, list):
+                    for block in content_blocks:
+                        if isinstance(block, TextContent) and block.text:
+                            try:
+                                parsed = json.loads(block.text)
+                                tokenized_parsed, tokens = self._vault.tokenize_tool_result(
+                                    tool_result=parsed,
+                                    vault_session=vault_session,
+                                    run=None,
+                                )
+                                all_tokens.extend(tokens)
+                                tokenized_blocks.append(
+                                    TextContent(type="text", text=json.dumps(tokenized_parsed, indent=2))
+                                )
+                            except (json.JSONDecodeError, TypeError):
+                                tokenized_text, tokens = self._vault.tokenize_tool_result(
+                                    tool_result=block.text,
+                                    vault_session=vault_session,
+                                    run=None,
+                                )
+                                all_tokens.extend(tokens)
+                                tokenized_blocks.append(TextContent(type="text", text=tokenized_text))
+                        else:
+                            tokenized_blocks.append(block)
+                else:
+                    tokenized_blocks = content_blocks
+
+                tokenized_raw_data, tokens = self._vault.tokenize_tool_result(
+                    tool_result=raw_data,
+                    vault_session=vault_session,
+                    run=None,
+                )
+                all_tokens.extend(tokens)
+
+                logger.info("tool_result_tokenized", tool_name=name, tokens_found=len(all_tokens))
+                return (tokenized_blocks, tokenized_raw_data)
+
+            # Non-tuple fallback (e.g. direct calls returning plain values).
+            tokenized_result, result_tokens = self._vault.tokenize_tool_result(
+                tool_result=result,
+                vault_session=vault_session,
+                run=None,
+            )
+            logger.info("tool_result_tokenized", tool_name=name, tokens_found=len(result_tokens))
+            return tokenized_result
+
+        # No vault session — return result unchanged.
+        return result
