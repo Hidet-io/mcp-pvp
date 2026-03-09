@@ -299,8 +299,9 @@ class TestAllFeaturesIntegrated:
         assert deliver_resp.delivered
         assert len(deliver_resp.result_tokens) > 0
 
-        # Step 4: Verify result is redacted (has TEXT tokens)
-        assert "[[PII:" in deliver_resp.tool_result
+        # Step 4: Verify result is redacted (has TEXT tokens).
+        # tool_result is a dict; stringify it to check for token patterns.
+        assert "[[PII:" in str(deliver_resp.tool_result)
 
         # Step 5: Verify audit trail (audit coherence)
         events = vault.audit_logger.get_events()
@@ -393,9 +394,10 @@ class TestAllFeaturesIntegrated:
         # Verify result tokens were created
         assert len(deliver_resp.result_tokens) > 0
 
-        # Verify both initial and result tokens appear in redacted content
+        # Verify both initial and result tokens appear in redacted content.
+        # tool_result is a dict; stringify to check for token patterns.
         assert "[[PII:" in tokenize_resp.redacted
-        assert "[[PII:" in deliver_resp.tool_result
+        assert "[[PII:" in str(deliver_resp.tool_result)
 
 
 class TestComplexExceptionHandling:
@@ -434,8 +436,9 @@ class TestComplexExceptionHandling:
         # Should have found PII in the exception and context
         assert len(deliver_resp.result_tokens) > 0
 
-        # Result should contain redacted markers
-        assert "[[PII:" in deliver_resp.tool_result
+        # Result should contain redacted markers.
+        # tool_result is a dict; stringify to check for token patterns.
+        assert "[[PII:" in str(deliver_resp.tool_result)
 
         # Verify audit trail exists
         events = vault.audit_logger.get_events()

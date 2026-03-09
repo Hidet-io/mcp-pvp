@@ -141,14 +141,15 @@ class Vault:
                      or None for RegexDetector (default)
             secret_key: Secret key for capabilities (default: generate random)
             audit_logger: Audit logger (default: in-memory)
-            executor: ToolExecutor for deliver mode (default: DummyExecutor)
-                     Provide your own executor to enable real tool execution
+            executor: ToolExecutor for deliver mode (default: None)
+                     If None, deliver() will only prepare injected args without execution.
+                     Provide your own executor to enable real tool execution in deliver().
         """
         self.policy = policy or Policy()
         self.policy_evaluator = PolicyEvaluator(self.policy)
         self.store = SessionStore()
         self.audit_logger = audit_logger or InMemoryAuditLogger()
-        self.executor = executor or DummyExecutor()
+        self.executor = executor
 
         # Initialize detector
         if isinstance(detector, PIIDetector):
@@ -430,31 +431,172 @@ class Vault:
             disclosed=disclosed_types,
         )
 
-    async def deliver(self, request: DeliverRequest) -> DeliverResponse:
+    def tokenize_tool_result(
+        self,
+        tool_result: Any,
+        vault_session: str,
+        run: RunContext | None = None,
+        parent_audit_id: str | None = None,
+    ) -> tuple[Any, list[JSONToken | TextToken]]:
         """
-        Deliver: inject PII into tool call and execute (stub).
+        Tokenize tool result to prevent PII leakage while preserving structure.
+
+        This method detects PII in tool results and replaces it with tokens,
+        preventing sensitive data from leaking back to the caller. It recursively
+        traverses the result structure and replaces PII in string values while
+        maintaining the original data types and structure.
 
         Args:
-            request: DeliverRequest
+            tool_result: The result from tool execution (any type)
+            vault_session: Vault session ID for token storage
+            run: Run context (optional)
+            parent_audit_id: Parent audit ID to link tokenization (optional)
 
         Returns:
-            DeliverResponse
+            Tuple of (tokenized_result, result_tokens):
+            - tokenized_result: Result with PII replaced by TEXT format tokens (same structure)
+            - result_tokens: List of tokens found in the result
+
+        Example:
+            >>> result = {"email": "user@example.com", "status": "sent"}
+            >>> tokenized, tokens = vault.tokenize_tool_result(
+            ...     tool_result=result,
+            ...     vault_session="vs_123",
+            ... )
+            >>> # tokenized contains: {"email": "[[PII:EMAIL:tkn_abc]]", "status": "sent"}
+            >>> # tokens contains: [TextToken(ref="tkn_abc", type=PIIType.EMAIL)]
+        """
+        if tool_result is None:
+            return tool_result, []
+
+        # Collect all tokens created during traversal
+        all_tokens: list[JSONToken | TextToken] = []
+
+        def tokenize_value_recursive(value: Any) -> Any:
+            """Recursively tokenize PII in values while preserving structure."""
+            # Handle None
+            if value is None:
+                return None
+
+            # Handle strings - detect and replace PII
+            if isinstance(value, str):
+                # Tokenize the string content
+                tokenization = self.tokenize(
+                    TokenizeRequest(
+                        content=value,
+                        vault_session=vault_session,
+                        token_format=TokenFormat.TEXT,
+                        run=run,
+                        parent_audit_id=parent_audit_id,
+                    )
+                )
+                # Collect tokens
+                all_tokens.extend(tokenization.tokens)
+                # Return redacted string
+                return tokenization.redacted
+
+            # Handle dicts - recursively process values
+            elif isinstance(value, dict):
+                return {k: tokenize_value_recursive(v) for k, v in value.items()}
+
+            # Handle lists - recursively process items
+            elif isinstance(value, list):
+                return [tokenize_value_recursive(item) for item in value]
+
+            # Handle tuples - recursively process items, return as tuple
+            elif isinstance(value, tuple):
+                return tuple(tokenize_value_recursive(item) for item in value)
+
+            # Handle sets - recursively process items, return as set
+            elif isinstance(value, set):
+                return {tokenize_value_recursive(item) for item in value}
+
+            # Handle objects with __dict__ (like Pydantic models, custom classes)
+            # This includes MCP's ContentBlock types
+            elif hasattr(value, '__dict__') and hasattr(value, '__class__'):
+                # For objects with attributes, we need to rebuild them
+                # Get the object's dict representation
+                obj_dict = {}
+                for attr_name in dir(value):
+                    if not attr_name.startswith('_'):
+                        try:
+                            attr_value = getattr(value, attr_name)
+                            # Skip methods
+                            if not callable(attr_value):
+                                obj_dict[attr_name] = attr_value
+                        except Exception:
+                            continue
+                
+                # Tokenize the dict representation
+                tokenized_dict = tokenize_value_recursive(obj_dict)
+                
+                # Try to reconstruct the object with tokenized values
+                try:
+                    # For Pydantic models and similar, try to create new instance
+                    if hasattr(value.__class__, 'model_validate'):
+                        # Pydantic v2
+                        return value.__class__.model_validate(tokenized_dict)
+                    elif hasattr(value.__class__, 'parse_obj'):
+                        # Pydantic v1
+                        return value.__class__.parse_obj(tokenized_dict)
+                    else:
+                        # For other types, try to use constructor
+                        return value.__class__(**tokenized_dict)
+                except Exception:
+                    # If reconstruction fails, return the tokenized dict
+                    return tokenized_dict
+
+            # For other types (int, float, bool, etc.), return as-is
+            # This includes numbers, booleans, dates, etc.
+            else:
+                return value
+
+        # Tokenize the result recursively
+        tokenized_result = tokenize_value_recursive(tool_result)
+
+        return tokenized_result, all_tokens
+
+    def resolve_tokens_in_args(
+        self,
+        args: dict[str, Any],
+        vault_session: str,
+        tool_name: str,
+        run: RunContext | None = None,
+    ) -> tuple[dict[str, str], dict[PIIType, int]]:
+        """
+        Extract tokens from arguments, validate policy, and return replacements.
+
+        This helper method handles both JSON and TEXT format tokens embedded in
+        arguments, validates policy for each token, and returns the PII replacements
+        that should be injected.
+
+        Args:
+            args: Tool arguments that may contain tokens
+            vault_session: Vault session ID
+            tool_name: Name of the tool (for sink specification)
+            run: Run context (optional)
+
+        Returns:
+            Tuple of (replacements, disclosed_types):
+            - replacements: Dict mapping token refs to actual PII values
+            - disclosed_types: Dict counting disclosures by PII type
 
         Raises:
-            PolicyDeniedError: If policy denies disclosure
-            CapabilityInvalidError: If capability is invalid
-        """
-        logger.info(
-            "vault_deliver_start",
-            vault_session=request.vault_session,
-            tool_name=request.tool_call.name,
-        )
+            PolicyDeniedError: If policy denies disclosure for any token
+            CapabilityInvalidError: If capability verification fails
 
+        Example:
+            >>> replacements, disclosed = vault.resolve_tokens_in_args(
+            ...     args={"to": {"$pii_ref": "tkn_abc", "type": "EMAIL"}},
+            ...     vault_session="vs_123",
+            ...     tool_name="send_email",
+            ... )
+        """
         # Get session
-        session = self.store.get_session(request.vault_session)
+        session = self.store.get_session(vault_session)
 
         # Extract JSON tokens from args with their paths
-        json_token_paths = extract_json_tokens(request.tool_call.args)
+        json_token_paths = extract_json_tokens(args)
 
         # Build replacements and verify
         replacements: dict[str, str] = {}
@@ -467,21 +609,21 @@ class Vault:
 
             sink = Sink(
                 kind=SinkKind.TOOL,
-                name=request.tool_call.name,
+                name=tool_name,
                 arg_path=arg_path,
             )
 
             # Get stored PII
-            stored = self.store.get_pii(request.vault_session, token.pii_ref)
+            stored = self.store.get_pii(vault_session, token.pii_ref)
 
             # Verify capability if provided
             if token.cap:
                 self.cap_manager.verify(
                     cap_string=token.cap,
-                    vault_session=request.vault_session,
+                    vault_session=vault_session,
                     pii_ref=token.pii_ref,
                     sink=sink,
-                    run=request.run,
+                    run=run,
                 )
 
             # Check policy
@@ -490,14 +632,14 @@ class Vault:
                     session=session,
                     pii_type=stored.pii_type,
                     sink=sink,
-                    run=request.run,
+                    run=run,
                     value_size=len(stored.value),
                 )
             except PolicyDeniedError as e:
                 # Audit denial
                 event = create_policy_denied_event(
-                    vault_session=request.vault_session,
-                    run=request.run,
+                    vault_session=vault_session,
+                    run=run,
                     pii_type=stored.pii_type,
                     sink_kind=sink.kind.value,
                     sink_name=sink.name,
@@ -535,7 +677,7 @@ class Vault:
 
             return tokens_with_paths
 
-        text_token_paths = extract_text_tokens_recursive(request.tool_call.args)
+        text_token_paths = extract_text_tokens_recursive(args)
 
         for text_token, path in text_token_paths:
             # Extract just the top-level key from path (strip array indices and nested paths)
@@ -544,12 +686,12 @@ class Vault:
 
             sink = Sink(
                 kind=SinkKind.TOOL,
-                name=request.tool_call.name,
+                name=tool_name,
                 arg_path=arg_path,
             )
 
             # Get stored PII
-            stored = self.store.get_pii(request.vault_session, text_token.ref)
+            stored = self.store.get_pii(vault_session, text_token.ref)
 
             # Check policy
             try:
@@ -557,14 +699,14 @@ class Vault:
                     session=session,
                     pii_type=stored.pii_type,
                     sink=sink,
-                    run=request.run,
+                    run=run,
                     value_size=len(stored.value),
                 )
             except PolicyDeniedError as e:
                 # Audit denial
                 event = create_policy_denied_event(
-                    vault_session=request.vault_session,
-                    run=request.run,
+                    vault_session=vault_session,
+                    run=run,
                     pii_type=stored.pii_type,
                     sink_kind=sink.kind.value,
                     sink_name=sink.name,
@@ -580,8 +722,34 @@ class Vault:
                 # Record disclosure only once per unique token reference
                 self.policy_evaluator.record_disclosure(session, len(stored.value))
 
-        # Inject values into args (handle both JSON and TEXT tokens)
-        injected_args = replace_json_tokens(request.tool_call.args, replacements)
+        return replacements, disclosed_types
+
+    def inject_pii_into_args(
+        self, args: dict[str, Any], replacements: dict[str, str]
+    ) -> dict[str, Any]:
+        """
+        Replace tokens in arguments with actual PII values.
+
+        Handles both JSON and TEXT format tokens, recursively traversing
+        the argument structure.
+
+        Args:
+            args: Tool arguments containing tokens
+            replacements: Dict mapping token refs to PII values
+
+        Returns:
+            New arguments dict with tokens replaced by actual values
+
+        Example:
+            >>> replacements = {"tkn_abc": "user@example.com"}
+            >>> injected = vault.inject_pii_into_args(
+            ...     args={"to": "[[PII:EMAIL:tkn_abc]]"},
+            ...     replacements=replacements,
+            ... )
+            >>> # injected = {"to": "user@example.com"}
+        """
+        # Replace JSON tokens
+        injected_args = replace_json_tokens(args, replacements)
 
         # Also replace TEXT format tokens in strings recursively
         def replace_text_tokens_recursive(obj: Any) -> Any:
@@ -595,97 +763,116 @@ class Vault:
             return obj
 
         injected_args = replace_text_tokens_recursive(injected_args)
+        return injected_args
+
+    async def deliver(self, request: DeliverRequest) -> DeliverResponse:
+        """
+        Deliver: inject PII into tool call arguments and optionally execute.
+
+        This method performs policy validation, token resolution, and PII injection
+        into tool call arguments. If an executor is configured, it will also execute
+        the tool call and tokenize results. Otherwise, it only prepares the injected
+        arguments for external execution (useful for MCP server integration).
+
+        Args:
+            request: DeliverRequest containing tool call and tokens
+
+        Returns:
+            DeliverResponse with execution results and audit trail
+
+        Raises:
+            PolicyDeniedError: If policy denies disclosure
+            CapabilityInvalidError: If capability is invalid
+
+        Note:
+            If no executor is configured (executor=None), this method will prepare
+            injected arguments but will NOT execute the tool. The tool_result will
+            be None in this case.
+        """
+        logger.info(
+            "vault_deliver_start",
+            vault_session=request.vault_session,
+            tool_name=request.tool_call.name,
+        )
+
+        # Resolve tokens and get replacements (with policy enforcement)
+        replacements, disclosed_types = self.resolve_tokens_in_args(
+            args=request.tool_call.args,
+            vault_session=request.vault_session,
+            tool_name=request.tool_call.name,
+            run=request.run,
+        )
+
+        # Inject PII values into arguments
+        injected_args = self.inject_pii_into_args(request.tool_call.args, replacements)
 
         # SECURITY: Raw PII exists in injected_args - handle with care
-        # Execute tool call via executor
-        try:
-            tool_result = await self.executor.execute(
-                tool_name=request.tool_call.name,
-                injected_args=injected_args,
-            )
-        except Exception as e:
-            # SECURITY: Scrub PII from exception message before logging
-            error_msg = str(e)
+        # Execute tool call via executor (if provided)
+        tool_result: Any = None
+        if self.executor is not None:
+            try:
+                tool_result = await self.executor.execute(
+                    tool_name=request.tool_call.name,
+                    injected_args=injected_args,
+                )
+            except Exception as e:
+                # SECURITY: Scrub PII from exception message before logging
+                error_msg = str(e)
 
-            # Tokenize the error message to remove PII
-            tokenize_resp = self.tokenize(
-                TokenizeRequest(
-                    content=error_msg,
+                # Tokenize the error message to remove PII
+                tokenize_resp = self.tokenize(
+                    TokenizeRequest(
+                        content=error_msg,
+                        vault_session=request.vault_session,
+                        run=request.run,
+                        token_format=TokenFormat.TEXT,
+                    )
+                )
+                scrubbed_error = tokenize_resp.redacted
+
+                # Audit the failed deliver attempt for complete audit trail
+                deliver_event = create_deliver_event(
                     vault_session=request.vault_session,
                     run=request.run,
-                    token_format=TokenFormat.TEXT,
+                    tool_name=request.tool_call.name,
+                    disclosed=disclosed_types,
                 )
-            )
-            scrubbed_error = tokenize_resp.redacted
+                self.audit_logger.log_event(deliver_event)
 
-            # Audit the failed deliver attempt for complete audit trail
-            deliver_event = create_deliver_event(
-                vault_session=request.vault_session,
-                run=request.run,
-                tool_name=request.tool_call.name,
-                disclosed=disclosed_types,
-            )
-            self.audit_logger.log_event(deliver_event)
+                # Log execution failure with scrubbed error message
+                logger.error(
+                    "tool_execution_failed",
+                    tool_name=request.tool_call.name,
+                    error=scrubbed_error,
+                    audit_id=deliver_event.audit_id,
+                )
 
-            # Log execution failure with scrubbed error message
-            logger.error(
-                "tool_execution_failed",
-                tool_name=request.tool_call.name,
-                error=scrubbed_error,
-                audit_id=deliver_event.audit_id,
-            )
+                # SECURITY: Return scrubbed error instead of raising
+                # This prevents raw PII from appearing in stack traces
+                return DeliverResponse(
+                    delivered=False,
+                    tool_result=None,
+                    result_tokens=[],
+                    audit_id=deliver_event.audit_id,
+                    error=scrubbed_error,
+                )
 
-            # SECURITY: Return scrubbed error instead of raising
-            # This prevents raw PII from appearing in stack traces
-            return DeliverResponse(
-                delivered=False,
-                tool_result=None,
-                result_tokens=[],
-                audit_id=deliver_event.audit_id,
-                error=scrubbed_error,
-            )
+        # Audit the deliver event BEFORE result tokenization so we can link them
+        deliver_event = create_deliver_event(
+            vault_session=request.vault_session,
+            run=request.run,
+            tool_name=request.tool_call.name,
+            disclosed=disclosed_types,
+        )
+        self.audit_logger.log_event(deliver_event)
 
         # SECURITY: Tokenize tool result to prevent PII leakage
-        # We need to detect PII in the result and replace with tokens
-        result_tokens: list[JSONToken | TextToken] = []
-        if tool_result is not None:
-            # Recursively serialize result to string for PII detection
-            # This handles exceptions, nested objects, and custom types
-            result_str = serialize_for_pii_detection(tool_result)
-
-            # Audit the deliver event BEFORE result tokenization so we can link them
-            deliver_event = create_deliver_event(
-                vault_session=request.vault_session,
-                run=request.run,
-                tool_name=request.tool_call.name,
-                disclosed=disclosed_types,
-            )
-            self.audit_logger.log_event(deliver_event)
-
-            # Tokenize to detect PII using TEXT format for simple replacement
-            # Pass deliver event's audit_id as parent to create audit trail
-            result_tokenization = self.tokenize(
-                TokenizeRequest(
-                    content=result_str,
-                    vault_session=request.vault_session,
-                    token_format=TokenFormat.TEXT,  # Use TEXT for [[PII:TYPE:REF]] format
-                    parent_audit_id=deliver_event.audit_id,  # Link to parent deliver event
-                )
-            )
-
-            result_tokens = result_tokenization.tokens
-            # Use the redacted string representation with PII tokens
-            tokenized_result: Any = result_tokenization.redacted
-        else:
-            # None result - audit but no tokenization needed
-            deliver_event = create_deliver_event(
-                vault_session=request.vault_session,
-                run=request.run,
-                tool_name=request.tool_call.name,
-                disclosed=disclosed_types,
-            )
-            self.audit_logger.log_event(deliver_event)
-            tokenized_result = tool_result
+        tokenized_result, result_tokens = self.tokenize_tool_result(
+            tool_result=tool_result,
+            vault_session=request.vault_session,
+            run=request.run,
+            parent_audit_id=deliver_event.audit_id,
+        )
 
         logger.info(
             "vault_deliver_complete",

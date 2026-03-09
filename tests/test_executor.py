@@ -40,10 +40,10 @@ class CustomExecutor(ToolExecutor):
         return None
 
 
-def test_dummy_executor_default():
+def test_default_executor_is_none():
     """Test that DummyExecutor is used by default."""
     vault = Vault()
-    assert isinstance(vault.executor, DummyExecutor)
+    assert vault.executor is None
 
 
 @pytest.mark.asyncio
@@ -83,7 +83,8 @@ async def test_custom_executor_integration():
     assert "to" in execution["args"]
     # Raw PII was injected
     assert execution["args"]["to"] == "alice@example.com"
-    tool_result = json.loads(deliver_resp.tool_result)
+    # tool_result is now a dict (tokenize_tool_result preserves structure)
+    tool_result = deliver_resp.tool_result
 
     # Verify response
     assert deliver_resp.delivered is True

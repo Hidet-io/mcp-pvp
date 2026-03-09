@@ -143,7 +143,7 @@ async def test_vault_deliver_mode() -> None:
             "tool:send_email": SinkPolicy(allow=[PolicyAllow(type=PIIType.EMAIL, arg_paths=["to"])])
         }
     )
-    vault = Vault(policy=policy)
+    vault = Vault(policy=policy, executor=CustomExecutor())
 
     # Tokenize
     tokenize_req = TokenizeRequest(

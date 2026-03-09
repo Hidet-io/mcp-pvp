@@ -21,9 +21,8 @@ Most systems either:
 - send raw values to an LLM (high risk), or
 - do brittle redaction that breaks workflows (hard to restore safely)
 
-
 > This is **not** a vulnerability scanner/fuzzer for MCP servers.  
-> It’s a **privacy vault + policy enforcement runtime** for sensitive data in MCP workflows.
+> It's a **privacy vault + policy enforcement runtime** for sensitive data in MCP workflows.
 
 ---
 
@@ -36,7 +35,7 @@ Most systems either:
 curl -LsSf https://astral.sh/uv/install.sh | sh
 
 # Clone the repository
-git clone https://github.com/Spidux-ai/mcp-pvp.git
+git clone https://github.com/Hidet-io/mcp-pvp.git
 cd mcp-pvp
 
 # Create virtual environment and install
@@ -54,17 +53,14 @@ make install-all
 # Basic installation (regex detector)
 pip install mcp-pvp
 
-# With Presidio detector (recommended)
+# With Presidio detector (recommended for production)
 pip install mcp-pvp[presidio]
-
 
 # All extras
 pip install mcp-pvp[all]
 ```
 
 ### Quick Start with Makefile
-
-Once installed with Poetry, use the Makefile for common tasks:
 
 ```bash
 make help          # Show all available commands
@@ -73,27 +69,8 @@ make lint          # Run linter
 make format        # Format code
 make check         # Run all checks (lint, format, typecheck, test)
 make version       # Show current version
-make bump-minor    # Bump version (e.g., 0.4.0 -> 0.5.0)
+make bump-minor    # Bump version (e.g., 0.6.0 -> 0.7.0)
 ```
-
-### Version Management
-
-Version is managed in a single source of truth. To update:
-
-```bash
-# Bump version automatically
-make bump-major   # 0.4.0 -> 1.0.0
-make bump-minor   # 0.4.0 -> 0.5.0  
-make bump-patch   # 0.4.0 -> 0.4.1
-
-# Or specify exact version
-python scripts/bump_version.py 0.5.0
-
-# Check current version
-make version
-```
-
-All code dynamically imports `__version__` from `mcp_pvp.__init__`, ensuring consistency.
 
 ---
 
@@ -103,47 +80,19 @@ All code dynamically imports `__version__` from `mcp_pvp.__init__`, ensuring con
 
 - **Required**: Python 3.11+
 - **Tested**: Python 3.11, 3.12
-- **Not Supported**: Python 3.10 and below (uses modern type hints)
 
 ### MCP SDK
 
-- **Required**: MCP SDK 1.25.0+
-- **Tested with**: 1.25.x, 1.26.x
-- **Note**: MCP protocol is evolving; ensure SDK compatibility
+- **Required**: MCP SDK 1.26.0+
 
 ### Optional Dependencies (Extras)
 
-Install extras based on your use case:
-
 ```bash
-# Presidio detector (recommended for production)
-pip install mcp-pvp[presidio]
+pip install mcp-pvp[presidio]   # Microsoft Presidio for production-grade PII detection
+pip install mcp-pvp[sentry]     # Sentry error tracking with PII protection
+pip install mcp-pvp[all]        # Everything above + docs tooling
+pip install mcp-pvp[dev]        # Development tools (pytest, ruff, mypy, etc.)
 ```
-- **What**: Microsoft Presidio for high-quality PII detection
-- **When**: Production deployments, multi-language PII, advanced patterns
-- **Fallback**: Regex detector (built-in, no extra deps)
-
-```bash
-# MCP executor (for real tool execution)
-pip install mcp-pvp[mcp]
-```
-- **What**: MCP SDK for executing real tools in deliver mode
-- **When**: Using `MCP_ToolExecutor` to call actual MCP tools
-- **Note**: Already included in base dependencies
-
-```bash
-# All extras (everything)
-pip install mcp-pvp[all]
-```
-- **What**: Presidio + mkdocs tooling + all optional features
-- **When**: Full-featured development or deployment
-
-```bash
-# Development tools
-pip install mcp-pvp[dev]
-```
-- **What**: pytest, ruff, mypy, pre-commit, build tools
-- **When**: Contributing to mcp-pvp or running tests locally
 
 ### Platform Support
 
@@ -151,68 +100,239 @@ pip install mcp-pvp[dev]
 - **macOS**: Fully supported ✅
 - **Windows**: Supported ⚠️ (Presidio may require WSL for some languages)
 
-### Breaking Changes (0.x → 0.2)
-
-If upgrading from 0.1.0, note these **BREAKING** changes:
-
-1. **Capabilities no longer included at tokenization**
-   - Old: `tokenize()` returned tokens with `.cap` field
-   - New: `.cap` is `None` by default; issued on-demand in `resolve()`
-   - **Migration**: If you relied on capabilities at tokenization, update to request capabilities explicitly or use `resolve()` 
-
-2. **Wildcard LOCAL capabilities removed**
-   - Old: Capabilities with `sink.kind=LOCAL, sink.name="local"` worked for any tool
-   - New: Capabilities strictly bound to specific sink (tool + arg_path)
-   - **Migration**: Capabilities are now sink-specific; reuse across tools blocked
-
-3. **ToolExecutor required for deliver mode**
-   - Old: `deliver()` returned stub responses
-   - New: Requires `ToolExecutor` implementation (defaults to `DummyExecutor`)
-   - **Migration**: Provide custom executor or accept stub responses
-
-See [CHANGELOG.md](CHANGELOG.md) for detailed migration guide.
-
 ---
 
 ## Quick Start
 
-### Library Usage
+### Library Usage (standalone vault)
 
 ```python
 from mcp_pvp import Vault, TokenizeRequest, DeliverRequest, ToolCall, Policy
 
-# Initialize vault
 vault = Vault(policy=Policy())
 
 # Tokenize sensitive content
-request = TokenizeRequest(content="Email me at alice@example.com")
-response = vault.tokenize(request)
-
+response = vault.tokenize(TokenizeRequest(content="Email me at alice@example.com"))
 print(response.redacted)  # "Email me at [[PII:EMAIL:tkn_xyz]]"
 
-# Use deliver mode (recommended)
-deliver_response = vault.deliver(
+# Deliver: inject PII locally into a tool call without returning raw values
+deliver_resp = await vault.deliver(
     DeliverRequest(
         vault_session=response.vault_session,
-        tool_call=ToolCall(name="send_email", args={...})
+        tool_call=ToolCall(name="send_email", args={"to": response.tokens[0].to_text()})
     )
+)
+# deliver_resp.tool_result is the tool's return value with PII re-tokenized
+```
+
+### MCP Server Integration (`FastPvpMCP`)
+
+`FastPvpMCP` is a drop-in subclass of FastMCP that adds automatic PII protection to every tool call.  It uses MCP's native **lifespan** and **resource** primitives — no hidden arguments, no protocol changes.
+
+```python
+from mcp_pvp.bindings.mcp.server import FastPvpMCP
+from mcp_pvp.models import Policy, PolicyAllow, PIIType, SinkPolicy
+from mcp_pvp.vault import Vault
+
+policy = Policy(
+    sinks={
+        "tool:send_email": SinkPolicy(
+            allow=[PolicyAllow(type=PIIType.EMAIL, arg_paths=["to"])]
+        )
+    }
+)
+
+mcp = FastPvpMCP(name="my-server", vault=Vault(policy=policy))
+
+@mcp.tool()
+def send_email(to: str, subject: str, body: str) -> dict:
+    """The 'to' argument arrives already resolved — no token handling needed."""
+    return {"status": "sent", "to": to}
+
+# Run as a standard FastMCP server
+if __name__ == "__main__":
+    mcp.run()
+```
+
+#### How it works end-to-end
+
+```
+Client connects
+  └─ Server creates a vault session automatically (lifespan hook)
+
+Client reads  pvp://session  resource
+  └─ Receives vault_session_id
+
+Client tokenizes PII:
+  vault.tokenize(content="alice@example.com", vault_session=vault_session_id)
+  └─ Returns token: [[PII:EMAIL:tkn_abc123]]
+
+Client calls tool:
+  session.call_tool("send_email", {"to": "[[PII:EMAIL:tkn_abc123]]", "subject": "Hi"})
+  └─ No _vault_session argument — server reads it from the lifespan context
+
+Server, transparently:
+  1. Resolves token → "alice@example.com" (policy-checked)
+  2. Invokes the real tool with resolved args
+  3. Scans result for PII → re-tokenizes it
+  4. Returns clean result to client
+
+Client disconnects → vault session ends
+```
+
+#### Client-side usage with the MCP SDK
+
+```python
+import anyio
+from mcp import ClientSession
+from mcp.types import AnyUrl
+from mcp_pvp.models import TokenizeRequest, TokenFormat
+
+# ... set up memory streams or stdio transport ...
+
+async with ClientSession(read_stream, write_stream) as session:
+    await session.initialize()
+
+    # Step 1: Discover the vault session for this connection
+    resource = await session.read_resource(AnyUrl("pvp://session"))
+    vault_session_id = resource.contents[0].text
+
+    # Step 2: Tokenize PII before sending it
+    resp = vault.tokenize(TokenizeRequest(
+        content="alice@example.com",
+        token_format=TokenFormat.TEXT,
+        vault_session=vault_session_id,
+    ))
+    token = resp.tokens[0].to_text()  # "[[PII:EMAIL:tkn_abc123]]"
+
+    # Step 3: Call the tool — no special arguments needed
+    result = await session.call_tool("send_email", {"to": token, "subject": "Hi"})
+    # result.content[0].text contains the re-tokenized JSON response
+```
+
+---
+
+## Core Concepts
+
+### Tokens (references, not values)
+
+**Text token** (LLM-safe, passes through prompts):
+```
+[[PII:EMAIL:tkn_a1b2c3]]
+```
+
+**JSON token** (preferred for structured tool args):
+```json
+{ "$pii_ref": "tkn_a1b2c3", "type": "EMAIL", "cap": "cap_..." }
+```
+
+### Vault sessions
+
+Tokens are scoped to a short-lived **vault session** (`vs_...`) with a TTL.  
+A token is only valid within its session.
+
+In `FastPvpMCP`, one vault session is created per MCP connection and lives for the duration of that connection.
+
+### Capabilities (caps)
+
+Even if an LLM is tricked into requesting disclosure, the vault requires a signed **capability** authorizing exactly: which token, for which sink/tool, at which argument path, within which time window.
+
+### Sinks + policies
+
+Policies are enforced **inside the vault**, default-deny:
+
+- allow specific PII types
+- only for specific tools (sinks), identified as `"tool:<name>"`
+- optionally restricted to argument paths (e.g. `to`, `email`)
+
+### Deliver mode (standalone) vs. `FastPvpMCP` (server mode)
+
+| Mode | When to use |
+|---|---|
+| `vault.deliver()` | Standalone Python workflows, custom executors, non-FastMCP servers |
+| `FastPvpMCP` | FastMCP-based servers — wraps every registered tool transparently |
+
+In `FastPvpMCP`, deliver-mode semantics (resolve → execute → re-tokenize) happen automatically inside `call_tool()` using the connection-scoped vault session from the lifespan context.
+
+---
+
+## Policy Example
+
+```python
+from mcp_pvp.models import Policy, PolicyAllow, PIIType, SinkPolicy, PolicyLimits
+
+policy = Policy(
+    sinks={
+        "tool:send_email": SinkPolicy(
+            allow=[
+                PolicyAllow(type=PIIType.EMAIL, arg_paths=["to", "cc", "bcc"]),
+            ]
+        ),
+        "tool:crm_upsert_contact": SinkPolicy(
+            allow=[
+                PolicyAllow(type=PIIType.EMAIL, arg_paths=["email"]),
+                PolicyAllow(type=PIIType.PHONE, arg_paths=["phone"]),
+            ]
+        ),
+    },
+    limits=PolicyLimits(
+        max_disclosures_per_step=50,
+        max_total_disclosed_bytes_per_step=8192,
+    ),
 )
 ```
 
-### MCP Tool Server
+---
 
-The MCP binding exposes `pvp.tokenize`, `pvp.resolve`, and `pvp.deliver` as real MCP tools using the official MCP Python SDK.
+## PII Types
 
-#### Running as MCP Server
+| Type | Default mode | Notes |
+|---|---|---|
+| `EMAIL` | Tokenize | |
+| `PHONE` | Tokenize | Sanity-checked |
+| `IPV4` | Tokenize | |
+| `CC` | Mask | Optional tokenize with Luhn |
+| `API_KEY` | Mask | Optional tokenize |
+
+Names/addresses are intentionally excluded from the regex detector (too error-prone). Use the Presidio extra for those.
+
+---
+
+## What's Included
+
+### Core Features
+
+- ✅ PII detection (regex built-in; Presidio optional)
+- ✅ Tokenization with typed opaque refs, structured tokens, and session TTLs
+- ✅ Policy enforcement (sink allow-lists + limits) with capability checks
+- ✅ HMAC-signed capabilities paired with audit events (no raw values in logs)
+- ✅ Deliver mode: injects PII locally, re-tokenizes tool results, returns `result_tokens`
+- ✅ `FastPvpMCP`: drop-in FastMCP subclass with connection-scoped vault sessions
+- ✅ `pvp://session` MCP resource — standard resource protocol for session discovery
+- ✅ Observability (structlog, Prometheus metrics, optional Sentry)
+
+### Vault Hardening Features
+
+- ✅ **Session Integrity Validation** — prevents cross-session token theft
+- ✅ **Result Tokenization in Same Session** — session consistency for result tokens
+- ✅ **Scanner-Based TEXT Token Parser** — O(n) state machine, 10–100× faster than regex
+- ✅ **Recursive Output Scrubbing** — PII detection in exceptions, nested dicts, custom types
+- ✅ **Audit Coherence** — parent-child event tracking for full request/response traceability
+
+**Test Coverage**: 239 tests, 83% code coverage
+
+---
+
+## Running as MCP Server
 
 ```bash
-# Start the MCP server with stdio transport
+# Start with stdio transport (works with Claude Desktop, MCP Inspector, etc.)
 mcp-pvp-mcp
 ```
 
-#### Integrating with Claude Desktop
+### Integrating with Claude Desktop
 
-Add to your `claude_desktop_config.json`:
+Add to `claude_desktop_config.json`:
 
 ```json
 {
@@ -225,343 +345,92 @@ Add to your `claude_desktop_config.json`:
 }
 ```
 
-#### Using with MCP Inspector
-
-Test the server interactively:
+### Testing with MCP Inspector
 
 ```bash
-# Install MCP Inspector
 npx @modelcontextprotocol/inspector
-
-# Connect to mcp-pvp server
-# The inspector will prompt for the command: mcp-pvp-mcp
-```
-
-#### Available Tools
-
-- **`pvp.tokenize`**: Tokenize sensitive content and return redacted text with capabilities
-  ```json
-  {
-    "content": "Email: user@example.com",
-    "token_format": "TEXT",
-    "session_ttl_seconds": 3600
-  }
-  ```
-
-- **`pvp.resolve`**: Resolve tokens back to original values (with capability verification)
-  ```json
-  {
-    "vault_session": "vs_...",
-    "tokens": [{"ref": "tkn_...", "cap": "eyJ..."}],
-    "sink": {"kind": "tool", "name": "send_email"}
-  }
-  ```
-
-- **`pvp.deliver`**: Inject PII into tool call args without returning raw values
-  ```json
-  {
-    "vault_session": "vs_...",
-    "tool_call": {
-      "name": "send_email",
-      "args": {"to": "EMAIL_TOKEN_001"}
-    }
-  }
-  ```
-
-## Usage
-
-See [examples/safe_email_sender/](examples/safe_email_sender/) for a complete example.
-
----
-## Documentation
-
-Full API and architecture docs are generated with MkDocs (Material theme + mkdocstrings) and published to GitHub Pages at https://spidux-ai.github.io/mcp-pvp/.
-Visit the live docs at the same address for API reference, architecture guides, and operational playbooks.
-
-```bash
-# Preview locally (requires docs deps via .[docs] or .[dev])
-make docs
-
-# Build artifacts for publishing
-make docs-build
-
-# Push the generated site (requires GH_TOKEN)
-make docs-deploy
-```
-
-Install the necessary dependencies with `uv pip install -e "./[docs]"` or include the docs extra in your dev environment.
-
----
-
-## Core concepts
-
-### Tokens (references, not values)
-
-**Text token** (LLM-safe):
-```
-
-[[PII:EMAIL:tkn_a1b2c3]]
-
-````
-
-**JSON token object** (preferred for tool args):
-```json
-{ "$pii_ref": "tkn_a1b2c3", "type": "EMAIL", "cap": "cap_..." }
-````
-
-### Vault sessions
-
-Tokens are scoped to a short-lived **vault session** (`vs_...`) with TTL.
-A token is valid only inside its session.
-
-### Capabilities (caps)
-
-Even if an LLM tries to trick the system (“restore everything”), the vault requires a signed **capability** authorizing disclosure to a specific sink/field for a limited time.
-
-### Sinks + policies
-
-Policies are enforced **inside the vault**, with a default-deny stance:
-
-* allow specific PII types
-* only for specific tools (sinks)
-* optionally restricted to argument paths (e.g., `to`, `email`)
-
-### Deliver mode (recommended)
-
-Instead of returning raw PII back to the cloud engine/agent, the vault **injects PII locally** into tool calls and executes them (or hands off to a trusted local runner). The response now contains tokenized tool results via `DeliverResponse.tool_result`, along with `result_tokens` that describe every detected PII span, so agents never receive raw values even if the tool emits sensitive data.
-This is the biggest reduction in leak surface.
-
----
-
-## What you get (v0.2 scope)
-
-### Core Features
-
-* ✅ PII detection (regex-first, no heavy deps; Presidio support optional)
-* ✅ Tokenization with typed opaque refs, structured tokens, and session TTLs
-* ✅ Policy enforcement (sink allow-lists + limits) with capability checks
-* ✅ Capabilities (HMAC-signed) paired with audit events (no raw values leaked)
-* ✅ Deliver mode that also tokenizes tool results and returns `result_tokens`
-* ✅ MCP tool binding (`pvp.tokenize`, `pvp.resolve`, `pvp.deliver`)
-* ✅ Observability stack (structlog, Prometheus, optional Sentry) and production docs
-
-### Vault Hardening Features (v0.2)
-
-Enhanced security, performance, and auditability through five integrated features:
-
-* ✅ **Session Integrity Validation** - Prevents cross-session token theft by binding each PII record to its vault session
-* ✅ **Result Tokenization in Same Session** - Maintains session consistency by reusing vault sessions for result tokens
-* ✅ **Scanner-Based TEXT Token Parser** - High-performance O(n) state machine replacing regex (10-100x faster)
-* ✅ **Recursive Output Scrubbing** - Comprehensive PII detection in exceptions, nested objects, and custom types
-* ✅ **Audit Coherence** - Complete parent-child event tracking for full request/response traceability
-
-See [docs/VAULT_HARDENING.md](docs/VAULT_HARDENING.md) for detailed documentation, usage examples, and migration guide.
-
-**Test Coverage**: 148 tests, 87% code coverage  
-**Production Ready**: All features backward compatible
-
----
-
-## How it works (end-to-end)
-
-### 1) Tokenize locally before any LLM call
-
-Input:
-
-```
-Email me at mitiku@example.com
-```
-
-Tokenized:
-
-```
-Email me at [[PII:EMAIL:tkn_a1b2c3]]
-```
-
-Raw value (`mitiku@example.com`) stays inside the local vault.
-
-### 2) LLM produces tool plan using tokens
-
-```json
-{
-  "action": "send_email",
-  "args": {
-    "to": { "$pii_ref": "tkn_a1b2c3", "type": "EMAIL", "cap": "cap_..." },
-    "subject": "Hello",
-    "body": "..."
-  }
-}
-```
-
-### 3) Vault enforces policy + injects locally (deliver)
-
-Vault validates:
-
-* token exists & session is valid
-* cap is valid & matches sink/field
-* policy allows `EMAIL` for `tool:send_email` at `to`
-* disclosure limits not exceeded
-
-Then it injects the real email and executes the tool locally.
-
----
-
-## Quickstart (conceptual)
-
-> Implementation commands will be added as the v0.1 API stabilizes.
-
-1. Start the vault (Python)
-2. Call `pvp.tokenize` on user input before LLM prompting
-3. Keep tokens in prompts and plans
-4. Use `pvp.deliver` for tool execution requiring sensitive values
-   (use `pvp.resolve` only if you must)
-
----
-
-## Policy example
-
-```json
-{
-  "sinks": {
-    "tool:send_email": {
-      "allow": [
-        { "type": "EMAIL", "arg_paths": ["to", "cc", "bcc"] }
-      ]
-    },
-    "tool:crm_upsert_contact": {
-      "allow": [
-        { "type": "EMAIL", "arg_paths": ["email"] },
-        { "type": "PHONE", "arg_paths": ["phone"] }
-      ]
-    }
-  },
-  "defaults": { "allow": [] },
-  "limits": {
-    "max_disclosures_per_step": 50,
-    "max_total_disclosed_bytes_per_step": 8192
-  },
-  "type_rules": {
-    "CC": { "mode": "MASK" },
-    "API_KEY": { "mode": "MASK" }
-  }
-}
+# Connect using command: mcp-pvp-mcp
 ```
 
 ---
 
-## PII types (initial)
+## Threat Model (What This Helps With)
 
-High-signal types for v0.1:
+- Prompt injection: "print the user's email"
+- Accidental logging/telemetry leaks
+- Token spoofing (LLM hallucinates `tkn_...`)
+- Over-broad restoration ("give me the full mapping")
+- Unsafe tool exfiltration (policy + deliver reduces exposure)
 
-* `EMAIL` (tokenize)
-* `PHONE` (tokenize; sanity-checked)
-* `IPV4` (tokenize)
-* `CC` (masked by default; optional tokenize with Luhn)
-* `API_KEY` (masked by default; optional tokenize)
-
-We intentionally avoid “names/addresses” in v0.1 (regex-only is too error-prone). Those can come later via heuristics or lightweight models.
-
----
-
-## Threat model (what this helps with)
-
-* Prompt injection: “print the user’s email”
-* Accidental logging/telemetry leaks
-* Token spoofing (LLM hallucinates `tkn_...`)
-* Over-broad restoration (“give me the full mapping”)
-* Unsafe tool exfiltration (policy + deliver reduces exposure)
-
-> No library can fully protect a compromised device.
+> No library can fully protect a compromised device.  
 > `mcp-pvp` minimizes common leakage paths and enforces least-privilege disclosure.
 
 ---
 
-## Feature Matrix & Differentiation
+## Feature Matrix
 
-### Where mcp-pvp fits
-There are great tools for *detecting* PII and great tools for *validating* LLM outputs, but fewer reusable building blocks for **MCP-native, local-first, policy-gated disclosure and safe tool execution**.
-
-mcp-pvp is intentionally **not** a detector-only library.  
-It’s a **Privacy Vault runtime** for MCP workflows: tokenize → policy → deliver → audit.
-
-### Feature matrix
-
-| Capability | **mcp-pvp (this project)** | **Microsoft Presidio** | **LangChain PII middleware** | **Guardrails / Portkey guardrails** | **Vault MCP Server (HashiCorp)** |
+| Capability | **mcp-pvp** | **Presidio** | **LangChain PII** | **Guardrails** | **HashiCorp Vault MCP** |
 |---|---|---|---|---|---|
-| High-quality PII detection | ✅ (via Presidio by default; pluggable) | ✅ | ✅ | ✅ | ❌ |
-| Redaction / anonymization | ✅ (tokenization + masking strategies) | ✅ | ✅ | ✅ | ❌ |
-| Local “vault session” storing raw PII | ✅ | ❌ | ⚠️ (framework-scoped) | ❌ (often service/gateway-scoped) | ✅ (but for *secrets*, not PII flows) |
-| Typed opaque tokens in prompts/plans | ✅ | ⚠️ (anonymization placeholders, not MCP tokens) | ⚠️ | ⚠️ | ❌ |
-| Capability-based selective disclosure | ✅ | ❌ | ❌ / limited | ❌ / varies | ✅ (Vault auth model, but for secrets APIs) |
-| Per-tool / per-arg-path policy enforcement (“sink allow-lists”) | ✅ | ❌ | ⚠️ | ✅ (provider guardrails) | ✅ (Vault policy system for secrets) |
-| **Deliver mode** (inject PII locally into tool calls so raw never returns to agent/LLM) | ✅ (key differentiator) | ❌ | ❌ | ❌ | ❌ (different use-case) |
-| MCP-native integration (tools / proxy / middleware) | ✅ | ❌ | ❌ | ❌ | ✅ |
-| Framework-agnostic (works with any MCP client) | ✅ | ✅ | ❌ | ✅ | ✅ |
-| Audit trail for disclosure (without raw values) | ✅ | ⚠️ | ⚠️ | ✅ | ✅ |
-
-**Notes**
-- Presidio excels at detection + anonymization, but it’s not a vault/session + disclosure protocol. 
-- LangChain provides PII middleware that redacts before model calls and restores values for tool execution—conceptually close, but framework-tied and not MCP-native. 
-- Guardrails ecosystems (Guardrails AI, Portkey guardrails) are great for validation/redaction pipelines, but they typically don’t provide a local vault + deliver-mode execution pattern.
-- HashiCorp’s Vault MCP server integrates MCP with *secrets management* (credentials, mounts, policies). It’s complementary, not a replacement for PII-flow minimization.
+| High-quality PII detection | ✅ (Presidio optional) | ✅ | ✅ | ✅ | ❌ |
+| Redaction / anonymization | ✅ | ✅ | ✅ | ✅ | ❌ |
+| Local vault session (raw PII stays local) | ✅ | ❌ | ⚠️ | ❌ | ✅ (secrets, not PII) |
+| Typed opaque tokens in prompts/plans | ✅ | ⚠️ | ⚠️ | ⚠️ | ❌ |
+| Capability-based selective disclosure | ✅ | ❌ | ❌ | ❌ | ✅ (secrets API) |
+| Per-tool / per-arg-path policy enforcement | ✅ | ❌ | ⚠️ | ✅ | ✅ |
+| **Deliver mode** (PII injected locally, never returned to agent) | ✅ | ❌ | ❌ | ❌ | ❌ |
+| MCP-native integration (lifespan, resources) | ✅ | ❌ | ❌ | ❌ | ✅ |
+| Audit trail (no raw values in logs) | ✅ | ⚠️ | ⚠️ | ✅ | ✅ |
 
 ---
 
-### Differentiation (why mcp-pvp exists)
-
-#### 1) Presidio-grade detection + MCP-native runtime
-We use **Microsoft Presidio** as the default detection/anonymization engine, so we don’t reinvent detection quality. We focus on the missing layer: **MCP-native privacy runtime** that safely carries sensitive values through tool plans without leaking them. 
-
-#### 2) Tokens are first-class (agents operate on references)
-mcp-pvp replaces sensitive spans with **typed opaque tokens** (text + JSON forms). Tokens are scoped to a **vault session** with TTL, reducing replay and accidental reuse.
-
-#### 3) Capabilities prevent “restore everything”
-Even if an LLM is tricked (prompt injection) or hallucinates token IDs, disclosure requires **capabilities** that bind:
-token + sink/tool + arg_path + expiration (+ optional run/step).
-
-#### 4) Deliver mode eliminates a major exfiltration path
-Most approaches do: redact → restore → call tool (raw PII passes through the agent/orchestrator).
-mcp-pvp can do: **tokenize → plan with tokens → deliver locally**, injecting PII only at the tool boundary—so raw PII never returns to the agent/LLM.
-
-#### 5) Policy enforcement lives where it must: locally
-mcp-pvp enforces allow-lists and limits in the local vault (default deny), aligning with MCP ecosystem security best practices and reducing trust in cloud components.
-
-
 ## Observability & Monitoring
 
-mcp-pvp provides comprehensive observability for production deployments:
-
-- **Structured Logging**: Built on [structlog](https://www.structlog.org/) with JSON output
-- **Audit Trail**: Complete audit trail of all PII operations (never logs raw values)
-- **Error Tracking**: Optional [Sentry](https://sentry.io/) integration with PII protection
+- **Structured Logging**: built on [structlog](https://www.structlog.org/) with JSON output
+- **Audit Trail**: complete trail of all PII operations — raw values never logged
 - **Metrics**: Prometheus-compatible metrics for requests, latency, and disclosures
-- **Health Checks**: Ready-to-use health and readiness endpoints
+- **Error Tracking**: optional [Sentry](https://sentry.io/) integration with PII scrubbing
+- **Health Checks**: ready-to-use health and readiness endpoints
 
-See [docs/OBSERVABILITY.md](docs/OBSERVABILITY.md) for the complete guide and [examples/observability/](examples/observability/) for production configurations.
+See [docs/OBSERVABILITY.md](docs/OBSERVABILITY.md) for the full guide and [examples/observability/](examples/observability/) for production configurations.
 
 ---
 
 ## Roadmap
 
-### v0.2 ✅ (Current Release - Production Ready)
+### v0.6 ✅ (Current)
 
-* ✅ PVP core: tokenize/resolve/deliver
-* ✅ TTL store with session management
-* ✅ Policy allow-lists + limits
-* ✅ HMAC capabilities for sink-bound tokens
-* ✅ MCP server binding with ToolExecutor
-* ✅ Golden example: "safe email sender"
-* ✅ Comprehensive observability (logging, metrics, Sentry)
-* ✅ Production packaging (CHANGELOG, versioning, release workflow)
-* ✅ Security scanning (Bandit integration)
+- ✅ PVP core: tokenize / resolve / deliver
+- ✅ TTL store with session management
+- ✅ Policy allow-lists + limits
+- ✅ HMAC capabilities for sink-bound tokens
+- ✅ `FastPvpMCP` — FastMCP subclass with transparent PII protection
+- ✅ Connection-scoped vault sessions via MCP lifespan
+- ✅ `pvp://session` MCP resource for standard session discovery
+- ✅ Recursive result scrubbing (dicts, lists, exceptions, Pydantic models)
+- ✅ Vault hardening: session integrity, audit coherence, scanner-based parser
+- ✅ Comprehensive observability (logging, metrics, Sentry)
 
-### v0.3+ (Future)
+### Future
 
-* encrypted local persistence (sqlite)
-* expanded detectors (IBAN, secrets, configurable patterns)
-* richer audit queries and compliance reporting
-* optional proxy mode (secure existing agents without refactor)
-* enhanced policy primitives (time-based, context-aware)
+- Encrypted local persistence (SQLite)
+- Expanded detectors (IBAN, secrets, configurable patterns)
+- Richer audit queries and compliance reporting
+- Optional proxy mode (protect existing agents without refactoring)
+- Enhanced policy primitives (time-based, context-aware)
+
+---
+
+## Documentation
+
+Full API and architecture docs are generated with MkDocs (Material theme + mkdocstrings).
+
+```bash
+make docs          # Preview locally
+make docs-build    # Build static site
+make docs-deploy   # Publish to GitHub Pages (requires GH_TOKEN)
+```
+
+Install docs dependencies: `uv pip install -e ".[docs]"`
 
 ---
 
@@ -569,18 +438,16 @@ See [docs/OBSERVABILITY.md](docs/OBSERVABILITY.md) for the complete guide and [e
 
 We welcome:
 
-* detector modules (high precision, low false positives)
-* policy primitives and safe defaults
-* examples (email, CRM, ticketing, file access)
-* interoperability tests with MCP clients/servers
-* threat model improvements
+- Detector modules (high precision, low false positives)
+- Policy primitives and safe defaults
+- Examples (email, CRM, ticketing, file access)
+- Interoperability tests with MCP clients/servers
+- Threat model improvements
 
-See `CONTRIBUTING.md` (to be added).
+See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ---
 
 ## License
 
 Apache-2.0
-
----
