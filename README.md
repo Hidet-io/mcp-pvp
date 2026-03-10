@@ -107,12 +107,18 @@ pip install mcp-pvp[dev]        # Development tools (pytest, ruff, mypy, etc.)
 ### Library Usage (standalone vault)
 
 ```python
-from mcp_pvp import Vault, TokenizeRequest, DeliverRequest, ToolCall, Policy
+from mcp_pvp import Vault, TokenizeRequest, TokenFormat, DeliverRequest, ToolCall, Policy
 
-vault = Vault(policy=Policy())
+vault = Vault(policy=Policy(
+    sinks={
+        "tool:send_email": SinkPolicy(allow=[PolicyAllow(type=PIIType.EMAIL, arg_paths=["to"])])
+    }
+))
 
 # Tokenize sensitive content
-response = vault.tokenize(TokenizeRequest(content="Email me at alice@example.com"))
+response = vault.tokenize(TokenizeRequest(content="Email me at alice@example.com", token_format=TokenFormat.TEXT))
+
+# Tokenize sensitive content
 print(response.redacted)  # "Email me at [[PII:EMAIL:tkn_xyz]]"
 
 # Deliver: inject PII locally into a tool call without returning raw values
