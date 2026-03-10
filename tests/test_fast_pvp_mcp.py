@@ -15,7 +15,6 @@ from mcp_pvp.models import (
 )
 from mcp_pvp.vault import Vault
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
@@ -215,7 +214,7 @@ async def test_in_process_pvp_tokenize_tool():
     assert token_text.startswith("[[PII:EMAIL:")
 
     # Token must resolve in the server vault
-    ref = token_text.removeprefix("[[PII:EMAIL:").rstrip("]]")
+    ref = token_text.removeprefix("[[PII:EMAIL:").rstrip("]").rstrip("]")
     stored_session = mcp.vault.store.get_session(vsid)
     assert ref in stored_session.tokens
 

@@ -8,9 +8,10 @@ Vault session lifecycle is tied to the MCP connection via lifespan:
 """
 
 import json
+from collections.abc import AsyncIterator, Sequence
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
-from typing import Any, AsyncIterator, Sequence
+from typing import Any
 
 import structlog
 from mcp.server.fastmcp import FastMCP
@@ -208,7 +209,9 @@ class FastPvpMCP(FastMCP):
             content_blocks = result
 
         if content_blocks is not None:
-            tokenized_blocks, all_tokens = self._retokenize_blocks(name, content_blocks, vault_session)
+            tokenized_blocks, all_tokens = self._retokenize_blocks(
+                name, content_blocks, vault_session
+            )
             logger.info("tool_result_tokenized", tool_name=name, tokens_found=len(all_tokens))
 
             if raw_data is not None:

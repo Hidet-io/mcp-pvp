@@ -19,7 +19,7 @@ from mcp_pvp.caps import CapabilityManager
 from mcp_pvp.detectors.base import PIIDetector
 from mcp_pvp.detectors.regex import RegexDetector
 from mcp_pvp.errors import PolicyDeniedError
-from mcp_pvp.executor import DummyExecutor, ToolExecutor
+from mcp_pvp.executor import ToolExecutor
 from mcp_pvp.models import (
     DeliverRequest,
     DeliverResponse,
@@ -525,11 +525,16 @@ class Vault:
                             if not callable(attr_value):
                                 obj_dict[attr_name] = attr_value
                         except Exception:
+                            logger.exception(
+                                "vault_tokenize_tool_result_attr_error",
+                                attr_name=attr_name,
+                                error=traceback.format_exc(),
+                            )
                             continue
-                
+
                 # Tokenize the dict representation
                 tokenized_dict = tokenize_value_recursive(obj_dict)
-                
+
                 # Try to reconstruct the object with tokenized values
                 try:
                     # For Pydantic models and similar, try to create new instance
