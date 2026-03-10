@@ -2115,7 +2115,9 @@
 <span class="normal">892</span>
 <span class="normal">893</span>
 <span class="normal">894</span>
-<span class="normal">895</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Vault</span><span class="p">:</span>
+<span class="normal">895</span>
+<span class="normal">896</span>
+<span class="normal">897</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Vault</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Main PVP Vault service.&quot;&quot;&quot;</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
@@ -2725,7 +2727,7 @@
 
     <span class="k">def</span><span class="w"> </span><span class="nf">inject_pii_into_args</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">replacements</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Any</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Replace tokens in arguments with actual PII values.</span>
 
@@ -2751,7 +2753,9 @@
         <span class="n">injected_args</span> <span class="o">=</span> <span class="n">replace_json_tokens</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">replacements</span><span class="p">)</span>
 
         <span class="c1"># Also replace TEXT format tokens in strings recursively</span>
-        <span class="k">def</span><span class="w"> </span><span class="nf">replace_text_tokens_recursive</span><span class="p">(</span><span class="n">obj</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">replace_text_tokens_recursive</span><span class="p">(</span>
+            <span class="n">obj</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Any</span><span class="p">,</span>
+        <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Any</span><span class="p">:</span>
 <span class="w">            </span><span class="sd">&quot;&quot;&quot;Recursively replace TEXT tokens in strings.&quot;&quot;&quot;</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
                 <span class="k">return</span> <span class="n">replace_text_tokens</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">replacements</span><span class="p">)</span>
@@ -2812,7 +2816,7 @@
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">tool_result</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">executor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
                     <span class="n">tool_name</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">tool_call</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
-                    <span class="n">injected_args</span><span class="o">=</span><span class="n">injected_args</span><span class="p">,</span>
+                    <span class="n">injected_args</span><span class="o">=</span><span class="n">cast</span><span class="p">(</span><span class="s2">&quot;dict[str, Any]&quot;</span><span class="p">,</span> <span class="n">injected_args</span><span class="p">),</span>
                 <span class="p">)</span>
             <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                 <span class="c1"># SECURITY: Scrub PII from exception message before logging</span>
@@ -3236,9 +3240,7 @@ be None in this case.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/mcp_pvp/vault.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">773</span>
-<span class="normal">774</span>
-<span class="normal">775</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">775</span>
 <span class="normal">776</span>
 <span class="normal">777</span>
 <span class="normal">778</span>
@@ -3358,7 +3360,9 @@ be None in this case.</p>
 <span class="normal">892</span>
 <span class="normal">893</span>
 <span class="normal">894</span>
-<span class="normal">895</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">deliver</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">:</span> <span class="n">DeliverRequest</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DeliverResponse</span><span class="p">:</span>
+<span class="normal">895</span>
+<span class="normal">896</span>
+<span class="normal">897</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">deliver</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">:</span> <span class="n">DeliverRequest</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DeliverResponse</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Deliver: inject PII into tool call arguments and optionally execute.</span>
 
@@ -3406,7 +3410,7 @@ be None in this case.</p>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">tool_result</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">executor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
                 <span class="n">tool_name</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">tool_call</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
-                <span class="n">injected_args</span><span class="o">=</span><span class="n">injected_args</span><span class="p">,</span>
+                <span class="n">injected_args</span><span class="o">=</span><span class="n">cast</span><span class="p">(</span><span class="s2">&quot;dict[str, Any]&quot;</span><span class="p">,</span> <span class="n">injected_args</span><span class="p">),</span>
             <span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="c1"># SECURITY: Scrub PII from exception message before logging</span>
@@ -3561,7 +3565,7 @@ the argument structure.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                  <code><span title="dict">dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]</code>
+                  <code><span title="dict">dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>] | <span title="list">list</span>[<span title="typing.Any">Any</span>] | <span title="str">str</span> | <span title="typing.Any">Any</span></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -3630,9 +3634,11 @@ injected = vault.inject_pii_into_args(
 <span class="normal">768</span>
 <span class="normal">769</span>
 <span class="normal">770</span>
-<span class="normal">771</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">inject_pii_into_args</span><span class="p">(</span>
+<span class="normal">771</span>
+<span class="normal">772</span>
+<span class="normal">773</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">inject_pii_into_args</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">replacements</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Any</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Replace tokens in arguments with actual PII values.</span>
 
@@ -3658,7 +3664,9 @@ injected = vault.inject_pii_into_args(
     <span class="n">injected_args</span> <span class="o">=</span> <span class="n">replace_json_tokens</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">replacements</span><span class="p">)</span>
 
     <span class="c1"># Also replace TEXT format tokens in strings recursively</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">replace_text_tokens_recursive</span><span class="p">(</span><span class="n">obj</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">replace_text_tokens_recursive</span><span class="p">(</span>
+        <span class="n">obj</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Any</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Recursively replace TEXT tokens in strings.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
             <span class="k">return</span> <span class="n">replace_text_tokens</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">replacements</span><span class="p">)</span>
