@@ -11,13 +11,13 @@ import json
 from collections.abc import AsyncIterator, Sequence
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, cast
 
 import structlog
 from mcp.server.fastmcp import FastMCP
 from mcp.types import ContentBlock, TextContent
 
-from mcp_pvp.models import Policy, TokenFormat, TokenizeRequest
+from mcp_pvp.models import Policy, TextToken, TokenFormat, TokenizeRequest
 from mcp_pvp.vault import Vault
 
 logger = structlog.get_logger(__name__)
@@ -39,7 +39,7 @@ class FastPvpMCP(FastMCP):
     where any PII is re-tokenized automatically.
     """
 
-    def __init__(self, *args: Any, vault: Vault = None, **kwargs: Any) -> None:
+    def __init__(self, *args: Any, vault: Vault | None = None, **kwargs: Any) -> None:
         # Store vault before calling super so the lifespan can reference it.
         self._vault = vault or Vault()
         super().__init__(*args, lifespan=self._pvp_lifespan, **kwargs)
@@ -74,7 +74,7 @@ class FastPvpMCP(FastMCP):
                 "Pass the returned tokens to other tools instead of raw PII."
             ),
         )
-        def _pvp_tokenize_tool(content: str, vault_session: str) -> dict:
+        def _pvp_tokenize_tool(content: str, vault_session: str) -> dict[str, Any]:
             resp = self._vault.tokenize(
                 TokenizeRequest(
                     content=content,
@@ -84,7 +84,7 @@ class FastPvpMCP(FastMCP):
             )
             return {
                 "redacted": resp.redacted,
-                "tokens": [t.to_text() for t in resp.tokens],
+                "tokens": [t.to_text() for t in resp.tokens if isinstance(t, TextToken)],
             }
 
     # ── Lifespan ─────────────────────────────────────────────────────────────
@@ -147,7 +147,7 @@ class FastPvpMCP(FastMCP):
             tool_name=name,
             run=None,
         )
-        resolved = self._vault.inject_pii_into_args(arguments, replacements)
+        resolved = cast("dict[str, Any]", self._vault.inject_pii_into_args(arguments, replacements))
         logger.info(
             "tokens_resolved_for_tool",
             tool_name=name,
@@ -156,13 +156,15 @@ class FastPvpMCP(FastMCP):
         )
         return resolved
 
-    def _retokenize_blocks(self, name: str, blocks: list, vault_session: str) -> tuple[list, list]:
+    def _retokenize_blocks(
+        self, name: str, blocks: list[ContentBlock], vault_session: str
+    ) -> tuple[list[ContentBlock], list[Any]]:
         """Tokenize PII in a list of ContentBlocks.
 
         Returns ``(tokenized_blocks, all_tokens)``.
         """
-        tokenized_blocks = []
-        all_tokens = []
+        tokenized_blocks: list[ContentBlock] = []
+        all_tokens: list[Any] = []
         for block in blocks:
             if isinstance(block, TextContent) and block.text:
                 try:
@@ -198,7 +200,7 @@ class FastPvpMCP(FastMCP):
         """
         logger.info("tokenizing_tool_result", tool_name=name, vault_session=vault_session)
 
-        content_blocks: list | None = None
+        content_blocks: list[ContentBlock] | None = None
         raw_data: Any = None
 
         if isinstance(result, tuple) and len(result) == 2:
@@ -250,6 +252,9 @@ class FastPvpMCP(FastMCP):
         result = await super().call_tool(name, arguments)
 
         if vault_session:
-            return self._retokenize_result(name, result, vault_session)
+            return cast(
+                "Sequence[ContentBlock] | dict[str, Any]",
+                self._retokenize_result(name, result, vault_session),
+            )
 
         return result

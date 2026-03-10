@@ -36,6 +36,24 @@ def make_server(policy: Policy | None = None) -> FastPvpMCP:
     return mcp
 
 
+def _parse_direct_result(result: object) -> object:
+    """Normalize FastMCP call_tool result to a plain Python value.
+
+    FastMCP may return:
+    - ``list[ContentBlock]``          — current format (≥1.2)
+    - ``(list[ContentBlock], raw)``   — older tuple/back-compat format
+    - raw scalar / dict               — unlikely but handled
+    """
+    if isinstance(result, tuple) and len(result) == 2:
+        # (content_blocks, raw_data) — return the already-parsed raw_data
+        return result[1]
+    if isinstance(result, list) and result:
+        return json.loads(result[0].text)
+    if isinstance(result, str):
+        return json.loads(result)
+    return result
+
+
 def email_policy() -> Policy:
     return Policy(
         sinks={
@@ -116,9 +134,7 @@ async def test_pvp_tokenize_direct_call():
         "pvp_tokenize",
         {"content": "email alice@example.com", "vault_session": session.session_id},
     )
-    # result is list[ContentBlock] when no lifespan context
-    text = result[0].text if isinstance(result, list) else result
-    data = json.loads(text) if isinstance(text, str) else text
+    data = _parse_direct_result(result)
     assert "redacted" in data
     assert "tokens" in data
     assert "[[PII:EMAIL:" in data["redacted"]
@@ -135,8 +151,7 @@ async def test_pvp_tokenize_no_pii():
         "pvp_tokenize",
         {"content": "hello world", "vault_session": session.session_id},
     )
-    text = result[0].text if isinstance(result, list) else result
-    data = json.loads(text) if isinstance(text, str) else text
+    data = _parse_direct_result(result)
     assert data["redacted"] == "hello world"
     assert data["tokens"] == []
 
@@ -152,8 +167,7 @@ async def test_call_tool_without_session_passthrough():
     mcp = make_server()
 
     result = await mcp.call_tool("echo", {"message": "hello"})
-    text = result[0].text if isinstance(result, list) else result
-    data = json.loads(text) if isinstance(text, str) else text
+    data = _parse_direct_result(result)
     assert data["echo"] == "hello"
 
 
@@ -166,8 +180,7 @@ async def test_call_tool_no_session_raw_email_not_tokenized():
         "send_email",
         {"to": "alice@example.com", "subject": "test"},
     )
-    text = result[0].text if isinstance(result, list) else result
-    data = json.loads(text) if isinstance(text, str) else text
+    data = _parse_direct_result(result)
     # No session → no tokenization of result
     assert data["to"] == "alice@example.com"
 

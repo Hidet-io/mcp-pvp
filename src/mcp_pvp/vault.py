@@ -3,7 +3,7 @@
 import json
 import secrets
 import traceback
-from typing import Any
+from typing import Any, cast
 
 import structlog
 
@@ -731,7 +731,7 @@ class Vault:
 
     def inject_pii_into_args(
         self, args: dict[str, Any], replacements: dict[str, str]
-    ) -> dict[str, Any]:
+    ) -> dict[str, Any] | list[Any] | str | Any:
         """
         Replace tokens in arguments with actual PII values.
 
@@ -757,7 +757,9 @@ class Vault:
         injected_args = replace_json_tokens(args, replacements)
 
         # Also replace TEXT format tokens in strings recursively
-        def replace_text_tokens_recursive(obj: Any) -> Any:
+        def replace_text_tokens_recursive(
+            obj: dict[str, Any] | list[Any] | str | Any,
+        ) -> dict[str, Any] | list[Any] | str | Any:
             """Recursively replace TEXT tokens in strings."""
             if isinstance(obj, str):
                 return replace_text_tokens(obj, replacements)
@@ -818,7 +820,7 @@ class Vault:
             try:
                 tool_result = await self.executor.execute(
                     tool_name=request.tool_call.name,
-                    injected_args=injected_args,
+                    injected_args=cast("dict[str, Any]", injected_args),
                 )
             except Exception as e:
                 # SECURITY: Scrub PII from exception message before logging
