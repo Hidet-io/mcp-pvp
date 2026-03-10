@@ -2507,12 +2507,12 @@
 
             <span class="c1"># Handle objects with __dict__ (like Pydantic models, custom classes)</span>
             <span class="c1"># This includes MCP&#39;s ContentBlock types</span>
-            <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s1">&#39;__dict__&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s1">&#39;__class__&#39;</span><span class="p">):</span>
+            <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s2">&quot;__dict__&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s2">&quot;__class__&quot;</span><span class="p">):</span>
                 <span class="c1"># For objects with attributes, we need to rebuild them</span>
                 <span class="c1"># Get the object&#39;s dict representation</span>
                 <span class="n">obj_dict</span> <span class="o">=</span> <span class="p">{}</span>
                 <span class="k">for</span> <span class="n">attr_name</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
-                    <span class="k">if</span> <span class="ow">not</span> <span class="n">attr_name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">attr_name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">):</span>
                         <span class="k">try</span><span class="p">:</span>
                             <span class="n">attr_value</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">attr_name</span><span class="p">)</span>
                             <span class="c1"># Skip methods</span>
@@ -2532,10 +2532,10 @@
                 <span class="c1"># Try to reconstruct the object with tokenized values</span>
                 <span class="k">try</span><span class="p">:</span>
                     <span class="c1"># For Pydantic models and similar, try to create new instance</span>
-                    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span> <span class="s1">&#39;model_validate&#39;</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span> <span class="s2">&quot;model_validate&quot;</span><span class="p">):</span>
                         <span class="c1"># Pydantic v2</span>
                         <span class="k">return</span> <span class="n">value</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="n">model_validate</span><span class="p">(</span><span class="n">tokenized_dict</span><span class="p">)</span>
-                    <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span> <span class="s1">&#39;parse_obj&#39;</span><span class="p">):</span>
+                    <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span> <span class="s2">&quot;parse_obj&quot;</span><span class="p">):</span>
                         <span class="c1"># Pydantic v1</span>
                         <span class="k">return</span> <span class="n">value</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="n">parse_obj</span><span class="p">(</span><span class="n">tokenized_dict</span><span class="p">)</span>
                     <span class="k">else</span><span class="p">:</span>
@@ -5449,12 +5449,12 @@ tokenized, tokens = vault.tokenize_tool_result(
 
         <span class="c1"># Handle objects with __dict__ (like Pydantic models, custom classes)</span>
         <span class="c1"># This includes MCP&#39;s ContentBlock types</span>
-        <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s1">&#39;__dict__&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s1">&#39;__class__&#39;</span><span class="p">):</span>
+        <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s2">&quot;__dict__&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s2">&quot;__class__&quot;</span><span class="p">):</span>
             <span class="c1"># For objects with attributes, we need to rebuild them</span>
             <span class="c1"># Get the object&#39;s dict representation</span>
             <span class="n">obj_dict</span> <span class="o">=</span> <span class="p">{}</span>
             <span class="k">for</span> <span class="n">attr_name</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
-                <span class="k">if</span> <span class="ow">not</span> <span class="n">attr_name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">):</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">attr_name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">):</span>
                     <span class="k">try</span><span class="p">:</span>
                         <span class="n">attr_value</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">attr_name</span><span class="p">)</span>
                         <span class="c1"># Skip methods</span>
@@ -5474,10 +5474,10 @@ tokenized, tokens = vault.tokenize_tool_result(
             <span class="c1"># Try to reconstruct the object with tokenized values</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="c1"># For Pydantic models and similar, try to create new instance</span>
-                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span> <span class="s1">&#39;model_validate&#39;</span><span class="p">):</span>
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span> <span class="s2">&quot;model_validate&quot;</span><span class="p">):</span>
                     <span class="c1"># Pydantic v2</span>
                     <span class="k">return</span> <span class="n">value</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="n">model_validate</span><span class="p">(</span><span class="n">tokenized_dict</span><span class="p">)</span>
-                <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span> <span class="s1">&#39;parse_obj&#39;</span><span class="p">):</span>
+                <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span> <span class="s2">&quot;parse_obj&quot;</span><span class="p">):</span>
                     <span class="c1"># Pydantic v1</span>
                     <span class="k">return</span> <span class="n">value</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="n">parse_obj</span><span class="p">(</span><span class="n">tokenized_dict</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
