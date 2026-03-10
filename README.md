@@ -188,32 +188,38 @@ Client disconnects → vault session ends
 
 #### Client-side usage with the MCP SDK
 
+No local `Vault` instance is needed. The server exposes a built-in `pvp_tokenize` tool so
+clients can tokenize PII server-side over the MCP protocol itself.
+
 ```python
-import anyio
+import json
 from mcp import ClientSession
 from mcp.types import AnyUrl
-from mcp_pvp.models import TokenizeRequest, TokenFormat
 
 # ... set up memory streams or stdio transport ...
 
 async with ClientSession(read_stream, write_stream) as session:
     await session.initialize()
 
-    # Step 1: Discover the vault session for this connection
+    # Step 1: Discover the vault session created for this connection
     resource = await session.read_resource(AnyUrl("pvp://session"))
     vault_session_id = resource.contents[0].text
 
-    # Step 2: Tokenize PII before sending it
-    resp = vault.tokenize(TokenizeRequest(
-        content="alice@example.com",
-        token_format=TokenFormat.TEXT,
-        vault_session=vault_session_id,
-    ))
-    token = resp.tokens[0].to_text()  # "[[PII:EMAIL:tkn_abc123]]"
+    # Step 2: Tokenize PII via the built-in server tool — raw value never
+    #         leaves this process; the server stores it in its vault.
+    tok_result = await session.call_tool(
+        "pvp_tokenize",
+        {"content": "alice@example.com", "vault_session": vault_session_id},
+    )
+    tok_data = json.loads(tok_result.content[0].text)
+    token = tok_data["tokens"][0]  # "[[PII:EMAIL:tkn_abc123]]"
 
-    # Step 3: Call the tool — no special arguments needed
+    # Step 3: Call the real tool with the token — no raw PII on the wire.
+    #         The server resolves the token, executes the tool, and
+    #         re-tokenizes any PII in the result before returning it.
     result = await session.call_tool("send_email", {"to": token, "subject": "Hi"})
-    # result.content[0].text contains the re-tokenized JSON response
+    result_data = json.loads(result.content[0].text)
+    # result_data["to"] is a fresh token, not the real email address
 ```
 
 ---
