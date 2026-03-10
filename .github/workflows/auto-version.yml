@@ -1,0 +1,96 @@
+name: Auto Version Bump
+
+# Triggers on every push to main and determines the bump level from the
+# commit message:
+#
+#   major: <message>            → bump major  (e.g. "major: rewrite vault API")
+#   feat: <message>             → bump minor  (e.g. "feat: add presidio detector")
+#   feat(<scope>): <message>    → bump minor  (scoped conventional commit)
+#   anything else               → bump patch  (fix, chore, docs, refactor, …)
+#
+# After bumping, the workflow commits the two changed files back to main with
+# "[skip ci]" in the message (so this workflow doesn't re-trigger) and pushes
+# a "v{version}" tag, which fires the existing release.yml pipeline.
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    # Do not run on the automated version-bump commit itself
+    if: "!startsWith(github.event.head_commit.message, 'chore: bump version')"
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # fetch full history so we can push back to main
+          fetch-depth: 0
+          # A Personal Access Token (PAT) is required here instead of the
+          # default GITHUB_TOKEN.  When code/tags are pushed with GITHUB_TOKEN,
+          # GitHub intentionally blocks downstream workflow triggers to prevent
+          # infinite loops.  Using a PAT ensures the tag push fires release.yml.
+          #
+          # Create a fine-grained PAT with "Contents: Read and write" on this
+          # repo and store it as a repository secret named RELEASE_PAT.
+          token: ${{ secrets.RELEASE_PAT }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      # ── Determine bump level ──────────────────────────────────────────────
+      - name: Determine bump type
+        id: bump_type
+        env:
+          COMMIT_MSG: ${{ github.event.head_commit.message }}
+        run: |
+          # major: … → major bump
+          # feat(scope): … or feat: … → minor bump
+          # everything else → patch bump
+          if echo "$COMMIT_MSG" | grep -qE "^major(\([^)]*\))?: "; then
+            echo "type=major" >> "$GITHUB_OUTPUT"
+          elif echo "$COMMIT_MSG" | grep -qE "^feat(\([^)]*\))?: "; then
+            echo "type=minor" >> "$GITHUB_OUTPUT"
+          else
+            echo "type=patch" >> "$GITHUB_OUTPUT"
+          fi
+          echo "Bump type: $(grep type= $GITHUB_OUTPUT | cut -d= -f2)"
+
+      # ── Run the existing bump script ──────────────────────────────────────
+      - name: Bump version (${{ steps.bump_type.outputs.type }})
+        run: python scripts/bump_version.py --${{ steps.bump_type.outputs.type }}
+
+      # ── Read the new version written by the script ────────────────────────
+      - name: Read new version
+        id: ver
+        run: |
+          VERSION=$(python - <<'EOF'
+          import re, pathlib
+          text = pathlib.Path("src/mcp_pvp/__init__.py").read_text()
+          print(re.search(r'__version__ = "([^"]+)"', text).group(1))
+          EOF
+          )
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "New version: $VERSION"
+
+      # ── Commit, tag, push ─────────────────────────────────────────────────
+      - name: Commit version bump
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add pyproject.toml src/mcp_pvp/__init__.py
+          git commit -m "chore: bump version to v${{ steps.ver.outputs.version }} [skip ci]"
+
+      - name: Create version tag
+        run: git tag -a "v${{ steps.ver.outputs.version }}" -m "Release v${{ steps.ver.outputs.version }}"
+
+      - name: Push commit and tag
+        run: |
+          git push origin main
+          git push origin "v${{ steps.ver.outputs.version }}"
