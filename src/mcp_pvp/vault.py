@@ -513,12 +513,12 @@ class Vault:
 
             # Handle objects with __dict__ (like Pydantic models, custom classes)
             # This includes MCP's ContentBlock types
-            elif hasattr(value, '__dict__') and hasattr(value, '__class__'):
+            elif hasattr(value, "__dict__") and hasattr(value, "__class__"):
                 # For objects with attributes, we need to rebuild them
                 # Get the object's dict representation
                 obj_dict = {}
                 for attr_name in dir(value):
-                    if not attr_name.startswith('_'):
+                    if not attr_name.startswith("_"):
                         try:
                             attr_value = getattr(value, attr_name)
                             # Skip methods
@@ -538,10 +538,10 @@ class Vault:
                 # Try to reconstruct the object with tokenized values
                 try:
                     # For Pydantic models and similar, try to create new instance
-                    if hasattr(value.__class__, 'model_validate'):
+                    if hasattr(value.__class__, "model_validate"):
                         # Pydantic v2
                         return value.__class__.model_validate(tokenized_dict)
-                    elif hasattr(value.__class__, 'parse_obj'):
+                    elif hasattr(value.__class__, "parse_obj"):
                         # Pydantic v1
                         return value.__class__.parse_obj(tokenized_dict)
                     else:

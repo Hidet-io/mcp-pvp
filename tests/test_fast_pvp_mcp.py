@@ -39,9 +39,7 @@ def make_server(policy: Policy | None = None) -> FastPvpMCP:
 def email_policy() -> Policy:
     return Policy(
         sinks={
-            "tool:send_email": SinkPolicy(
-                allow=[PolicyAllow(type=PIIType.EMAIL, arg_paths=["to"])]
-            )
+            "tool:send_email": SinkPolicy(allow=[PolicyAllow(type=PIIType.EMAIL, arg_paths=["to"])])
         }
     )
 

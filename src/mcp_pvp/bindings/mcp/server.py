@@ -156,9 +156,7 @@ class FastPvpMCP(FastMCP):
         )
         return resolved
 
-    def _retokenize_blocks(
-        self, name: str, blocks: list, vault_session: str
-    ) -> tuple[list, list]:
+    def _retokenize_blocks(self, name: str, blocks: list, vault_session: str) -> tuple[list, list]:
         """Tokenize PII in a list of ContentBlocks.
 
         Returns ``(tokenized_blocks, all_tokens)``.
@@ -215,8 +213,10 @@ class FastPvpMCP(FastMCP):
             logger.info("tool_result_tokenized", tool_name=name, tokens_found=len(all_tokens))
 
             if raw_data is not None:
-                tokenized_raw, raw_tokens = self._vault.tokenize_tool_result(
-                    tool_result=raw_data, vault_session=vault_session, run=None,
+                tokenized_raw, _ = self._vault.tokenize_tool_result(
+                    tool_result=raw_data,
+                    vault_session=vault_session,
+                    run=None,
                 )
                 return (tokenized_blocks, tokenized_raw)
 

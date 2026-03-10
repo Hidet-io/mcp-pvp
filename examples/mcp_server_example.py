@@ -51,13 +51,14 @@ def send_email(to: str, subject: str, body: str) -> dict[str, Any]:
     print(f"\n[Tool] send_email called — to={to!r}  (real address, resolved by server)")
     return {
         "status": "sent",
-        "to": to,          # server will re-tokenize this before it leaves
+        "to": to,  # server will re-tokenize this before it leaves
         "subject": subject,
         "timestamp": "2026-03-09T10:30:00Z",
     }
 
 
 # ── Demo ──────────────────────────────────────────────────────────────────────
+
 
 async def demo() -> None:
     """Run an in-process MCP client ↔ server demo."""
@@ -69,8 +70,8 @@ async def demo() -> None:
 
     async def run_server() -> None:
         await mcp._mcp_server.run(
-            client_to_server_recv,      # server reads from client
-            server_to_client_send,      # server writes to client
+            client_to_server_recv,  # server reads from client
+            server_to_client_send,  # server writes to client
             mcp._mcp_server.create_initialization_options(),
             raise_exceptions=True,
         )
@@ -92,7 +93,7 @@ async def demo() -> None:
                 TokenizeRequest(
                     content="john.doe@example.com",
                     token_format=TokenFormat.TEXT,
-                    vault_session=vault_session_id,   # tie tokens to this connection
+                    vault_session=vault_session_id,  # tie tokens to this connection
                 )
             )
             email_token = tokenize_resp.tokens[0].to_text()
@@ -104,7 +105,7 @@ async def demo() -> None:
             result = await session.call_tool(
                 "send_email",
                 {
-                    "to": email_token,      # PII token, not the real address
+                    "to": email_token,  # PII token, not the real address
                     "subject": "Hello!",
                     "body": "This is a test.",
                 },
@@ -134,4 +135,3 @@ async def demo() -> None:
 
 if __name__ == "__main__":
     asyncio.run(demo())
-
