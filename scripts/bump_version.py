@@ -16,7 +16,9 @@ Usage:
 
 import argparse
 import re
+import subprocess
 import sys
+from datetime import UTC, datetime
 from pathlib import Path
 
 
@@ -55,6 +57,59 @@ def bump_version(current: str, bump_type: str) -> str:
         return format_version(major, minor, patch + 1)
     else:
         raise ValueError(f"Invalid bump type: {bump_type}")
+
+
+def update_changelog(new_version: str) -> bool:
+    """Add a new version entry to CHANGELOG.md.
+
+    Inserts a dated header under [Unreleased] and includes the triggering
+    commit message as the first bullet point (when available via git).
+    Returns True if the file was modified.
+    """
+    changelog = Path("CHANGELOG.md")
+    if not changelog.exists():
+        return False
+
+    content = changelog.read_text()
+    today = datetime.now(tz=UTC).strftime("%Y-%m-%d")
+    header = f"## [{new_version}] - {today}"
+
+    # Avoid duplicate entries
+    if f"## [{new_version}]" in content:
+        return False
+
+    # Try to get the commit message that triggered the bump
+    commit_msg = ""
+    try:
+        result = subprocess.run(  # noqa: S603
+            ["git", "log", "-1", "--format=%s"],  # noqa: S607
+            capture_output=True,
+            text=True,
+            timeout=5,
+        )
+        if result.returncode == 0:
+            msg = result.stdout.strip()
+            # Don't include bump commit messages themselves
+            if not msg.startswith("chore: bump version"):
+                commit_msg = msg
+    except Exception:
+        print(
+            "Warning: Could not retrieve git commit message for changelog entry.", file=sys.stderr
+        )
+
+    entry = f"\n{header}\n"
+    if commit_msg:
+        entry += f"- {commit_msg}\n"
+
+    # Insert after ## [Unreleased]
+    new_content = content.replace("## [Unreleased]", f"## [Unreleased]\n{entry}", 1)
+    if new_content == content:
+        # No [Unreleased] header; insert after the first line
+        lines = content.split("\n", 1)
+        new_content = lines[0] + f"\n{entry}\n" + (lines[1] if len(lines) > 1 else "")
+
+    changelog.write_text(new_content)
+    return True
 
 
 def update_file(file_path: Path, old_version: str, new_version: str) -> bool:
@@ -122,6 +177,12 @@ def main():
             print(f"  ✅ {file_path}")
         else:
             print(f"  ⚠️  {file_path} - no changes")
+
+    # Update CHANGELOG.md
+    if update_changelog(new_version):
+        print("  ✅ CHANGELOG.md")
+    else:
+        print("  ⚠️  CHANGELOG.md - no changes")
 
     print(f"\n✨ Version bumped from {current_version} to {new_version}")
     print("\n📝 Next steps:")

@@ -128,11 +128,10 @@ async def test_pvp_tokenize_direct_call():
     """pvp_tokenize works when called with an explicit vault session."""
     mcp = make_server(email_policy())
     # Create a session directly in the vault
-    session = mcp.vault.store.create_session()
 
     result = await mcp.call_tool(
         "pvp_tokenize",
-        {"content": "email alice@example.com", "vault_session": session.session_id},
+        {"content": "email alice@example.com"},
     )
     data = _parse_direct_result(result)
     assert "redacted" in data
@@ -145,11 +144,10 @@ async def test_pvp_tokenize_direct_call():
 async def test_pvp_tokenize_no_pii():
     """pvp_tokenize returns empty token list when no PII is found."""
     mcp = make_server()
-    session = mcp.vault.store.create_session()
 
     result = await mcp.call_tool(
         "pvp_tokenize",
-        {"content": "hello world", "vault_session": session.session_id},
+        {"content": "hello world"},
     )
     data = _parse_direct_result(result)
     assert data["redacted"] == "hello world"

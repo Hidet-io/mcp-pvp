@@ -75,9 +75,12 @@ class FastPvpMCP(FastMCP):
             ),
         )
         def _pvp_tokenize_tool(content: str) -> dict[str, Any]:
-            context = self.get_context()
-            lifespan_ctx: PvpLifespanContext = context.request_context.lifespan_context
-            vault_session = lifespan_ctx.vault_session
+            vault_session = self._get_vault_session()
+            if vault_session is None:
+                # Direct call without MCP connection (e.g. unit tests) —
+                # create an ad-hoc session for this tokenization request.
+                session = self._vault.store.create_session()
+                vault_session = session.session_id
 
             resp = self._vault.tokenize(
                 TokenizeRequest(

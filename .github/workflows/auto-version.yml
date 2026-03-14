@@ -8,9 +8,10 @@ name: Auto Version Bump
 #   feat(<scope>): <message>    → bump minor  (scoped conventional commit)
 #   anything else               → bump patch  (fix, chore, docs, refactor, …)
 #
-# After bumping, the workflow commits the two changed files back to main with
-# "[skip ci]" in the message (so this workflow doesn't re-trigger) and pushes
+# After bumping, the workflow commits the changed files back to main and pushes
 # a "v{version}" tag, which fires the existing release.yml pipeline.
+# Re-triggering is prevented by the `if` condition on the job (not [skip ci],
+# which would also suppress the tag-triggered release.yml).
 
 on:
   push:
@@ -84,8 +85,8 @@ jobs:
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add pyproject.toml src/mcp_pvp/__init__.py
-          git commit -m "chore: bump version to v${{ steps.ver.outputs.version }} [skip ci]"
+          git add pyproject.toml src/mcp_pvp/__init__.py CHANGELOG.md
+          git commit -m "chore: bump version to v${{ steps.ver.outputs.version }}"
 
       - name: Create version tag
         run: git tag -a "v${{ steps.ver.outputs.version }}" -m "Release v${{ steps.ver.outputs.version }}"

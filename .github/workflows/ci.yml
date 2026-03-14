@@ -9,6 +9,8 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    # Skip CI on automated version-bump commits (release.yml handles validation)
+    if: "!startsWith(github.event.head_commit.message, 'chore: bump version')"
     strategy:
       matrix:
         python-version: ["3.11", "3.12"]
@@ -51,6 +53,7 @@ jobs:
 
   security:
     runs-on: ubuntu-latest
+    if: "!startsWith(github.event.head_commit.message, 'chore: bump version')"
     steps:
       - uses: actions/checkout@v4
 

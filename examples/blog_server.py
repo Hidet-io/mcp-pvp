@@ -14,6 +14,10 @@ import sys
 
 import structlog
 
+from mcp_pvp.bindings.mcp.server import FastPvpMCP
+from mcp_pvp.models import PIIType, Policy, PolicyAllow, PolicyLimits, SinkPolicy
+from mcp_pvp.vault import Vault
+
 # ── Logging setup ────────────────────────────────────────────────────────────
 # MCP stdio transport owns stdout. Redirect ALL logging to stderr so it
 # doesn't corrupt the JSON-RPC stream.
@@ -26,9 +30,6 @@ structlog.configure(
     logger_factory=structlog.PrintLoggerFactory(file=sys.stderr),
 )
 
-from mcp_pvp.bindings.mcp.server import FastPvpMCP
-from mcp_pvp.models import PIIType, Policy, PolicyAllow, PolicyLimits, SinkPolicy
-from mcp_pvp.vault import Vault
 
 logger = structlog.get_logger(__name__)
 
