@@ -74,7 +74,11 @@ class FastPvpMCP(FastMCP):
                 "Pass the returned tokens to other tools instead of raw PII."
             ),
         )
-        def _pvp_tokenize_tool(content: str, vault_session: str) -> dict[str, Any]:
+        def _pvp_tokenize_tool(content: str) -> dict[str, Any]:
+            context = self.get_context()
+            lifespan_ctx: PvpLifespanContext = context.request_context.lifespan_context
+            vault_session = lifespan_ctx.vault_session
+
             resp = self._vault.tokenize(
                 TokenizeRequest(
                     content=content,
