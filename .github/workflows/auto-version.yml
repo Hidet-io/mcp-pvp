@@ -94,27 +94,5 @@ jobs:
         run: |
           git push origin main
           git push origin "v${{ steps.ver.outputs.version }}"
-
-      - name: Download artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: dist
-          path: dist/
-
-      - name: Extract release notes
-        id: extract_notes
-        run: |
-          TAG_VERSION="${GITHUB_REF#refs/tags/v}"
-          # Extract changelog section for this version
-          awk "/## \[$TAG_VERSION\]/,/## \[/" CHANGELOG.md | sed '$d' > release_notes.md
-          echo "Release notes for v$TAG_VERSION extracted"
-
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v1
-        with:
-          body_path: release_notes.md
-          files: dist/*
-          draft: false
-          prerelease: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.RELEASE_PAT }}
+          # The tag push triggers release.yml which builds, tests,
+          # and creates the GitHub Release with dist artifacts.
