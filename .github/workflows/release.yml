@@ -109,7 +109,6 @@ jobs:
   publish-pypi:
     needs: release
     runs-on: ubuntu-latest
-    if: false  # Set to true when ready to publish to PyPI
     environment:
       name: pypi
       url: https://pypi.org/project/mcp-pvp/
