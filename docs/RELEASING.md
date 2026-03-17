@@ -153,7 +153,7 @@ Fix by bumping to the correct version and re-tagging.
 
 ### Release workflow fails
 
-Check the [Actions tab](https://github.com/Spidux-ai/mcp-pvp/actions) for details. Common issues:
+Check the [Actions tab](https://github.com/hidet-io/mcp-pvp/actions) for details. Common issues:
 - Test failures — fix and re-release with a new patch version
 - Lint/type errors — run `make lint-fix && make format` locally, commit, re-tag
 - Version mismatch — ensure `make bump-version` was run before tagging

@@ -2,7 +2,7 @@
 name = "mcp-pvp"
 version = "0.6.16"
 description = "Privacy Vault Protocol for MCP: tokenize sensitive data before the LLM sees it"
-authors = [{name = "Spidux.ai Team", email = "team@hidet.io"}]
+authors = [{name = "Hidet-io Team", email = "support@hidet.io"}]
 license = {text = "Apache-2.0"}
 readme = "README.md"
 requires-python = ">=3.11"
@@ -72,9 +72,9 @@ all = [
 mcp-pvp-mcp = "mcp_pvp.bindings.mcp.server:main"
 
 [project.urls]
-Homepage = "https://github.com/Spidux-ai/mcp-pvp"
-Repository = "https://github.com/Spidux-ai/mcp-pvp"
-Documentation = "https://github.com/Spidux-ai/mcp-pvp/blob/main/docs/SPEC.md"
+Homepage = "https://github.com/hidet-io/mcp-pvp"
+Repository = "https://github.com/hidet-io/mcp-pvp"
+Documentation = "https://github.com/hidet-io/mcp-pvp/blob/main/docs/SPEC.md"
 
 [build-system]
 requires = ["hatchling"]

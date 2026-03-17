@@ -1,8 +1,8 @@
 site_name: mcp-pvp Documentation
 site_description: Tokenize sensitive data before the LLM sees it.
-site_url: https://spidux-ai.github.io/mcp-pvp/
-repo_url: https://github.com/Spidux-ai/mcp-pvp
-repo_name: Spidux-ai/mcp-pvp
+site_url: https://hidet-io.github.io/mcp-pvp/
+repo_url: https://github.com/hidet-io/mcp-pvp
+repo_name: Hidet-io/mcp-pvp
 
 theme:
   name: material
@@ -73,4 +73,4 @@ markdown_extensions:
 extra:
   social:
     - icon: fontawesome/brands/github
-      link: https://github.com/Spidux-ai/mcp-pvp
+      link: https://github.com/hidet-io/mcp-pvp

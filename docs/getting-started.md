@@ -6,7 +6,7 @@ The recommended path is to use `uv`, which bootstraps isolated environments quic
 
 ```bash
 curl -LsSf https://astral.sh/uv/install.sh | sh
-git clone https://github.com/Spidux-ai/mcp-pvp.git
+git clone https://github.com/hidet-io/mcp-pvp.git
 cd mcp-pvp
 uv venv
 source .venv/bin/activate

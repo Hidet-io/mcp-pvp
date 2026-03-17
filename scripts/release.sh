@@ -273,5 +273,5 @@ if ! $NO_PUSH && ! $DRY_RUN; then
     echo "    3. Create GitHub Release with changelog notes"
     echo "    4. Publish to PyPI (if enabled)"
     echo ""
-    echo -e "  ${CYAN}Monitor:${NC} https://github.com/Spidux-ai/mcp-pvp/actions"
+    echo -e "  ${CYAN}Monitor:${NC} https://github.com/hidet-io/mcp-pvp/actions"
 fi
